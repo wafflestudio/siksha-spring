@@ -4,12 +4,17 @@ plugins {
     id("org.springframework.boot") version "3.3.4" apply false
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "1.9.25"
+    id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
 }
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 }
 
 allprojects {
