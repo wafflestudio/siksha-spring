@@ -13,6 +13,6 @@ class RestaurantTest
     ) {
         @Test
         fun testRestaurant() {
-            println(repository.findAll().map { it.id })
+            println(repository.findAll().map{ it.nameKr })
         }
     }
