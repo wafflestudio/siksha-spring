@@ -1,0 +1,17 @@
+package siksha.wafflestudio.core.restaurant
+
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import siksha.wafflestudio.core.RestaurantRepository
+
+@SpringBootTest
+class RestaurantTest @Autowired constructor(
+    private val repository: RestaurantRepository
+) {
+
+    @Test
+    fun testRestaurant() {
+        println(repository.findAll().map { it.id })
+    }
+}

@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS restaurants;
+
+CREATE TABLE restaurants
+(
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY(id)
+);
