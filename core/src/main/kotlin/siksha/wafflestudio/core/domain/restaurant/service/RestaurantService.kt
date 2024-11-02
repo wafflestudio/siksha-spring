@@ -8,7 +8,7 @@ import siksha.wafflestudio.core.domain.restaurant.data.RestaurantRepository
 class RestaurantService(
     private val restaurantRepository: RestaurantRepository,
 ) {
-    fun getRestaurants(): List<Restaurant> {
+    fun getRestaurants(userId: Long): List<Restaurant> {
         return restaurantRepository.findAll()
     }
 }
