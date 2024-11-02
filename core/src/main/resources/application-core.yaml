@@ -11,3 +11,5 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+jwt.secret-key:
