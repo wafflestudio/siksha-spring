@@ -12,4 +12,10 @@ spring:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  data:
+    redis:
+      host:
+      port:
+      password:
+
 jwt.secret-key:
