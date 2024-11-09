@@ -16,6 +16,5 @@ spring:
     redis:
       host:
       port:
-      password:
 
 jwt.secret-key:
