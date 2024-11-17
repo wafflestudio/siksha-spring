@@ -11,4 +11,8 @@ class RestaurantService(
     fun getRestaurants(userId: Long): List<Restaurant> {
         return restaurantRepository.findAll()
     }
+
+    fun getRestaurant(restaurantId: Long): Restaurant {
+        return restaurantRepository.findById(restaurantId).get()
+    }
 }
