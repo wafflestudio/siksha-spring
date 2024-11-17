@@ -3,6 +3,7 @@ package siksha.wafflestudio.api.common
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -11,13 +12,19 @@ import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import java.nio.charset.StandardCharsets
+import javax.crypto.SecretKey
 
 @Component
 class AuthInterceptor(
     @Value("\${jwt.secret-key}") private val jwtSecretKey: String,
 ) : HandlerInterceptor {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val encodedJwtSecretKey = Keys.hmacShaKeyFor(jwtSecretKey.toByteArray(StandardCharsets.UTF_8))
+    private lateinit var encodedJwtSecretKey: SecretKey
+
+    @PostConstruct
+    fun init() {
+        encodedJwtSecretKey = Keys.hmacShaKeyFor(jwtSecretKey.toByteArray(StandardCharsets.UTF_8))
+    }
 
     override fun preHandle(
         request: HttpServletRequest,
