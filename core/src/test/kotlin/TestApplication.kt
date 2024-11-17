@@ -25,7 +25,6 @@ class TestApplication(
     private val jdbcTemplate: JdbcTemplate,
     private val resourceLoader: ResourceLoader,
 ) {
-
     companion object {
         @JvmStatic
         @ServiceConnection
