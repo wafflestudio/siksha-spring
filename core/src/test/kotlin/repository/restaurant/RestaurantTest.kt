@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.restaurant
+package siksha.wafflestudio.core.repository.restaurant
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
