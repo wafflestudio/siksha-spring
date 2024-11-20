@@ -11,6 +11,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.io.ResourceLoader
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.event.BeforeTestMethodEvent
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.MySQLContainer
 import java.nio.file.FileSystems
 import kotlin.io.path.listDirectoryEntries
@@ -29,6 +30,10 @@ class TestApplication(
         @JvmStatic
         @ServiceConnection
         val mysql = MySQLContainer("mysql:8")
+
+        @JvmStatic
+        val redis = GenericContainer("redis:6.2")
+            .withExposedPorts(6379)
     }
 
     @EventListener(BeforeTestMethodEvent::class)
