@@ -11,3 +11,10 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host:
+      port:
+
+jwt.secret-key:
