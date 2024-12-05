@@ -10,7 +10,6 @@ class WebMvcConfig(
     private val authInterceptor: AuthInterceptor,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
-        // TODO: jwt secret 확보되면 인터셉터 추가
 //        registry.addInterceptor(authInterceptor)
     }
 }
