@@ -13,4 +13,17 @@ CREATE TABLE `restaurant` (
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '변경 시간',
     PRIMARY KEY (`id`),
     UNIQUE KEY `code` (`code`)
-)
+);
+
+DROP TABLE IF EXISTS `board`;
+
+CREATE TABLE `board` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '게시판명',
+    `description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '게시판 소개',
+    `type` int DEFAULT 1 NOT NULL COMMENT '게시판 타입',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시간',
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '변경 시간',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `name` (`name`)
+);

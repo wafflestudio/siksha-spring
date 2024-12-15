@@ -31,8 +31,8 @@ class BoardApplicationService(
         } catch (ex: InvalidBoardFormException) {
             throw ex;
         }
-
     }
+
     fun getBoardById(id: Long): BoardDto {
         val board = boardRepository.findByIdOrNull(id) ?: throw BoardNotFoundException()
         return BoardDto.from(board)
