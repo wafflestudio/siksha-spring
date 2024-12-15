@@ -68,7 +68,7 @@ class BoardServiceTest {
     @Test
     fun `create board already exists error`() {
         // given
-        every { repository.save(any())} throws DataIntegrityViolationException("")
+        every { repository.save(any()) } throws DataIntegrityViolationException("")
 
         // when
         val boardCreateDTO = BoardCreateDTO("existing", "이미 존재하는 게시판")

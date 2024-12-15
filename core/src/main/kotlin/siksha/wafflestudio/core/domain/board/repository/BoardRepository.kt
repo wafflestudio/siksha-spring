@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.board.data.Board
 
 @Repository
-interface BoardRepository : JpaRepository<Board, Long> {
-}
+interface BoardRepository : JpaRepository<Board, Long>

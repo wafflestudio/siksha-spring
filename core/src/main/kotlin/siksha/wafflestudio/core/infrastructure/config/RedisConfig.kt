@@ -14,7 +14,7 @@ class RedisConfig(
     @Value("\${spring.data.redis.host}")
     val host: String,
     @Value("\${spring.data.redis.port}")
-    val port: Int
+    val port: Int,
 ) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {

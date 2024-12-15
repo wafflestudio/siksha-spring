@@ -25,7 +25,7 @@ class BoardTest {
     @Test
     fun `save board`() {
         // when
-        val board = Board(name="Test", description = "테스트 게시판")
+        val board = Board(name = "Test", description = "테스트 게시판")
         val savedBoard = repository.save(board)
 
         // then

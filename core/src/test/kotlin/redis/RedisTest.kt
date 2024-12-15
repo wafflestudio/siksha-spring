@@ -1,7 +1,6 @@
 package siksha.wafflestudio.core.redis
 
 import junit.framework.TestCase.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
