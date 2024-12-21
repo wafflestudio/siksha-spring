@@ -10,6 +10,10 @@ class WebMvcConfig(
     private val authInterceptor: AuthInterceptor,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
-//        registry.addInterceptor(authInterceptor)
+        registry.addInterceptor(authInterceptor)
+            .excludePathPatterns(
+                "/community/**/web",
+            )
     }
 }
+

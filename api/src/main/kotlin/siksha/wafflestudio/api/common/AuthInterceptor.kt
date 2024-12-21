@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
+import siksha.wafflestudio.core.domain.common.exception.Unauthorized
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import javax.crypto.SecretKey
 
 @Component
@@ -23,7 +25,8 @@ class AuthInterceptor(
 
     @PostConstruct
     fun init() {
-        encodedJwtSecretKey = Keys.hmacShaKeyFor(jwtSecretKey.toByteArray(StandardCharsets.UTF_8))
+        val secretKeyExtended = MessageDigest.getInstance("SHA-256").digest(jwtSecretKey.toByteArray())
+        encodedJwtSecretKey = Keys.hmacShaKeyFor(secretKeyExtended)
     }
 
 
@@ -41,7 +44,7 @@ class AuthInterceptor(
             true
         }.getOrElse {
             logger.error("auth failed")
-            throw it
+            throw Unauthorized()
         }
     }
 
