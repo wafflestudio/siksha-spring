@@ -23,8 +23,7 @@ class AuthInterceptor(
     private val logger = LoggerFactory.getLogger(javaClass)
     private lateinit var encodedJwtSecretKey: SecretKey
 
-    @PostConstruct
-    fun init() {
+    init {
         val secretKeyExtended = MessageDigest.getInstance("SHA-256").digest(jwtSecretKey.toByteArray())
         encodedJwtSecretKey = Keys.hmacShaKeyFor(secretKeyExtended)
     }
