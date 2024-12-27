@@ -13,11 +13,12 @@ class CommentService(
     private val commentLikeRepository: CommentLikeRepository,
 ){
     fun getCommentsWithoutAuth(
+        postId: Long,
         page: Int,
         perPage: Int,
     ): GetCommentsResponseDto {
         val pageable = PageRequest.of(page, perPage)
-        val commentsPage = commentRepository.findPageByPostId(pageable)
+        val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
