@@ -7,10 +7,9 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
-import java.sql.Timestamp
 import java.time.LocalDateTime
 
 @Entity(name = "comment")
@@ -24,11 +23,10 @@ class Comment(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
-    // FIXME post 엔티티 생기면 연결
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "post_id", nullable = false)
-//    val post: Long,
-    val postId: Long,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    val post: Post,
+
     val content: String,
     val available: Boolean,
     val anonymous: Boolean,

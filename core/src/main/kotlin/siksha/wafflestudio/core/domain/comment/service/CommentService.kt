@@ -24,7 +24,7 @@ class CommentService(
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
             CommentResponseDto(
                 id = comment.id,
-                postId = comment.postId,
+                postId = comment.post.id,
                 content = comment.content,
                 createdAt = comment.createdAt,
                 updatedAt = comment.updatedAt,

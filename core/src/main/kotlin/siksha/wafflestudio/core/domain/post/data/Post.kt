@@ -24,7 +24,7 @@ class Post(
     val title: String,
 
     val content: String,
-    val available: Boolean? = null,
+    val available: Boolean,
     val anonymous: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
