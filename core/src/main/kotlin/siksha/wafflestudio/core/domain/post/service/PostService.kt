@@ -16,6 +16,7 @@ class PostService(
     private val postReportRepository: PostReportRepository,
     private val commentRepository: CommentRepository,
 ){
+    // TODO: throw custom exceptions & parse etc
     fun getPostsWithoutAuth(
         boardId: Long,
         page: Int,
