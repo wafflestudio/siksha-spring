@@ -2,7 +2,7 @@ package siksha.wafflestudio.core.application.board.dto
 
 import siksha.wafflestudio.core.domain.board.data.Board
 
-data class BoardCreateDTO(
+data class BoardCreateDto(
     val name: String?,
     val description: String?,
     val type: Int = 1,

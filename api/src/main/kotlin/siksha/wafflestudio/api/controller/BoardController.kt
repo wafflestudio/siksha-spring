@@ -3,8 +3,9 @@ package siksha.wafflestudio.api.controller
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import siksha.wafflestudio.core.application.board.BoardApplicationService
-import siksha.wafflestudio.core.application.board.dto.BoardCreateDTO
+import siksha.wafflestudio.core.application.board.dto.BoardCreateDto
 import siksha.wafflestudio.core.application.board.dto.BoardDto
+import java.util.*
 
 @RestController
 @RequestMapping("/community/boards")
@@ -17,11 +18,11 @@ class BoardController(
     @GetMapping("/{board_id}")
     fun getBoard(
         @PathVariable("board_id") boardId: Long,
-    ): BoardDto? = boardApplicationService.getBoardById(boardId)
+    ): Optional<BoardDto> = Optional.ofNullable(boardApplicationService.getBoardById(boardId))
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun addBoard(
-        @RequestBody board: BoardCreateDTO,
+        @RequestBody board: BoardCreateDto,
     ): BoardDto = boardApplicationService.addBoard(board)
 }

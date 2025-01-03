@@ -15,7 +15,7 @@ class BoardDomainService {
             errors.add("Description cannot be empty")
         }
         if (errors.isNotEmpty()) {
-            throw InvalidBoardFormException(errors.toString())
+            throw InvalidBoardFormException("$errors")
         }
     }
 }

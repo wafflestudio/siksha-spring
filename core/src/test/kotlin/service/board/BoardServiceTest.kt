@@ -11,7 +11,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import siksha.wafflestudio.core.application.board.BoardApplicationService
-import siksha.wafflestudio.core.application.board.dto.BoardCreateDTO
+import siksha.wafflestudio.core.application.board.dto.BoardCreateDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.board.service.BoardDomainService
@@ -40,7 +40,7 @@ class BoardServiceTest {
         every { repository.save(any()) } returns board
 
         // when
-        val boardCreateDTO = BoardCreateDTO("test", "테스트 게시판")
+        val boardCreateDTO = BoardCreateDto("test", "테스트 게시판")
         val result = service.addBoard(boardCreateDTO)
 
         // when
@@ -56,7 +56,7 @@ class BoardServiceTest {
         // given
 
         // when
-        val boardCreateDTO = BoardCreateDTO(name = null, description = "테스트")
+        val boardCreateDTO = BoardCreateDto(name = null, description = "테스트")
         val exception = assertThrows<InvalidBoardFormException> {
             service.addBoard(boardCreateDTO)
         }
@@ -71,7 +71,7 @@ class BoardServiceTest {
         every { repository.save(any()) } throws DataIntegrityViolationException("")
 
         // when
-        val boardCreateDTO = BoardCreateDTO("existing", "이미 존재하는 게시판")
+        val boardCreateDTO = BoardCreateDto("existing", "이미 존재하는 게시판")
         val exception = assertThrows<BoardNameAlreadyExistException> {
             service.addBoard(boardCreateDTO)
         }

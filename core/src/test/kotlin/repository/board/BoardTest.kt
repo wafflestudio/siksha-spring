@@ -17,11 +17,6 @@ class BoardTest {
     @Autowired
     lateinit var repository: BoardRepository
 
-    @BeforeEach
-    fun setUp() {
-        repository.deleteAll()
-    }
-
     @Test
     fun `save board`() {
         // when
