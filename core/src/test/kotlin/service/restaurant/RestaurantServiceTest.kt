@@ -16,7 +16,7 @@ constructor(
 ) {
     @Test
     fun testRestaurant() {
-        val restaurants = service.getRestaurants(0)
+        val restaurants = service.getRestaurants(1)
         assert(restaurants.isNotEmpty())
     }
 
