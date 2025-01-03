@@ -9,3 +9,7 @@ class BoardNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "Board n
 class BoardNameAlreadyExistException : CommunityException(HttpStatus.BAD_REQUEST, "Board name already exists")
 
 class InvalidBoardFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
+
+class InvalidPageNumberException(): CommunityException(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다.")
+
+class InvalidPostFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)

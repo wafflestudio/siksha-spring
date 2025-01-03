@@ -17,7 +17,7 @@ class CommentService(
         page: Int,
         perPage: Int,
     ): GetCommentsResponseDto {
-        val pageable = PageRequest.of(page, perPage)
+        val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id }).groupBy { it.comment.id }

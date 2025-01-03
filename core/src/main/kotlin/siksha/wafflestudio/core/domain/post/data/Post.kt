@@ -1,8 +1,11 @@
 package siksha.wafflestudio.core.domain.post.data
 
 import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.user.data.User
+import java.sql.Timestamp
 import java.time.LocalDateTime
 
 @Entity(name = "post")
@@ -26,7 +29,12 @@ class Post(
     val content: String,
     val available: Boolean,
     val anonymous: Boolean,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
     val etc: String? = null,
 )

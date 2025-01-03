@@ -2,8 +2,3 @@ spring:
   config:
     import:
       - application-core.yaml
-  data:
-    web:
-      pageable:
-        one-indexed-parameters: true
-        default-page-size: 10
