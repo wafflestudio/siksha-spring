@@ -31,22 +31,7 @@ class PostService(
         val postDtos = posts.map { post ->
             val likeCount = postIdToPostLikes[post.id]?.size ?: 0
             val commentCount = postIdToComments[post.id]?.size ?: 0
-            PostResponseDto(
-                id = post.id,
-                boardId = 0L, // FIXME: post.board.id,
-                title = post.title,
-                content = post.content,
-                createdAt = post.createdAt,
-                updatedAt = post.updatedAt,
-                nickname = post.user.nickname,
-                profileUrl = post.user.profileUrl,
-                available = post.available,
-                anonymous = post.anonymous,
-                etc = post.etc,
-                likeCnt = likeCount,
-                commentCnt = commentCount,
-                isLiked = false,
-            )
+            PostResponseDto.fromEntity(post, likeCount, commentCount)
         }
 
         return GetPostsResponseDto(

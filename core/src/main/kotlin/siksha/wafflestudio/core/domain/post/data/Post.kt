@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.post.data
 
 import jakarta.persistence.*
+import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.LocalDateTime
 
@@ -15,10 +16,9 @@ class Post(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 
-//    FIXME: Board entity 생성 후 연결
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "board_id", nullable = false)
-//    val board: Board,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    val board: Board,
 
     @Column(name = "title", length = 200)
     val title: String,

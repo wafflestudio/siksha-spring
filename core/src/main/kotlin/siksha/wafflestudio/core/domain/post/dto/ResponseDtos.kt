@@ -2,6 +2,7 @@ package siksha.wafflestudio.core.domain.post.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import siksha.wafflestudio.core.domain.post.data.Post
 import java.time.LocalDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -27,4 +28,25 @@ data class PostResponseDto(
     val likeCnt: Int,
     val commentCnt: Int,
     val isLiked: Boolean?,
-)
+) {
+    companion object {
+        fun fromEntity(post: Post, likeCnt: Int, commentCnt: Int): PostResponseDto {
+            return PostResponseDto(
+                id = post.id,
+                boardId = post.board.id,
+                title = post.title,
+                content = post.content,
+                createdAt = post.createdAt,
+                updatedAt = post.updatedAt,
+                nickname = post.user.nickname,
+                profileUrl = post.user.profileUrl,
+                available = post.available,
+                anonymous = post.anonymous,
+                etc = post.etc,
+                likeCnt = likeCnt,
+                commentCnt = commentCnt,
+                isLiked = false,
+            )
+        }
+    }
+}
