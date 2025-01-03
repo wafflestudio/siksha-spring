@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.service
+package siksha.wafflestudio.core.service.restaurant
 
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test

@@ -31,6 +31,7 @@ allprojects {
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+        testImplementation("io.mockk:mockk:1.12.0")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         implementation("io.jsonwebtoken:jjwt-api:0.12.6")
         implementation("io.jsonwebtoken:jjwt-impl:0.12.6")

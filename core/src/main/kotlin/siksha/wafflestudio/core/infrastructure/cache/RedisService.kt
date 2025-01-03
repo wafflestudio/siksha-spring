@@ -9,9 +9,11 @@ import java.time.Duration
 @Service
 class RedisService(
     private val redisTemplate: RedisTemplate<String, Any>,
-    @Qualifier("redisConnectionFactory") private val redisConnectionFactory: RedisConnectionFactory
+    @Qualifier("redisConnectionFactory") private val redisConnectionFactory: RedisConnectionFactory,
 ) {
-    fun <T> cacheValue(key: String, value: T, expire: Duration) {
+    fun <T> cacheValue(
+        key: String, value: T, expire: Duration
+    ) {
         try {
             redisTemplate.opsForValue().set(key, value as Any, expire)
         } catch (e: Exception) {
@@ -19,7 +21,9 @@ class RedisService(
         }
     }
 
-    fun <T> getCachedValue(key: String): T? {
+    fun <T> getCachedValue(
+        key: String
+    ): T? {
         return try {
             redisTemplate.opsForValue().get(key) as? T
         } catch (e: Exception) {
@@ -28,11 +32,13 @@ class RedisService(
         }
     }
 
-    fun deleteByKey(key: String): Boolean {
+    fun deleteByKey(
+        key: String
+    ): Boolean {
         return try {
             redisTemplate.delete(key)
         } catch (e: Exception) {
-            println("Error deleting cached by key: ${e.message}")
+            println("Error deleting cached by key ${e.message}")
             false
         }
     }

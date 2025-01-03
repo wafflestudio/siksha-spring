@@ -320,4 +320,3 @@ CREATE TABLE version
     updated_at      timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '변경 시간'
 )
     COLLATE = utf8mb4_unicode_ci;
-
