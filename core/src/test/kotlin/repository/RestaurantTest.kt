@@ -1,0 +1,19 @@
+package siksha.wafflestudio.core.repository
+
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import siksha.wafflestudio.core.domain.restaurant.data.RestaurantRepository
+
+@SpringBootTest
+class RestaurantTest
+    @Autowired
+    constructor(
+        private val repository: RestaurantRepository,
+    ) {
+        @Test
+        fun testRestaurant() {
+            val restaurants = repository.findAll()
+            assert(restaurants.isNotEmpty())
+        }
+    }
