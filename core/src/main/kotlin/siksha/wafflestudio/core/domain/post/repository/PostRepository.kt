@@ -10,8 +10,6 @@ import siksha.wafflestudio.core.domain.post.data.Post
 
 interface PostRepository: JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = ["user"])
-    // FIXME: board 생성 후 수정
-    // @Query("SELECT p FROM post p WHERE p.board.id = :boardId")
-    @Query("SELECT p FROM post p")
+    @Query("SELECT p FROM post p WHERE p.board.id = :boardId")
     fun findPageByBoardId(@Param("boardId") boardId: Long, pageable: Pageable): Page<Post>
 }
