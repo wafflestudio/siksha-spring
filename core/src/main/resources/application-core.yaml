@@ -17,4 +17,13 @@ spring:
       host: localhost
       port: 6379
 
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        profile-name: dev
+      s3:
+        bucket:
+
 jwt.secret-key:

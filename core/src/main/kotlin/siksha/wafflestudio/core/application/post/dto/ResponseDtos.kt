@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.post.dto
+package siksha.wafflestudio.core.application.post.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
