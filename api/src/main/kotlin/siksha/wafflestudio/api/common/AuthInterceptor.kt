@@ -24,8 +24,9 @@ class AuthInterceptor(
     private lateinit var encodedJwtSecretKey: SecretKey
 
     init {
-        val secretKeyExtended = MessageDigest.getInstance("SHA-256").digest(jwtSecretKey.toByteArray())
-        encodedJwtSecretKey = Keys.hmacShaKeyFor(secretKeyExtended)
+        // 기존 api 서버에서 기준보다 짧은 secret을 사용중이어서, 호환성을 위해 padding
+        val extendedKey = jwtSecretKey.toByteArray().copyOf(32)
+        encodedJwtSecretKey = Keys.hmacShaKeyFor(extendedKey)
     }
 
 
@@ -38,7 +39,7 @@ class AuthInterceptor(
 
         return runCatching {
             val authHeader = request.getHeader(AUTHORIZATION_HEADER_NAME)
-            val userId = verifyJwtGetClaims(authHeader)[USER_ID_KEY_IN_JWT]
+            val userId = verifyJwtGetClaims(authHeader)[USER_ID_KEY_IN_JWT]!!.claimToLong()
             request.setAttribute("userId", userId)
             true
         }.getOrElse {
@@ -57,10 +58,12 @@ class AuthInterceptor(
     }
 
     companion object {
-        private const val USER_ID_KEY_IN_JWT = "user_id"
+        private const val USER_ID_KEY_IN_JWT = "userId"
         private const val AUTHORIZATION_HEADER_NAME = "Authorization-Token"
     }
 }
+
+fun Any.claimToLong(): Long = if (this is Int) toLong() else this as Long
 
 val HttpServletRequest.userId: Long
     get() = this.getAttribute("userId") as Long
