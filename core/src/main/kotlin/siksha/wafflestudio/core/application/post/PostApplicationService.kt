@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
@@ -73,27 +74,9 @@ class PostApplicationService(
         postDomainService.validateDto(postCreateDto)
         val user = userRepository.findByIdOrNull(userId) ?: throw Unauthorized()
         val board = boardRepository.findByIdOrNull(postCreateDto.board_id) ?: throw BoardNotFoundException()
-        var imageUrls: List<String>? = null
 
-        postCreateDto.images?.let {
-            val prefix = "post-images"
-            val nameKey = "board-${postCreateDto.board_id}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+        val imageUrls = handleImageUpload(postCreateDto.board_id, userId, postCreateDto.images)
 
-            s3Service.uploadFiles(it, prefix, nameKey).let { urlsAndKeys ->
-                imageUrls = urlsAndKeys.first
-                imageRepository.saveAll(
-                    urlsAndKeys.second.map { key ->
-                        Image(
-                            key = key,
-                            category = "POST",
-                            userId = userId,
-                            isDeleted = false
-                        )
-                    }
-                )
-            }
-
-        }
         val post = postCreateDto.toEntity(user = user, board = board, imageUrls = imageUrls)
 
         postRepository.save(post)
@@ -105,4 +88,26 @@ class PostApplicationService(
             commentCnt = 0,
         )
     }
+
+    private fun generateImageNameKey(boardId: Long, userId: Long) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+
+    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>?): List<String>? {
+        if (images.isNullOrEmpty()) return null
+
+        val prefix = "post-images"
+        val nameKey = generateImageNameKey(boardId, userId)
+        val urlsAndKeys = s3Service.uploadFiles(images, prefix, nameKey)
+        imageRepository.saveAll(
+            urlsAndKeys.second.map { key ->
+                Image(
+                    key = key,
+                    category = "POST",
+                    userId = userId,
+                    isDeleted = false
+                )
+            }
+        )
+        return urlsAndKeys.first
+    }
+
 }

@@ -41,13 +41,12 @@ class PostController (
         return postApplicationService.getPosts(boardId, page, perPage, request.userId)
     }
 
-    // FIXME: auth 해결 후 /web 삭제
-    @PostMapping("/web", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
     fun createPost(
         request: HttpServletRequest,
         @ModelAttribute post: PostCreateDto,
     ): PostResponseDto? {
-        return postApplicationService.createPost(119, post) // FIXME: request.userId로 수정
+        return postApplicationService.createPost(request.userId, post) // FIXME: request.userId로 수정
     }
 }

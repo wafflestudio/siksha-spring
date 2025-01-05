@@ -1,22 +1,25 @@
 package siksha.wafflestudio.core.infrastructure.s3
 
 import io.awspring.cloud.s3.S3Exception
-import org.springframework.stereotype.Service
 import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.common.exception.S3ImageUploadException
+import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.core.exception.SdkClientException
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.IOException
-import java.net.URL
 
 @Service
 class S3Service (
     @Value("\${spring.cloud.aws.s3.bucket}")
     private val bucketName: String,
-    private val s3Template: S3Template,
+    private val s3Client: S3Client,
 ) {
     /**
      * AWS S3 bucket에 하나의 파일을 업로드합니다.
@@ -29,8 +32,14 @@ class S3Service (
         val key = "$prefix/$nameKey.jpeg"
         val logger = LoggerFactory.getLogger(javaClass)
         return try {
-            val s3Resource = s3Template.upload(bucketName, key, file.inputStream)
-            Pair(s3Resource.url.toString(), key)
+            val putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .acl(ObjectCannedACL.PUBLIC_READ)
+                .build()
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
+            Pair("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
         } catch (e: Exception) {
             when (e) {
                 is S3Exception, is SdkClientException, is IOException -> {
@@ -51,18 +60,24 @@ class S3Service (
      */
     fun uploadFiles(files: List<MultipartFile>, prefix: String, nameKey: String): Pair<List<String>, List<String>> {
         val logger = LoggerFactory.getLogger(javaClass)
-        val urls = mutableListOf<String>()//mutableListOf<Pair<URL, String>>()
+        val urls = mutableListOf<String>()
         val keys = mutableListOf<String>()
 
         files.forEachIndexed { idx, file ->
             val key = "$prefix/$nameKey/$idx.jpeg"
             try {
-                val s3Resource = s3Template.upload(bucketName, key, file.inputStream)
-                urls.add(s3Resource.url.toString())
+                val putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .build()
+
+                s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
+                urls.add("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
                 keys.add(key)
             } catch (e: Exception) {
                 when (e) {
-                    is S3Exception, is SdkClientException, is IOException -> {
+                    is S3Exception, is SdkClientException, is IOException, is AwsServiceException -> {
                         logger.error("AWS S3 upload error: ${e.message}")
                         throw S3ImageUploadException()
                     }
@@ -70,7 +85,6 @@ class S3Service (
                 }
             }
         }
-
         return Pair(urls, keys)
     }
 }
