@@ -2,13 +2,24 @@ package siksha.wafflestudio.core.domain.comment.service
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import siksha.wafflestudio.core.domain.comment.data.Comment
 import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.comment.repository.UserRepository
+import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
+import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
+import java.time.LocalDateTime
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class CommentService(
+    private val userRepository: UserRepository,
     private val commentRepository: CommentRepository,
     private val commentLikeRepository: CommentLikeRepository,
 ){
@@ -44,5 +55,123 @@ class CommentService(
             totalCount = commentsPage.totalElements,
             hasNext = commentsPage.hasNext(),
         )
+    }
+
+    fun getComments(
+        userId: Long,
+        postId: Long,
+        page: Int,
+        perPage: Int,
+    ):GetCommentsResponseDto {
+        val pageable = PageRequest.of(page, perPage)
+        val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        val comments = commentsPage.content
+
+        val commentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id })
+        val commentIdsILiked = commentLikes.filter { it.user.id == userId }.map { it.comment.id }.toSet()
+        val commentIdToCommentLikes = commentLikes.groupBy { it.comment.id }
+
+        val commentDtos = comments.map { comment ->
+            val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
+            val isLiked = comment.id in commentIdsILiked
+
+            CommentResponseDto(
+                id = comment.id,
+                postId = comment.postId,
+                content = comment.content,
+                createdAt = comment.createdAt,
+                updatedAt = comment.updatedAt,
+                nickname = comment.user.nickname,
+                profileUri = comment.user.profileUrl,
+                available = comment.available,
+                anonymous = comment.anonymous,
+                isMine = comment.user.id == userId,
+                likeCnt = likeCount,
+                isLiked = isLiked,
+            )
+        }
+
+        return GetCommentsResponseDto(
+            result = commentDtos,
+            totalCount = commentsPage.totalElements,
+            hasNext = commentsPage.hasNext(),
+        )
+    }
+
+    fun createComment(userId: Long, createDto: CreateCommentRequestDto): CommentResponseDto? {
+        val me = checkNotNull(userRepository.findById(userId).get())
+
+        val comment = commentRepository.save(
+            Comment(
+                user = me,
+                postId = createDto.postId,
+                content= createDto.content,
+                available = true,
+                anonymous = createDto.anonymous
+            )
+        )
+
+        return CommentResponseDto(
+            id = comment.id,
+            postId = comment.postId,
+            content = comment.content,
+            createdAt = comment.createdAt,
+            updatedAt = comment.updatedAt,
+            nickname = comment.user.nickname,
+            profileUri = comment.user.profileUrl,
+            available = comment.available,
+            anonymous = comment.anonymous,
+            isMine = true,
+            likeCnt = 0,
+            isLiked = false,
+        )
+    }
+
+    fun patchComment(userId: Long, commentId: Long, patchDto: PatchCommentRequestDto): CommentResponseDto {
+        val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
+        if (comment.user.id != userId) throw NotCommentOwnerException()
+
+        val newComment = runCatching {
+            commentRepository.save(
+                Comment(
+                    id = comment.id,
+                    user = comment.user,
+                    postId = comment.postId,
+                    content = patchDto.content ?: comment.content,
+                    available = comment.available,
+                    anonymous = patchDto.anonymous ?: comment.anonymous,
+                    createdAt = comment.createdAt,
+                    updatedAt = LocalDateTime.now(),
+                )
+            )
+        }.getOrElse {
+            throw CustomNotFoundException(NotFoundItem.USER, NotFoundItem.POST)
+        }
+
+        val commentLikes = commentLikeRepository.findByCommentId(commentId)
+        val isLiked = commentLikes.any { it.user.id == userId }
+
+        return CommentResponseDto(
+            id = newComment.id,
+            postId = newComment.postId,
+            content = newComment.content,
+            createdAt = newComment.createdAt,
+            updatedAt = newComment.updatedAt,
+            nickname = newComment.user.nickname,
+            profileUri = newComment.user.profileUrl,
+            available = newComment.available,
+            anonymous = newComment.anonymous,
+            isMine = true,
+            likeCnt = commentLikes.count(),
+            isLiked = isLiked,
+        )
+    }
+
+    fun deleteComment(userId: Long, commentId: Long) {
+        val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
+        if (comment.user.id != userId) throw NotCommentOwnerException()
+
+        commentRepository.deleteById(commentId)
+        commentLikeRepository.deleteByCommentId(commentId)
     }
 }
