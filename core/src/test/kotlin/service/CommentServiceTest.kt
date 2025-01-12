@@ -13,7 +13,7 @@ constructor(
 ) {
     @Test
     fun testComments() {
-        val comments = service.getCommentsWithoutAuth(0, 10).result
+        val comments = service.getCommentsWithoutAuth(1, 0, 10).result
         assert(comments.isNotEmpty())
     }
 }

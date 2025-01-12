@@ -19,6 +19,6 @@ class CommentController(
         @RequestParam(name = "page") page: Int,
         @RequestParam(name = "per_page") perPage: Int,
     ): GetCommentsResponseDto? {
-        return commentService.getCommentsWithoutAuth(page, perPage)
+        return commentService.getCommentsWithoutAuth(postId, page, perPage)
     }
 }
