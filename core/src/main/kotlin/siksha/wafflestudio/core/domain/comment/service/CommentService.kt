@@ -9,17 +9,21 @@ import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
 import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.comment.repository.UserRepository
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
 import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
+import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.post.repository.PostRepository
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Service
 class CommentService(
     private val userRepository: UserRepository,
+    private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val commentLikeRepository: CommentLikeRepository,
 ){
@@ -77,7 +81,7 @@ class CommentService(
 
             CommentResponseDto(
                 id = comment.id,
-                postId = comment.postId,
+                postId = comment.post.id,
                 content = comment.content,
                 createdAt = comment.createdAt,
                 updatedAt = comment.updatedAt,
@@ -99,12 +103,13 @@ class CommentService(
     }
 
     fun createComment(userId: Long, createDto: CreateCommentRequestDto): CommentResponseDto? {
-        val me = checkNotNull(userRepository.findById(userId).get())
+        val me = userRepository.findById(userId).getOrNull() ?: throw UserNotFoundException()
+        val post = postRepository.findById(createDto.postId).getOrNull() ?: throw PostNotFoundException()
 
         val comment = commentRepository.save(
             Comment(
                 user = me,
-                postId = createDto.postId,
+                post = post,
                 content= createDto.content,
                 available = true,
                 anonymous = createDto.anonymous
@@ -113,7 +118,7 @@ class CommentService(
 
         return CommentResponseDto(
             id = comment.id,
-            postId = comment.postId,
+            postId = comment.post.id,
             content = comment.content,
             createdAt = comment.createdAt,
             updatedAt = comment.updatedAt,
@@ -136,7 +141,7 @@ class CommentService(
                 Comment(
                     id = comment.id,
                     user = comment.user,
-                    postId = comment.postId,
+                    post = comment.post,
                     content = patchDto.content ?: comment.content,
                     available = comment.available,
                     anonymous = patchDto.anonymous ?: comment.anonymous,
@@ -153,7 +158,7 @@ class CommentService(
 
         return CommentResponseDto(
             id = newComment.id,
-            postId = newComment.postId,
+            postId = newComment.post.id,
             content = newComment.content,
             createdAt = newComment.createdAt,
             updatedAt = newComment.updatedAt,

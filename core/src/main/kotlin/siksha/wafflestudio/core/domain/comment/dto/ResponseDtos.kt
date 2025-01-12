@@ -27,7 +27,7 @@ data class CommentResponseDto(
     val isLiked: Boolean,
 ) {
     init {
-        if (anonymous.not()) check(nickname==null && profileUri==null)
+        if (anonymous) check(nickname==null && profileUri==null)
     }
 }
 
