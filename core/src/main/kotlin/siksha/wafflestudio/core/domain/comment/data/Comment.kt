@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 @Table(name = "comment")
 class Comment(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,6 +30,6 @@ class Comment(
     val content: String,
     val available: Boolean,
     val anonymous: Boolean,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
 )

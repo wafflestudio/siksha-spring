@@ -3,7 +3,6 @@ package siksha.wafflestudio.api.common
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -11,9 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
-import siksha.wafflestudio.core.domain.common.exception.Unauthorized
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import javax.crypto.SecretKey
 
 @Component
@@ -44,7 +41,7 @@ class AuthInterceptor(
             true
         }.getOrElse {
             logger.error("auth failed")
-            throw Unauthorized()
+            throw UnauthorizedUserException()
         }
     }
 

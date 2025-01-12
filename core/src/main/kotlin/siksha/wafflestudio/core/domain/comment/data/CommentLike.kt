@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 @Table(name = "comment_like")
 class CommentLike(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
     @ManyToOne(fetch = FetchType.LAZY)

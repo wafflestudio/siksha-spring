@@ -1,6 +1,5 @@
 package siksha.wafflestudio.core.domain.common.exception
 
-import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import org.springframework.http.HttpStatus
 
 open class SikshaException(
@@ -13,6 +12,4 @@ data class ErrorBody(
     val message: String,
 )
 
-class RestaurantNotFound : SikshaException(HttpStatus.NOT_FOUND, "Restaurant not found")
 
-class Unauthorized : SikshaException(HttpStatus.UNAUTHORIZED, "Authorization failed")

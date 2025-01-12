@@ -18,12 +18,16 @@ data class CommentResponseDto(
     val content: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val nickname: String,
+    val nickname: String?,
     val profileUri: String?,
     val available: Boolean,
     val anonymous: Boolean,
     val isMine: Boolean,
     val likeCnt: Int,
     val isLiked: Boolean,
-)
+) {
+    init {
+        if (anonymous) check(nickname==null && profileUri==null)
+    }
+}
 

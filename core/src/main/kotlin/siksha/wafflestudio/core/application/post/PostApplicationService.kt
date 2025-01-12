@@ -12,7 +12,7 @@ import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberExcepti
 import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
-import siksha.wafflestudio.core.domain.common.exception.Unauthorized
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
@@ -72,7 +72,7 @@ class PostApplicationService(
     @Transactional
     fun createPost(userId: Long, postCreateDto: PostCreateDto,): PostResponseDto {
         postDomainService.validateDto(postCreateDto)
-        val user = userRepository.findByIdOrNull(userId) ?: throw Unauthorized()
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateDto.board_id) ?: throw BoardNotFoundException()
 
         val imageUrls = handleImageUpload(postCreateDto.board_id, userId, postCreateDto.images)

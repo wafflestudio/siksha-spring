@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.service
+package siksha.wafflestudio.core.service.comment
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
