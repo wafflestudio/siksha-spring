@@ -68,4 +68,20 @@ class CommentController(
     ) {
         commentService.deleteComment(request.userId, commentId)
     }
+
+    @PostMapping("/community/comments/{commentId}/like")
+    fun postCommentLike(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+    ): CommentResponseDto {
+        return commentService.postCommentLike(request.userId, commentId, true)
+    }
+
+    @PostMapping("/community/comments/{commentId}/unlike")
+    fun postCommentUnlike(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+    ): CommentResponseDto {
+        return commentService.postCommentLike(request.userId, commentId, false)
+    }
 }

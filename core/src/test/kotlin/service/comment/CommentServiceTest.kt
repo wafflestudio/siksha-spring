@@ -13,7 +13,16 @@ constructor(
 ) {
     @Test
     fun testComments() {
-        val comments = service.getCommentsWithoutAuth(1, 0, 10).result
+        val comments = service.getCommentsWithoutAuth(1, 1, 10).result
         assert(comments.isNotEmpty())
+    }
+
+    @Test
+    fun testCommentLikes() {
+        val commentLike = service.postCommentLike(1, 1, true)
+        assert(commentLike.isLiked)
+
+        val commentUnlike = service.postCommentLike(1, 1, false)
+        assert(!commentUnlike.isLiked)
     }
 }

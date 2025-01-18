@@ -1,8 +1,10 @@
 package siksha.wafflestudio.core.domain.comment.service
 
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.comment.data.Comment
+import siksha.wafflestudio.core.domain.comment.data.CommentLike
 import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
 import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
@@ -26,7 +28,7 @@ class CommentService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val commentLikeRepository: CommentLikeRepository,
-){
+) {
     fun getCommentsWithoutAuth(
         postId: Long,
         page: Int,
@@ -178,5 +180,45 @@ class CommentService(
 
         commentRepository.deleteById(commentId)
         commentLikeRepository.deleteByCommentId(commentId)
+    }
+
+    fun postCommentLike(
+        userId: Long,
+        commentId: Long,
+        isLiked: Boolean,
+    ): CommentResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
+
+        var commentLike = commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId)
+
+        if (commentLike == null) {
+            commentLike =
+                CommentLike(
+                    user = user,
+                    comment = comment,
+                    isLiked = isLiked,
+                )
+        } else {
+            commentLike.isLiked = isLiked
+        }
+
+        commentLikeRepository.save(commentLike)
+
+        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId)
+        return CommentResponseDto(
+            id = comment.id,
+            postId = comment.post.id,
+            content = comment.content,
+            createdAt = comment.createdAt,
+            updatedAt = comment.updatedAt,
+            nickname = if (comment.anonymous) null else comment.user.nickname,
+            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
+            available = comment.available,
+            anonymous = comment.anonymous,
+            isMine = comment.user.id == userId,
+            likeCnt = likeCount.toInt(),
+            isLiked = isLiked,
+        )
     }
 }
