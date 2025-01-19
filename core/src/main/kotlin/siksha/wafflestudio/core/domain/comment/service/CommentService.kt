@@ -5,18 +5,12 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.comment.data.Comment
 import siksha.wafflestudio.core.domain.comment.data.CommentLike
-import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.comment.dto.*
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.comment.repository.CommentReportRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
-import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
-import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
@@ -28,6 +22,7 @@ class CommentService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val commentLikeRepository: CommentLikeRepository,
+    private val commentReportRepository: CommentReportRepository,
 ) {
     fun getCommentsWithoutAuth(
         postId: Long,
@@ -219,6 +214,37 @@ class CommentService(
             isMine = comment.user.id == userId,
             likeCnt = likeCount.toInt(),
             isLiked = isLiked,
+        )
+    }
+
+    fun postCommentReport(
+        reportingUid: Long,
+        commentId: Long,
+        reason: String,
+    ): CommentsReportResponseDto {
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UserNotFoundException()
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
+
+        if (reason.length > 200) {
+            throw InvalidCommentReportFormException("이유를 200자 이내로 작성해주세요.")
+        }
+        if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
+            throw CommentAlreadyReportedException()
+        }
+
+        val commentReport = commentReportRepository.save(
+            CommentReport(
+                comment = comment,
+                reason = reason,
+                reportingUser = reportingUser,
+                reportedUser = comment.user,
+            )
+        )
+
+        return CommentsReportResponseDto(
+            id = commentReport.id,
+            reason = commentReport.reason,
+            commentId = commentReport.comment.id,
         )
     }
 }

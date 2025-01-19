@@ -31,3 +31,9 @@ data class CommentResponseDto(
     }
 }
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class CommentsReportResponseDto(
+    val id: Long,
+    val reason: String,
+    val commentId: Long,
+)

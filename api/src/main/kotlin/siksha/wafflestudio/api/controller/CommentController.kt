@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.*
 import siksha.wafflestudio.core.domain.comment.service.CommentService
 
 @RestController
@@ -83,5 +80,14 @@ class CommentController(
         @PathVariable commentId: Long,
     ): CommentResponseDto {
         return commentService.postCommentLike(request.userId, commentId, false)
+    }
+
+    @PostMapping("/community/comments/{commentId}/report")
+    fun postCommentReport(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+        @RequestBody createDto: CreateCommentReportRequestDto,
+    ): CommentsReportResponseDto {
+        return commentService.postCommentReport(request.userId, commentId, createDto.reason)
     }
 }

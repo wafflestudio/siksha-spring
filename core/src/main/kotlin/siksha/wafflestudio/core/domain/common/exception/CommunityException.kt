@@ -30,6 +30,10 @@ class BoardNameAlreadyExistException : CommunityException(HttpStatus.CONFLICT, "
 
 class S3ImageUploadException() : CommunityException(HttpStatus.SERVICE_UNAVAILABLE, "AWS S3 오류")
 
+class CommentAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 댓글입니다.")
+
+class InvalidCommentReportFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
+
 enum class NotFoundItem(val value: String) {
     USER("유저"),
     POST("게시물")
