@@ -1,12 +1,12 @@
 package siksha.wafflestudio.core.infrastructure.s3
 
 import io.awspring.cloud.s3.S3Exception
-import io.awspring.cloud.s3.S3Template
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.common.exception.S3ImageUploadException
+import siksha.wafflestudio.core.domain.common.exception.ImageUploadFailedException
 import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.core.sync.RequestBody
@@ -21,17 +21,18 @@ class S3Service (
     private val bucketName: String,
     private val s3Client: S3Client,
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
     /**
      * AWS S3 bucket에 하나의 파일을 업로드합니다.
-     * @param file 업로드할 파일('MultipartFile')
-     * @param prefix S3 key에 사용할 접두사 ("review-images", "post-images" 등 이미지 종류)
+     * @param file 업로드할 파일
+     * @param prefix S3 key에 사용할 접두사
      * @param nameKey S3 key에 사용할 파일명
-     * @return (S3 URL, S3 key) Pair
+     * @return UploadFileDto
      */
-    fun uploadOneFile(file: MultipartFile, prefix: String, nameKey: String): Pair<String, String> {
-        val key = "$prefix/$nameKey.jpeg"
-        val logger = LoggerFactory.getLogger(javaClass)
-        return try {
+    fun uploadOneFile(file: MultipartFile, prefix: S3ImagePrefix, nameKey: String): UploadFileDto {
+        val key = "${prefix.prefix}/$nameKey.jpeg"
+
+        return runCatching {
             val putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
@@ -39,8 +40,8 @@ class S3Service (
                 .build()
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
-            Pair("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
-        } catch (e: Exception) {
+            UploadFileDto("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
+        }.onFailure { e ->
             when (e) {
                 is S3Exception, is SdkClientException, is IOException -> {
                     logger.error("AWS S3 upload err: ${e.message}")
@@ -48,24 +49,22 @@ class S3Service (
                 }
                 else -> throw e
             }
-        }
+        }.getOrThrow()
     }
 
     /**
      * AWS S3 bucket에 여러 파일을 업로드합니다.
-     * @param file 업로드할 파일('List<MultipartFile>')
-     * @param prefix S3 key에 사용할 접두사 ("review-images", "post-images" 등 이미지 종류)
+     * @param file 업로드할 파일
+     * @param prefix S3 key에 사용할 접두사
      * @param nameKey S3 key에 공통으로 사용할 파일명
-     * @return (S3 URLs List, S3 keys List) Pair
+     * @return List<UploadFileDto>
      */
-    fun uploadFiles(files: List<MultipartFile>, prefix: String, nameKey: String): Pair<List<String>, List<String>> {
-        val logger = LoggerFactory.getLogger(javaClass)
-        val urls = mutableListOf<String>()
-        val keys = mutableListOf<String>()
+    fun uploadFiles(files: List<MultipartFile>, prefix: S3ImagePrefix, nameKey: String): List<UploadFileDto> {
+        val uploadFiles = mutableListOf<UploadFileDto>()
 
         files.forEachIndexed { idx, file ->
-            val key = "$prefix/$nameKey/$idx.jpeg"
-            try {
+            val key = "${prefix.prefix}/$nameKey/$idx.jpeg"
+            runCatching {
                 val putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
@@ -73,19 +72,30 @@ class S3Service (
                     .build()
 
                 s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
-                urls.add("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
-                keys.add(key)
-            } catch (e: Exception) {
+                uploadFiles.add(
+                    UploadFileDto("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
+                )
+            }.onFailure { e ->
                 when (e) {
                     is S3Exception, is SdkClientException, is IOException, is AwsServiceException -> {
                         logger.error("AWS S3 upload error: ${e.message}")
-                        throw S3ImageUploadException()
+                        throw ImageUploadFailedException()
                     }
                     else -> throw e
                 }
-            }
+            }.getOrThrow()
         }
-        return Pair(urls, keys)
+        return uploadFiles
     }
 }
 
+data class UploadFileDto(
+    val key: String,
+    val url: String,
+)
+
+enum class S3ImagePrefix(val prefix: String) {
+    POST("post-images"),
+    PROFILE("profile-images"),
+    REVIEW("review-images")
+}

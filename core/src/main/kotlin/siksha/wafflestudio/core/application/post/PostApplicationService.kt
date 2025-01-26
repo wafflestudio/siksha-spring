@@ -14,12 +14,14 @@ import siksha.wafflestudio.core.application.post.dto.PostCreateDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.image.data.Image
+import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.post.service.PostDomainService
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -75,7 +77,9 @@ class PostApplicationService(
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateDto.board_id) ?: throw BoardNotFoundException()
 
-        val imageUrls = handleImageUpload(postCreateDto.board_id, userId, postCreateDto.images)
+        val imageUrls = postCreateDto.images
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { handleImageUpload(postCreateDto.board_id, userId, it) }
 
         val post = postCreateDto.toEntity(user = user, board = board, imageUrls = imageUrls)
 
@@ -91,23 +95,21 @@ class PostApplicationService(
 
     private fun generateImageNameKey(boardId: Long, userId: Long) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
 
-    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>?): List<String>? {
-        if (images.isNullOrEmpty()) return null
-
-        val prefix = "post-images"
+    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)
-        val urlsAndKeys = s3Service.uploadFiles(images, prefix, nameKey)
+        val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
+
         imageRepository.saveAll(
-            urlsAndKeys.second.map { key ->
+            uploadFiles.map {
                 Image(
-                    key = key,
-                    category = "POST",
+                    key = it.key,
+                    category = ImageCategory.POST,
                     userId = userId,
                     isDeleted = false
                 )
             }
         )
-        return urlsAndKeys.first
+        return uploadFiles.map { it.url }
     }
-
 }
+
