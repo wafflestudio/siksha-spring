@@ -40,7 +40,7 @@ class S3Service (
                 .build()
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
-            UploadFileDto("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
+            UploadFileDto(key = key, url = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
         }.onFailure { e ->
             when (e) {
                 is S3Exception, is SdkClientException, is IOException -> {
@@ -73,7 +73,7 @@ class S3Service (
 
                 s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
                 uploadFiles.add(
-                    UploadFileDto("https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key", key)
+                    UploadFileDto(key = key, url = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
                 )
             }.onFailure { e ->
                 when (e) {
