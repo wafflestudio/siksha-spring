@@ -13,7 +13,7 @@ data class PostCreateDto(
     val title: String,
     val content: String,
     val anonymous: Boolean?,
-    var images: List<MultipartFile>?
+    val images: List<MultipartFile>?
 ){
     fun toEntity(user: User, board: Board, imageUrls: List<String>?): Post {
         val etcJson: String? = imageUrls?.let {

@@ -60,7 +60,7 @@ class PostApplicationService(
             val likeCount = postIdToPostLikes[post.id]?.size ?: 0
             val commentCount = postIdToComments[post.id]?.size ?: 0
             val isMine = post.user.id == userId
-            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId } ?: false
+            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId && it.isLiked == true } ?: false
             PostResponseDto.from(post, isMine, userPostLiked, likeCount, commentCount)
         }
 
