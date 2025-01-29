@@ -67,6 +67,7 @@ class CommentController(
     }
 
     @PostMapping("/community/comments/{commentId}/like")
+    @ResponseStatus(HttpStatus.CREATED)
     fun postCommentLike(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
@@ -75,6 +76,7 @@ class CommentController(
     }
 
     @PostMapping("/community/comments/{commentId}/unlike")
+    @ResponseStatus(HttpStatus.CREATED)
     fun postCommentUnlike(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
@@ -83,6 +85,7 @@ class CommentController(
     }
 
     @PostMapping("/community/comments/{commentId}/report")
+    @ResponseStatus(HttpStatus.CREATED)
     fun postCommentReport(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
