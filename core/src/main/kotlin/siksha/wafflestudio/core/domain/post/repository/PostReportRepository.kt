@@ -8,4 +8,6 @@ import siksha.wafflestudio.core.domain.user.data.User
 @Repository
 interface PostReportRepository: JpaRepository<PostReport, Long> {
     fun existsByPostIdAndReportingUser(postId: Long, reportingUser: User): Boolean
+
+    fun countPostReportByPostId(postId: Long): Int
 }

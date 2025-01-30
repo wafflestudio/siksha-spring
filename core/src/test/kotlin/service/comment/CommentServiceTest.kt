@@ -54,7 +54,7 @@ class CommentServiceTest {
     }
 
     @Test
-    fun `post comment like`() {
+    fun `create comment like`() {
         // given
         val userId = 1L
         val commentId = 2L
@@ -152,7 +152,7 @@ class CommentServiceTest {
     }
 
     @Test
-    fun `post comment report`() {
+    fun `create comment report`() {
         // given
         val reportingUid = 1L
         val reportedUid = 2L
@@ -195,6 +195,7 @@ class CommentServiceTest {
         every { commentRepository.findByIdOrNull(commentId) } returns comment
         every { commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser) } returns false
         every { commentReportRepository.save(any()) } returns commentReport
+        every { commentReportRepository.countCommentReportByCommentId(commentId) } returns 1
 
         // when
         val response = service.createCommentReport(reportingUid, commentId, reason)

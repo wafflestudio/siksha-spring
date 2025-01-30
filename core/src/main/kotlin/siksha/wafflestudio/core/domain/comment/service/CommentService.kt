@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.domain.comment.service
 
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -217,6 +218,7 @@ class CommentService(
         )
     }
 
+    @Transactional
     fun createCommentReport(
         reportingUid: Long,
         commentId: Long,
@@ -240,6 +242,12 @@ class CommentService(
                 reportedUser = comment.user,
             )
         )
+
+        //신고 5개 이상 누적시 숨기기
+        val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
+        if (commentReportCount >= 5 && comment.available) {
+            comment.available = false
+        }
 
         return CommentsReportResponseDto(
             id = commentReport.id,

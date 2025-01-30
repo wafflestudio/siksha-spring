@@ -151,6 +151,7 @@ class PostApplicationService(
         )
     }
 
+    @Transactional
     fun createPostReport(
         reportingUid: Long,
         postId: Long,
@@ -174,6 +175,12 @@ class PostApplicationService(
                 reportedUser = post.user,
             )
         )
+
+        //신고 5개 이상 누적시 숨기기
+        val postReportCount = postReportRepository.countPostReportByPostId(postId)
+        if (postReportCount >= 5 && post.available) {
+            post.available = false
+        }
 
         return PostsReportResponseDto(
             id = postReport.id,

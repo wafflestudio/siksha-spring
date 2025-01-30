@@ -27,7 +27,7 @@ class Post(
     val title: String,
 
     val content: String,
-    val available: Boolean,
+    var available: Boolean,
     val anonymous: Boolean,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
