@@ -34,6 +34,10 @@ class CommentAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT
 
 class InvalidCommentReportFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
 
+class PostAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 글입니다.")
+
+class InvalidPostReportFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
+
 enum class NotFoundItem(val value: String) {
     USER("유저"),
     POST("게시물")

@@ -8,9 +8,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
-import siksha.wafflestudio.core.application.post.dto.PostCreateDto
-import siksha.wafflestudio.core.application.post.dto.PostResponseDto
+import siksha.wafflestudio.core.application.post.dto.*
 import siksha.wafflestudio.core.application.post.PostApplicationService
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.net.URL
@@ -48,5 +46,33 @@ class PostController (
         @ModelAttribute post: PostCreateDto,
     ): PostResponseDto? {
         return postApplicationService.createPost(request.userId, post) // FIXME: request.userId로 수정
+    }
+
+    @PostMapping("/{postId}/like")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun postPostLike(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+    ): PostResponseDto {
+        return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
+    }
+
+    @PostMapping("/{postId}/unlike")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun postPostUnlike(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+    ): PostResponseDto {
+        return postApplicationService.createOrUpdatePostLike(request.userId, postId, false)
+    }
+
+    @PostMapping("/{postId}/report")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun postPostReport(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+        @RequestBody createDto: CreatePostReportRequestDto,
+    ): PostsReportResponseDto {
+        return postApplicationService.createPostReport(request.userId, postId, createDto.reason)
     }
 }

@@ -9,12 +9,18 @@ import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberException
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
+import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedException
 import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
-import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
+import siksha.wafflestudio.core.domain.post.data.PostLike
+import siksha.wafflestudio.core.domain.post.data.PostReport
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
@@ -110,4 +116,69 @@ class PostApplicationService(
         return urlsAndKeys.first
     }
 
+    fun createOrUpdatePostLike(
+        userId: Long,
+        postId: Long,
+        isLiked: Boolean,
+    ): PostResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        var postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
+
+        if (postLike == null) {
+            postLike =
+                PostLike(
+                    user = user,
+                    post = post,
+                    isLiked = isLiked,
+                )
+        } else {
+            postLike.isLiked = isLiked
+        }
+
+        postLikeRepository.save(postLike)
+
+        val likeCount = postLikeRepository.countPostLikesByPostIdAndLiked(postId)
+        val commentCount = commentRepository.countCommentsByPostId(postId)
+
+        return PostResponseDto.from(
+            post = post,
+            isMine = post.user.id == userId,
+            userPostLiked = isLiked,
+            likeCnt = likeCount.toInt(),
+            commentCnt = commentCount.toInt(),
+        )
+    }
+
+    fun createPostReport(
+        reportingUid: Long,
+        postId: Long,
+        reason: String,
+    ): PostsReportResponseDto {
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        if (reason.length > 200 || reason.isBlank()) {
+            throw InvalidPostReportFormException("이유는 1자에서 200자 사이여야 합니다.")
+        }
+        if (postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser)) {
+            throw PostAlreadyReportedException()
+        }
+
+        val postReport = postReportRepository.save(
+            PostReport(
+                post = post,
+                reason = reason,
+                reportingUser = reportingUser,
+                reportedUser = post.user,
+            )
+        )
+
+        return PostsReportResponseDto(
+            id = postReport.id,
+            reason = postReport.reason,
+            postId = postReport.post.id,
+        )
+    }
 }

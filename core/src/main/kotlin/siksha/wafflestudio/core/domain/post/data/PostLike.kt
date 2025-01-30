@@ -1,6 +1,8 @@
 package siksha.wafflestudio.core.domain.post.data
 
 import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.LocalDateTime
 
@@ -19,7 +21,11 @@ class PostLike(
     @JoinColumn(name = "post_id", nullable = false)
     val post: Post,
 
-    val isLiked: Boolean? = null,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    var isLiked: Boolean,
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @UpdateTimestamp
+    @Column(nullable = false)
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
 )

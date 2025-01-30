@@ -54,3 +54,10 @@ data class PostResponseDto(
         }
     }
 }
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class PostsReportResponseDto(
+    val id: Long,
+    val reason: String,
+    val postId: Long,
+)
