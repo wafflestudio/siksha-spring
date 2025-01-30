@@ -50,7 +50,7 @@ class PostController (
 
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postPostLike(
+    fun createPostLike(
         request: HttpServletRequest,
         @PathVariable postId: Long,
     ): PostResponseDto {
@@ -59,7 +59,7 @@ class PostController (
 
     @PostMapping("/{postId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postPostUnlike(
+    fun createPostUnlike(
         request: HttpServletRequest,
         @PathVariable postId: Long,
     ): PostResponseDto {
@@ -68,7 +68,7 @@ class PostController (
 
     @PostMapping("/{postId}/report")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postPostReport(
+    fun createPostReport(
         request: HttpServletRequest,
         @PathVariable postId: Long,
         @RequestBody createDto: CreatePostReportRequestDto,

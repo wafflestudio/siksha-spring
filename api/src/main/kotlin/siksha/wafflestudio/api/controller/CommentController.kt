@@ -68,29 +68,29 @@ class CommentController(
 
     @PostMapping("/community/comments/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postCommentLike(
+    fun createCommentLike(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
     ): CommentResponseDto {
-        return commentService.postCommentLike(request.userId, commentId, true)
+        return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
     }
 
     @PostMapping("/community/comments/{commentId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postCommentUnlike(
+    fun createCommentUnlike(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
     ): CommentResponseDto {
-        return commentService.postCommentLike(request.userId, commentId, false)
+        return commentService.createOrUpdateCommentLike(request.userId, commentId, false)
     }
 
     @PostMapping("/community/comments/{commentId}/report")
     @ResponseStatus(HttpStatus.CREATED)
-    fun postCommentReport(
+    fun createCommentReport(
         request: HttpServletRequest,
         @PathVariable commentId: Long,
         @RequestBody createDto: CreateCommentReportRequestDto,
     ): CommentsReportResponseDto {
-        return commentService.postCommentReport(request.userId, commentId, createDto.reason)
+        return commentService.createCommentReport(request.userId, commentId, createDto.reason)
     }
 }

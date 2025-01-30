@@ -177,12 +177,12 @@ class CommentService(
         commentLikeRepository.deleteByCommentId(commentId)
     }
 
-    fun postCommentLike(
+    fun createOrUpdateCommentLike(
         userId: Long,
         commentId: Long,
         isLiked: Boolean,
     ): CommentResponseDto {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
 
         var commentLike = commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId)
@@ -217,16 +217,16 @@ class CommentService(
         )
     }
 
-    fun postCommentReport(
+    fun createCommentReport(
         reportingUid: Long,
         commentId: Long,
         reason: String,
     ): CommentsReportResponseDto {
-        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UserNotFoundException()
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
 
-        if (reason.length > 200) {
-            throw InvalidCommentReportFormException("이유를 200자 이내로 작성해주세요.")
+        if (reason.length > 200 || reason.isBlank()) {
+            throw InvalidCommentReportFormException("이유는 1자에서 200자 사이여야 합니다.")
         }
         if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
             throw CommentAlreadyReportedException()

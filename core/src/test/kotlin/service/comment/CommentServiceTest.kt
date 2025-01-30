@@ -85,7 +85,7 @@ class CommentServiceTest {
         every { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) } returns 1L
 
         // when
-        val response = service.postCommentLike(userId, commentId, isLiked)
+        val response = service.createOrUpdateCommentLike(userId, commentId, isLiked)
 
         // then
         assertEquals(commentId, response.id)
@@ -137,7 +137,7 @@ class CommentServiceTest {
         every { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) } returns 0L
 
         // when
-        val response = service.postCommentLike(userId, commentId, isLiked)
+        val response = service.createOrUpdateCommentLike(userId, commentId, isLiked)
 
         // then
         assertEquals(commentId, response.id)
@@ -197,7 +197,7 @@ class CommentServiceTest {
         every { commentReportRepository.save(any()) } returns commentReport
 
         // when
-        val response = service.postCommentReport(reportingUid, commentId, reason)
+        val response = service.createCommentReport(reportingUid, commentId, reason)
 
         // then
         assertEquals(reason, response.reason)
@@ -248,7 +248,7 @@ class CommentServiceTest {
 
         // then
         assertThrows<CommentAlreadyReportedException> {
-            service.postCommentReport(reportingUid, commentId, reason)
+            service.createCommentReport(reportingUid, commentId, reason)
         }
     }
 
@@ -289,7 +289,7 @@ class CommentServiceTest {
 
         // then
         assertThrows<InvalidCommentReportFormException> {
-            service.postCommentReport(reportingUid, commentId, reason)
+            service.createCommentReport(reportingUid, commentId, reason)
         }
     }
 }
