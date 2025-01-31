@@ -20,6 +20,8 @@ import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import org.junit.jupiter.api.Assertions.*
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 
 @SpringBootTest
 class CommentServiceTest {
@@ -48,9 +50,48 @@ class CommentServiceTest {
     }
 
     @Test
-    fun testComments() {
-        val comments = service.getCommentsWithoutAuth(1, 1, 10).result
-        assert(comments.isNotEmpty())
+    fun `get comment without auth`() {
+        // given
+        val postId = 1L
+        val page = 1
+        val perPage = 10
+        val totalCount = 1L
+
+        val user = User(
+            id = 1L,
+            nickname = "user",
+            type = "test",
+            identity = "test",
+        )
+
+        val board = Board(name = "test", description = "test")
+
+        val comment = Comment(
+            id = 1L,
+            post = Post(id = postId, user =  user, board = board, title = "title", content = "content", anonymous = false, available = true),
+            content = "Test comment",
+            user = user,
+            anonymous = false,
+            available = true,
+        )
+
+        val pageable = PageRequest.of(page-1, perPage)
+
+        every { commentRepository.findPageByPostId(postId, pageable) } returns PageImpl(listOf(comment), pageable, totalCount)
+        every { commentLikeRepository.findByCommentIdIn(any()) } returns emptyList()
+
+        //when
+        val response = service.getCommentsWithoutAuth(postId, page, perPage)
+
+        // then
+        assertEquals(totalCount, response.totalCount)
+        assertEquals(false, response.hasNext)
+        assertEquals(totalCount, response.result.size.toLong())
+        assertEquals(comment.id, response.result.first().id)
+
+        // verify
+        verify { commentRepository.findPageByPostId(postId, pageable) }
+        verify { commentLikeRepository.findByCommentIdIn(any()) }
     }
 
     @Test
