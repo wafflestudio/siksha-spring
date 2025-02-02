@@ -57,7 +57,7 @@ class PostApplicationService(
         val postIdToComments = commentRepository.findByPostIdIn(posts.map { it.id }).groupBy { it.post.id }
 
         val postDtos = posts.map { post ->
-            val likeCount = postIdToPostLikes[post.id]?.size ?: 0
+            val likeCount = postIdToPostLikes[post.id]?.count { it.user.id == userId && it.isLiked == true } ?: 0
             val commentCount = postIdToComments[post.id]?.size ?: 0
             val isMine = post.user.id == userId
             val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId && it.isLiked == true } ?: false
