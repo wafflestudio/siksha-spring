@@ -17,14 +17,9 @@ object EtcUtils {
         val pattern = Pattern.compile("https://.*\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(.*)")
         val keys = mutableListOf<String>()
 
-        for (url in urls) {
-            val matcher = pattern.matcher(url)
-            if (matcher.find()) {
-                keys.add(matcher.group(1) ?: "")
-            }
+        return urls.mapNotNull { url ->
+            pattern.matcher(url).takeIf { it.find() } ?.group(1)
         }
-
-        return keys
     }
 
     fun parseImageUrlsFromEtc(etcJson: String?): List<String> {
