@@ -1,15 +1,14 @@
 package siksha.wafflestudio.core.application.post.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.util.EtcUtils
 
-data class PostCreateDto(
-    @JsonProperty("board_id")
-    val boardId: Long,
+data class PostCreateRequestDto(
+    @JsonProperty("board_id") val boardId: Long,
     val title: String,
     val content: String,
     val anonymous: Boolean?,
@@ -17,7 +16,7 @@ data class PostCreateDto(
 ){
     fun toEntity(user: User, board: Board, imageUrls: List<String>?): Post {
         val etcJson: String? = imageUrls?.let {
-            ObjectMapper().writeValueAsString(mapOf("images" to it))
+            EtcUtils.convertImageUrlsToEtcJson(it)
         }
         return Post(
             user = user,
@@ -30,3 +29,11 @@ data class PostCreateDto(
         )
     }
 }
+
+data class PostPatchRequestDto(
+    @JsonProperty("board_id") val boardId: Long?,
+    val title: String?,
+    val content: String?,
+    val anonymous: Boolean?,
+    val images: List<MultipartFile>?
+)

@@ -12,6 +12,8 @@ class UnauthorizedUserException : CommunityException(HttpStatus.UNAUTHORIZED, "�
 
 class NotCommentOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 댓글의 작성자가 아닙니다.")
 
+class NotPostOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 글의 작성자가 아닙니다.")
+
 class CustomNotFoundException(vararg items: NotFoundItem): CommunityException(HttpStatus.NOT_FOUND, "다음을 찾을 수 없습니다: " + items.joinToString())
 
 class InvalidPageNumberException(): CommunityException(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다.")

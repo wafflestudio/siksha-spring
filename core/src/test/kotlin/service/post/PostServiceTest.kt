@@ -9,12 +9,10 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.multipart.MultipartFile
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 import siksha.wafflestudio.core.application.post.PostApplicationService
-import siksha.wafflestudio.core.application.post.dto.PostCreateDto
+import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
@@ -33,6 +31,7 @@ import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
+import siksha.wafflestudio.core.util.EtcUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
@@ -109,7 +108,7 @@ class PostServiceTest {
 
         every { boardRepository.existsById(boardId) } returns true
         every { postRepository.findPageByBoardId(boardId, pageable) } returns PageImpl(listOf(post), pageable, 1)
-        every { postLikeRepository.findByPostIdIn(any()) } returns emptyList()
+        every { postLikeRepository.findByPostIdInAndIsLikedTrue(any()) } returns emptyList()
         every { commentRepository.findByPostIdIn(any()) } returns emptyList()
 
         // when
@@ -124,7 +123,7 @@ class PostServiceTest {
         // verify
         verify { boardRepository.existsById(boardId) }
         verify { postRepository.findPageByBoardId(boardId, pageable) }
-        verify { postLikeRepository.findByPostIdIn(any()) }
+        verify { postLikeRepository.findByPostIdInAndIsLikedTrue(any()) }
         verify { commentRepository.findByPostIdIn(any()) }
 
     }
@@ -134,9 +133,9 @@ class PostServiceTest {
         // given
 
         // when
-        val dto = PostCreateDto(boardId = 1L, title = " ", content = "test", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1L, title = " ", content = "test", anonymous = null, images = null)
         val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1L, postCreateDto = dto)
+            service.createPost(userId = 1L, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
@@ -148,9 +147,9 @@ class PostServiceTest {
         // given
 
         // when
-        val dto = PostCreateDto(boardId = 1L, title = "test", content = " ", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = " ", anonymous = null, images = null)
         val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1L, postCreateDto = dto)
+            service.createPost(userId = 1L, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
@@ -162,9 +161,9 @@ class PostServiceTest {
         // given
         every { userRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception = assertThrows<UnauthorizedUserException> {
-            service.createPost(userId = 1L, postCreateDto = dto)
+            service.createPost(userId = 1L, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.UNAUTHORIZED, exception.httpStatus)
@@ -180,9 +179,9 @@ class PostServiceTest {
         every { userRepository.findByIdOrNull(userId) } returns user
         every { boardRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception = assertThrows<BoardNotFoundException> {
-            service.createPost(userId = userId, postCreateDto = dto)
+            service.createPost(userId = userId, postCreateRequestDto = dto)
         }
 
         // then
@@ -204,7 +203,7 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = true, images = null)
+        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = true, images = null)
         val response = service.createPost(userId, dto)
 
         // then
@@ -234,7 +233,7 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val response = service.createPost(userId, dto)
 
         // then
@@ -286,13 +285,13 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = false, images = images)
+        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = false, images = images)
         val response = service.createPost(userId, dto)
 
         // then
-        val parsedEtc = ObjectMapper().readValue(response.etc, Map::class.java)
+        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc)
 
-        assertEquals(mapOf("images" to listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg")), parsedEtc)
+        assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
 
         // verify
         verify { userRepository.findByIdOrNull(userId) }

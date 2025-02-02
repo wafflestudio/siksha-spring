@@ -14,4 +14,8 @@ interface PostRepository: JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = ["user"])
     @Query("SELECT p FROM post p WHERE p.board.id = :boardId")
     fun findPageByBoardId(@Param("boardId") boardId: Long, pageable: Pageable): Page<Post>
+
+    @EntityGraph(attributePaths = ["user"])
+    @Query("SELECT p FROM post p WHERE p.user.id = :userId")
+    fun findPageByUserId(@Param("userId") userId: Long, pageable: Pageable): Page<Post>
 }
