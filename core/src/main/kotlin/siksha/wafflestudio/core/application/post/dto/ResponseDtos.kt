@@ -35,8 +35,8 @@ data class PostResponseDto(
     companion object {
         fun from(post: Post, isMine: Boolean, userPostLiked: Boolean, likeCnt: Int, commentCnt: Int,): PostResponseDto {
             return PostResponseDto(
-                id = post.id,
-                boardId = post.board.id,
+                id = post.id.toLong(),
+                boardId = post.board.id.toLong(),
                 title = post.title,
                 content = post.content,
                 createdAt = post.createdAt,

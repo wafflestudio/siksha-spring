@@ -51,10 +51,10 @@ class PostApplicationService(
 ){
     // TODO: parse etc
     fun getPosts(
-        boardId: Long,
+        boardId: Int,
         page: Int,
         perPage: Int,
-        userId: Long?,
+        userId: Int?,
     ): GetPostsResponseDto {
         if (!boardRepository.existsById(boardId)) throw BoardNotFoundException()
 
@@ -100,8 +100,13 @@ class PostApplicationService(
     }
 
     @Transactional
+<<<<<<< HEAD
     fun createPost(userId: Long, postCreateRequestDto: PostCreateRequestDto): PostResponseDto {
         postDomainService.validateDto(postCreateRequestDto)
+=======
+    fun createPost(userId: Int, postCreateDto: PostCreateDto,): PostResponseDto {
+        postDomainService.validateDto(postCreateDto)
+>>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateRequestDto.boardId) ?: throw BoardNotFoundException()
 
@@ -121,6 +126,7 @@ class PostApplicationService(
         )
     }
 
+<<<<<<< HEAD
     @Transactional
     fun patchPost(userId: Long, postId: Long, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
         postDomainService.validatePatchDto(postPatchRequestDto)
@@ -189,8 +195,11 @@ class PostApplicationService(
     }
 
     private fun generateImageNameKey(boardId: Long, userId: Long) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+=======
+    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+>>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
 
-    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>): List<String> {
+    private fun handleImageUpload(boardId: Int, userId: Int, images: List<MultipartFile>): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)
         val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
 

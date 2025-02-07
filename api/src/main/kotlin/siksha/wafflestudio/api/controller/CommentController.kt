@@ -25,9 +25,15 @@ class CommentController(
     @GetMapping("/community/comments/web")
     fun getCommentsWithoutAuth(
         request: HttpServletRequest,
+<<<<<<< HEAD
         @RequestParam(name = "post_id") postId: Long,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
+=======
+        @RequestParam(name = "post_id") postId: Int,
+        @RequestParam(name = "page") page: Int,
+        @RequestParam(name = "per_page") perPage: Int,
+>>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
     ): GetCommentsResponseDto? {
         return commentService.getCommentsWithoutAuth(postId, page, perPage)
     }
@@ -35,11 +41,17 @@ class CommentController(
     @GetMapping("/community/comments")
     fun getComments(
         request: HttpServletRequest,
+<<<<<<< HEAD
         @RequestParam(name = "post_id") postId: Long,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
+=======
+        @RequestParam(name = "post_id") postId: Int,
+        @RequestParam(name = "page") page: Int,
+        @RequestParam(name = "per_page") perPage: Int,
+>>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
     ): GetCommentsResponseDto? {
-        return commentService.getComments(request.userId,postId,  page, perPage)
+        return commentService.getComments(request.userId, postId,  page, perPage)
     }
 
     @PostMapping("/community/comments")
@@ -54,7 +66,7 @@ class CommentController(
     @PatchMapping("/community/comments/{commentId}")
     fun patchComment(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
         @RequestBody patchDto: PatchCommentRequestDto,
     ): CommentResponseDto {
         return commentService.patchComment(request.userId, commentId, patchDto)
@@ -64,7 +76,7 @@ class CommentController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteComment(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
     ) {
         commentService.deleteComment(request.userId, commentId)
     }

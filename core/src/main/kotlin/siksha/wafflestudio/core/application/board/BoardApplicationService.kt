@@ -28,7 +28,7 @@ class BoardApplicationService(
         return BoardDto.from(savedBoard)
     }
 
-    fun getBoardById(id: Long): BoardDto {
+    fun getBoardById(id: Int): BoardDto {
         val board = boardRepository.findByIdOrNull(id) ?: throw BoardNotFoundException()
         return BoardDto.from(board)
     }

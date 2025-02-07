@@ -36,7 +36,7 @@ class AuthInterceptor(
 
         return runCatching {
             val authHeader = request.getHeader(AUTHORIZATION_HEADER_NAME)
-            val userId = verifyJwtGetClaims(authHeader)[USER_ID_KEY_IN_JWT]!!.claimToLong()
+            val userId = verifyJwtGetClaims(authHeader)[USER_ID_KEY_IN_JWT]!! as Int
             request.setAttribute("userId", userId)
             true
         }.getOrElse {
@@ -60,7 +60,5 @@ class AuthInterceptor(
     }
 }
 
-fun Any.claimToLong(): Long = if (this is Int) toLong() else this as Long
-
-val HttpServletRequest.userId: Long
-    get() = this.getAttribute("userId") as Long
+val HttpServletRequest.userId: Int
+    get() = this.getAttribute("userId") as Int

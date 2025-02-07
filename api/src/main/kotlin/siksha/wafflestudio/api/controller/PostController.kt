@@ -22,7 +22,7 @@ class PostController (
 ) {
     @GetMapping("/web")
     fun getPostsWithoutAuth(
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
@@ -32,7 +32,7 @@ class PostController (
     @GetMapping
     fun getPostsWithAuth(
         request: HttpServletRequest,
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
