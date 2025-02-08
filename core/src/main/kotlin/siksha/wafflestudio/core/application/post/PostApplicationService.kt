@@ -161,7 +161,7 @@ class PostApplicationService(
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
 
         if (reason.length > 200 || reason.isBlank()) {
-            throw InvalidPostReportFormException("이유는 1자에서 200자 사이여야 합니다.")
+            throw InvalidPostReportFormException()
         }
         if (postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser)) {
             throw PostAlreadyReportedException()

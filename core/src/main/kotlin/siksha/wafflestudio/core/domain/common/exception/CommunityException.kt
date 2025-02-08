@@ -32,11 +32,11 @@ class S3ImageUploadException() : CommunityException(HttpStatus.SERVICE_UNAVAILAB
 
 class CommentAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 댓글입니다.")
 
-class InvalidCommentReportFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
+class InvalidCommentReportFormException() : CommunityException(HttpStatus.BAD_REQUEST, "이유는 1자에서 200자 사이여야 합니다.")
 
 class PostAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 글입니다.")
 
-class InvalidPostReportFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
+class InvalidPostReportFormException() : CommunityException(HttpStatus.BAD_REQUEST, "이유는 1자에서 200자 사이여야 합니다.")
 
 enum class NotFoundItem(val value: String) {
     USER("유저"),

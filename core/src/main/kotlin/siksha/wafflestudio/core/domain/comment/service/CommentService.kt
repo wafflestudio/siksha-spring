@@ -228,7 +228,7 @@ class CommentService(
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
 
         if (reason.length > 200 || reason.isBlank()) {
-            throw InvalidCommentReportFormException("이유는 1자에서 200자 사이여야 합니다.")
+            throw InvalidCommentReportFormException()
         }
         if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
             throw CommentAlreadyReportedException()
