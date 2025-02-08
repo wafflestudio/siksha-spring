@@ -180,6 +180,7 @@ class PostApplicationService(
         val postReportCount = postReportRepository.countPostReportByPostId(postId)
         if (postReportCount >= 5 && post.available) {
             post.available = false
+            postRepository.save(post)
         }
 
         return PostsReportResponseDto(

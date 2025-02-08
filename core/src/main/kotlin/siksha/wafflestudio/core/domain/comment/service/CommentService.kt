@@ -247,6 +247,7 @@ class CommentService(
         val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
         if (commentReportCount >= 5 && comment.available) {
             comment.available = false
+            commentRepository.save(comment)
         }
 
         return CommentsReportResponseDto(
