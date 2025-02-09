@@ -176,7 +176,6 @@ class CommentService(
         if (comment.user.id != userId) throw NotCommentOwnerException()
 
         commentRepository.deleteById(commentId)
-        commentLikeRepository.deleteByCommentId(commentId)
     }
 
     fun createOrUpdateCommentLike(
