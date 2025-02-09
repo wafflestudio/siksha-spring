@@ -124,19 +124,14 @@ class PostApplicationService(
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
 
-        var postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
+        val postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
+            ?: PostLike(
+                user = user,
+                post = post,
+                isLiked = isLiked,
+            )
 
-        if (postLike == null) {
-            postLike =
-                PostLike(
-                    user = user,
-                    post = post,
-                    isLiked = isLiked,
-                )
-        } else {
-            postLike.isLiked = isLiked
-        }
-
+        postLike.isLiked = isLiked
         postLikeRepository.save(postLike)
 
         val likeCount = postLikeRepository.countPostLikesByPostIdAndLiked(postId)

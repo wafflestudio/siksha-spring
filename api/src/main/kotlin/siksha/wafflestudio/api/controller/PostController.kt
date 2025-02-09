@@ -57,6 +57,7 @@ class PostController (
         return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
     }
 
+    //TODO: delete 방식으로 수정
     @PostMapping("/{postId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostUnlike(

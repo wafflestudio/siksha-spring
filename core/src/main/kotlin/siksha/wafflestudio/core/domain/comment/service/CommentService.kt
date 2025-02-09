@@ -186,35 +186,22 @@ class CommentService(
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
 
-        var commentLike = commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId)
+        val commentLike = commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId)
+            ?: CommentLike(
+                user = user,
+                comment = comment,
+                isLiked = isLiked,
+            )
 
-        if (commentLike == null) {
-            commentLike =
-                CommentLike(
-                    user = user,
-                    comment = comment,
-                    isLiked = isLiked,
-                )
-        } else {
-            commentLike.isLiked = isLiked
-        }
-
+        commentLike.isLiked = isLiked
         commentLikeRepository.save(commentLike)
 
         val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId)
-        return CommentResponseDto(
-            id = comment.id,
-            postId = comment.post.id,
-            content = comment.content,
-            createdAt = comment.createdAt,
-            updatedAt = comment.updatedAt,
-            nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-            available = comment.available,
-            anonymous = comment.anonymous,
+        return CommentResponseDto.of(
+            comment = comment,
             isMine = comment.user.id == userId,
-            likeCnt = likeCount.toInt(),
-            isLiked = isLiked,
+            likeCount = likeCount.toInt(),
+            isLiked = isLiked
         )
     }
 

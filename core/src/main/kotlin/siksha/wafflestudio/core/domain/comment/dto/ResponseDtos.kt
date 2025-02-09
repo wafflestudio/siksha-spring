@@ -2,6 +2,7 @@ package siksha.wafflestudio.core.domain.comment.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import siksha.wafflestudio.core.domain.comment.data.Comment
 import java.time.LocalDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -28,6 +29,28 @@ data class CommentResponseDto(
 ) {
     init {
         if (anonymous) check(nickname==null && profileUri==null)
+    }
+
+    companion object {
+        fun of(
+            comment: Comment,
+            isMine: Boolean,
+            likeCount: Int,
+            isLiked: Boolean
+        ) = CommentResponseDto(
+            id = comment.id,
+            postId = comment.post.id,
+            content = comment.content,
+            createdAt = comment.createdAt,
+            updatedAt = comment.updatedAt,
+            nickname = if (comment.anonymous) null else comment.user.nickname,
+            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
+            available = comment.available,
+            anonymous = comment.anonymous,
+            isMine = isMine,
+            likeCnt = likeCount,
+            isLiked = isLiked,
+        )
     }
 }
 

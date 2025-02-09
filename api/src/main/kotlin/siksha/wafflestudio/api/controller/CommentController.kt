@@ -75,6 +75,7 @@ class CommentController(
         return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
     }
 
+    //TODO: delete 방식으로 수정
     @PostMapping("/community/comments/{commentId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun createCommentUnlike(
