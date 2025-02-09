@@ -79,7 +79,7 @@ class CommentServiceTest {
         val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
 
         every { commentRepository.findPageByPostId(postId, pageable) } returns PageImpl(listOf(comment), pageable, totalCount)
-        every { commentLikeRepository.findByCommentIdIn(any()) } returns emptyList()
+        every { commentLikeRepository.findByCommentIdInAndLiked(any()) } returns emptyList()
 
         //when
         val response = service.getCommentsWithoutAuth(postId, page, perPage)
@@ -92,7 +92,7 @@ class CommentServiceTest {
 
         // verify
         verify { commentRepository.findPageByPostId(postId, pageable) }
-        verify { commentLikeRepository.findByCommentIdIn(any()) }
+        verify { commentLikeRepository.findByCommentIdInAndLiked(any()) }
     }
 
     @Test
