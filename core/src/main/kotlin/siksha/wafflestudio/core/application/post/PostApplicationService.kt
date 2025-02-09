@@ -10,6 +10,7 @@ import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
 import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
+import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.image.data.Image
@@ -112,10 +113,27 @@ class PostApplicationService(
         )
     }
 
-//    @Transactional
-//    fun patchPost(userId: Long, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
-//        // TODO
-//    }
+    @Transactional
+    fun patchPost(userId: Long, postId: Long, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
+        postDomainService.validatePatchDto(postPatchRequestDto)
+
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+        if (post.user.id != userId) throw NotPostOwnerException()
+
+        val newImageUrls = postPatchRequestDto.images
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { handleImageUpload(post.board.id, userId, it) }
+
+        val newPost = runCatching {
+            postRepository.save(
+                postPatchRequestDto.toEntity(post, newImageUrls)
+            )
+        }.getOrElse {
+            throw CustomNotFoundException(NotFoundItem.POST, NotFoundItem.BOARD)
+        }
+
+        return mapAPostWithLikesAndComments(post, userId)
+    }
 
     @Transactional
     fun deletePost(userId: Long, postId: Long) {

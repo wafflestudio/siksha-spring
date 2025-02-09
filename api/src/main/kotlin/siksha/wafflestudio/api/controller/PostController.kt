@@ -72,14 +72,14 @@ class PostController (
         return postApplicationService.getAPost(postId, request.userId)
     }
 
-//    @PatchMapping("/{post_id}")
-//    fun patchPost(
-//        request: HttpServletRequest,
-//        @PathVariable("post_id") postId: Long,
-//        @ModelAttribute patchDto: PostPatchRequestDto,
-//    ): PostResponseDto? {
-//        return postApplicationService.patchPost()
-//    }
+    @PatchMapping("/{post_id}")
+    fun patchPost(
+        request: HttpServletRequest,
+        @PathVariable("post_id") postId: Long,
+        @ModelAttribute patchDto: PostPatchRequestDto,
+    ): PostResponseDto? {
+        return postApplicationService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
+    }
 
     @DeleteMapping("/{post_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

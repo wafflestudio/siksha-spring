@@ -36,4 +36,20 @@ data class PostPatchRequestDto(
     val content: String?,
     val anonymous: Boolean?,
     val images: List<MultipartFile>?
-)
+){
+    fun toEntity(post: Post, newImageUrls: List<String>?): Post {
+        val newEtcJson: String? = newImageUrls?.let {
+            EtcUtils.convertImageUrlsToEtcJson(it)
+        }
+        return Post(
+            id = post.id,
+            user = post.user,
+            board = post.board,
+            title = title ?: post.title,
+            content = content ?: post.content,
+            available = post.available,
+            anonymous = anonymous ?: post.anonymous,
+            etc = newEtcJson ?: post.etc
+        )
+    }
+}

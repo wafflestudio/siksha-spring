@@ -13,4 +13,7 @@ interface PostLikeRepository: JpaRepository<PostLike, Long> {
 
     @Query("SELECT pl FROM post_like pl WHERE pl.post.id = :postId AND pl.isLiked = true")
     fun findByPostIdAndIsLikedTrue(postId: Long): List<PostLike>
+
+    @Query("SELECT pl FROM post_like pl WHERE pl.post.id = :postId AND pl.user.id = :userId AND pl.isLiked = true")
+    fun findByPostIdAndUserIdAndIsLikedTrue(postId: Long, userId: Long): PostLike?
 }

@@ -27,7 +27,7 @@ data class PostResponseDto(
     val available: Boolean,
     val anonymous: Boolean,
     val isMine: Boolean,
-    val etc: String?, // TODO: parse this
+    val etc: String?,
     val likeCnt: Int,
     val commentCnt: Int,
     val isLiked: Boolean,
@@ -52,5 +52,8 @@ data class PostResponseDto(
                 isLiked = userPostLiked,
             )
         }
+    }
+    init {
+        if (anonymous) check(nickname==null && profileUrl==null)
     }
 }

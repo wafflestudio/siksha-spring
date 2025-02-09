@@ -34,5 +34,6 @@ class ImageUploadFailedException : CommunityException(HttpStatus.SERVICE_UNAVAIL
 
 enum class NotFoundItem(val value: String) {
     USER("유저"),
-    POST("게시물")
+    POST("게시물"),
+    BOARD("게시판")
 }
