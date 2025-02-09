@@ -31,7 +31,6 @@ data class PostCreateRequestDto(
 }
 
 data class PostPatchRequestDto(
-    @JsonProperty("board_id") val boardId: Long?,
     val title: String?,
     val content: String?,
     val anonymous: Boolean?,

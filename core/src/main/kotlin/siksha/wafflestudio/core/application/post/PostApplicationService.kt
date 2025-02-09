@@ -132,7 +132,7 @@ class PostApplicationService(
             throw CustomNotFoundException(NotFoundItem.POST, NotFoundItem.BOARD)
         }
 
-        return mapAPostWithLikesAndComments(post, userId)
+        return mapAPostWithLikesAndComments(newPost, userId)
     }
 
     @Transactional

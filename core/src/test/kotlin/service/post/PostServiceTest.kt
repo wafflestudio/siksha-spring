@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.service.post
 
+import aws.sdk.kotlin.runtime.config.endpoints.resolveAccountId
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,12 +14,11 @@ import org.springframework.web.multipart.MultipartFile
 import org.testcontainers.junit.jupiter.Testcontainers
 import siksha.wafflestudio.core.application.post.PostApplicationService
 import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
+import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
-import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.data.Post
@@ -296,5 +296,378 @@ class PostServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(userId) }
         verify { boardRepository.findByIdOrNull(boardId) }
+    }
+
+    @Test
+    fun `get my posts`() {
+        // given
+        val myId = 1L
+        val otherUserId = 2L
+        val boardId = 1L
+
+        val page = 1
+        val perPage = 10
+
+        val me = User(
+            id = myId,
+            nickname = "me",
+            type = "test",
+            identity = "test"
+        )
+        val otherUser = User(
+            id = otherUserId,
+            nickname = "bob",
+            type = "test",
+            identity = "test"
+        )
+
+        val board = Board(id = boardId, name = "test", description = "test")
+
+        val myPost = Post(
+            user = me,
+            board = board,
+            title = "test",
+            content = "test post",
+            available = true,
+            anonymous = false,
+        )
+        val otherUserPost = Post(
+            user = otherUser,
+            board = board,
+            title = "test",
+            content = "other user's post",
+            available = true,
+            anonymous = false,
+        )
+
+        val pageable = PageRequest.of(page-1, perPage)
+
+        every { postRepository.findPageByUserId(boardId, pageable) } returns PageImpl(listOf(myPost), pageable, 1)
+        every { postLikeRepository.findByPostIdInAndIsLikedTrue(any()) } returns emptyList()
+        every { commentRepository.findByPostIdIn(any()) } returns emptyList()
+
+        // when
+        val response = service.getMyPosts(page, perPage, myId)
+
+        // then
+        assertEquals(1, response.totalCount)
+        assertEquals(false, response.hasNext)
+        assertEquals(1, response.result.size)
+        assertEquals("me", response.result[0].nickname)
+
+        // verify
+        verify { postRepository.findPageByUserId(boardId, pageable) }
+        verify { postLikeRepository.findByPostIdInAndIsLikedTrue(any()) }
+        verify { commentRepository.findByPostIdIn(any()) }
+    }
+
+    @Test
+    fun `get a post not found` () {
+        // given
+        val notFoundPostId = 1L
+        every { postRepository.findByIdOrNull(notFoundPostId) } returns null
+        // when
+        val exception = assertThrows<PostNotFoundException> {
+            service.getAPost(notFoundPostId, null)
+        }
+
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, exception.httpStatus)
+        assertEquals("해당 글을 찾을 수 없습니다.", exception.errorMessage)
+    }
+
+    @Test
+    fun `get a post` () {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "test",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+        every { postRepository.findByIdOrNull(postId) } returns post
+        every { postLikeRepository.findByPostIdAndIsLikedTrue(postId) } returns emptyList()
+        every { commentRepository.countByPostId(postId) } returns 0
+
+        // when
+        val response = service.getAPost(postId, null)
+
+        // then
+        assertEquals("test", response.title)
+        assertEquals(postId, response.id)
+
+        // verify
+        verify { postRepository.findByIdOrNull(postId) }
+        verify { postLikeRepository.findByPostIdAndIsLikedTrue(postId) }
+        verify { commentRepository.countByPostId(postId) }
+
+    }
+
+    @Test
+    fun `delete a post not owner`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val otherUserId = 10000L
+        val otherUser = User(id = otherUserId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "test",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+        every { postRepository.findByIdOrNull(postId) } returns post
+
+        // when
+        val exception = assertThrows<NotPostOwnerException> {
+            service.deletePost(otherUserId, postId)
+        }
+
+        // then
+        assertEquals(HttpStatus.FORBIDDEN, exception.httpStatus)
+    }
+
+    @Test
+    fun `patch post invalid title`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "test",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+
+        // when
+        val exception = assertThrows<InvalidPostFormException> {
+            service.patchPost(
+                userId = userId,
+                postId = postId,
+                postPatchRequestDto = PostPatchRequestDto(title = "", content = null, anonymous = null, images = null)
+            )
+        }
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
+        assertEquals("제목은 1자에서 200자 사이여야 합니다.", exception.errorMessage)
+    }
+
+    @Test
+    fun `patch post invalid content`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "test",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+
+        // when
+        val exception = assertThrows<InvalidPostFormException> {
+            service.patchPost(
+                userId = userId,
+                postId = postId,
+                postPatchRequestDto = PostPatchRequestDto(title = null, content = "", anonymous = null, images = null)
+            )
+        }
+        // then
+        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
+        assertEquals("내용은 1자에서 1000자 사이여야 합니다.", exception.errorMessage)
+    }
+
+    @Test
+    fun `patch post not owner`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val otherUserId = 10000L
+        val otherUser = User(id = otherUserId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "test",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+
+        every { postRepository.findByIdOrNull(postId) } returns post
+
+        // when
+        val exception = assertThrows<NotPostOwnerException> {
+            service.patchPost(otherUserId, postId, PostPatchRequestDto(null, null, null, null))
+        }
+        // then
+        assertEquals(HttpStatus.FORBIDDEN, exception.httpStatus)
+    }
+
+    @Test
+    fun `patch post not found`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val notExistsPostId = 3L
+
+        every { postRepository.findByIdOrNull(notExistsPostId) } returns null
+
+        // when
+        val exception = assertThrows<PostNotFoundException> {
+            service.patchPost(userId, notExistsPostId, PostPatchRequestDto(null, null, null, null))
+        }
+        // then
+        assertEquals(HttpStatus.NOT_FOUND, exception.httpStatus)
+    }
+
+    @Test
+    fun `patch post with images`() {
+        // given
+        val userId = 1L
+        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
+
+        val boardId = 2L
+        val board = Board(id = boardId, name = "test board", description = "test")
+
+        val postId = 3L
+
+        val post = Post(
+            id = postId,
+            user = user,
+            board = board,
+            title = "test",
+            content = "do not change the content",
+            available = true,
+            anonymous = false,
+            etc = null,
+        )
+
+        val fixedDateTime = LocalDateTime.of(2025, 1, 1, 12, 0, 0)
+        val prefix = S3ImagePrefix.POST
+
+        val nameKey = "board-${boardId}/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+        val images: List<MultipartFile> = listOf(mockk(), mockk())
+        val bucketName = System.getProperty("spring.cloud.aws.s3.bucket")
+        val urlPrefix = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/${prefix.prefix}/$nameKey"
+        val uploadFileDtos = listOf(
+            UploadFileDto(
+                key = "${prefix.prefix}/$nameKey/0.jpeg",
+                url = "$urlPrefix/0.jpeg"
+            ),
+            UploadFileDto(
+                key = "${prefix.prefix}/$nameKey/1.jpeg",
+                url = "$urlPrefix/1.jpeg"
+            )
+        )
+
+        val savedPost = Post(
+            id = postId,  // 반드시 ID를 설정
+            user = user,
+            board = board,
+            title = "new title",
+            content = "do not change the content",
+            available = true,
+            anonymous = true,
+            etc = EtcUtils.convertImageUrlsToEtcJson(uploadFileDtos.map { it.url }) // 이미지 URL 적용
+        )
+
+        mockkStatic(LocalDateTime::class)
+        every { LocalDateTime.now() } returns fixedDateTime
+
+        every { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
+        every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
+        every { postRepository.save(any()) } returns savedPost
+        every { postRepository.findByIdOrNull(postId) } returns post
+        every { postLikeRepository.findByPostIdAndIsLikedTrue(postId)  } returns emptyList()
+        every { commentRepository.countByPostId(postId) } returns 0
+
+        // when
+        val response = service.patchPost(
+            userId = userId,
+            postId = postId,
+            postPatchRequestDto = PostPatchRequestDto(
+                title = "new title",
+                content = "do not change the content",
+                anonymous = true,
+                images = images
+            )
+        )
+        // then
+
+        // not changed
+        assertEquals(post.content, response.content)
+        assertEquals(post.id, response.id)
+
+        // changed
+        assertEquals("new title", response.title)
+        assertEquals(true, response.anonymous)
+
+        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc)
+        assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
+
+        // verify
+        verify { LocalDateTime.now() }
+        verify { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) }
+        verify { imageRepository.saveAll(any<List<Image>>()) }
+        verify { postRepository.save(any()) }
+        verify { postRepository.findByIdOrNull(postId) }
+        verify { postLikeRepository.findByPostIdAndIsLikedTrue(postId) }
+        verify { commentRepository.countByPostId(postId) }
     }
 }
