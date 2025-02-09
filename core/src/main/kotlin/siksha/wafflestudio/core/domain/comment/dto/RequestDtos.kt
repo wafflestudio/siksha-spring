@@ -13,3 +13,7 @@ data class PatchCommentRequestDto(
     val content: String?,
     val anonymous: Boolean?
 )
+
+data class CreateCommentReportRequestDto(
+    val reason: String,
+)

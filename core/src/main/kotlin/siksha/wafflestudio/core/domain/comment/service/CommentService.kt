@@ -1,20 +1,17 @@
 package siksha.wafflestudio.core.domain.comment.service
 
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.comment.data.Comment
-import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.comment.dto.*
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.comment.repository.CommentReportRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
-import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
-import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
@@ -26,7 +23,8 @@ class CommentService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val commentLikeRepository: CommentLikeRepository,
-){
+    private val commentReportRepository: CommentReportRepository,
+) {
     fun getCommentsWithoutAuth(
         postId: Long,
         page: Int,
@@ -178,5 +176,71 @@ class CommentService(
 
         commentRepository.deleteById(commentId)
         commentLikeRepository.deleteByCommentId(commentId)
+    }
+
+    fun createOrUpdateCommentLike(
+        userId: Long,
+        commentId: Long,
+        isLiked: Boolean,
+    ): CommentResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
+
+        val commentLike = commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId)
+            ?: CommentLike(
+                user = user,
+                comment = comment,
+                isLiked = isLiked,
+            )
+
+        commentLike.isLiked = isLiked
+        commentLikeRepository.save(commentLike)
+
+        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId)
+        return CommentResponseDto.of(
+            comment = comment,
+            isMine = comment.user.id == userId,
+            likeCount = likeCount.toInt(),
+            isLiked = isLiked
+        )
+    }
+
+    @Transactional
+    fun createCommentReport(
+        reportingUid: Long,
+        commentId: Long,
+        reason: String,
+    ): CommentsReportResponseDto {
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
+        val comment = commentRepository.findByIdOrNull(commentId) ?: throw CommentNotFoundException()
+
+        if (reason.length > 200 || reason.isBlank()) {
+            throw InvalidCommentReportFormException()
+        }
+        if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
+            throw CommentAlreadyReportedException()
+        }
+
+        val commentReport = commentReportRepository.save(
+            CommentReport(
+                comment = comment,
+                reason = reason,
+                reportingUser = reportingUser,
+                reportedUser = comment.user,
+            )
+        )
+
+        //신고 5개 이상 누적시 숨기기
+        val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
+        if (commentReportCount >= 5 && comment.available) {
+            comment.available = false
+            commentRepository.save(comment)
+        }
+
+        return CommentsReportResponseDto(
+            id = commentReport.id,
+            reason = commentReport.reason,
+            commentId = commentReport.comment.id,
+        )
     }
 }

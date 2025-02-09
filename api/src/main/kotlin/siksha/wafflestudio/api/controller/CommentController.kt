@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.*
 import siksha.wafflestudio.core.domain.comment.service.CommentService
 
 @RestController
@@ -67,5 +64,34 @@ class CommentController(
         @PathVariable commentId: Long,
     ) {
         commentService.deleteComment(request.userId, commentId)
+    }
+
+    @PostMapping("/community/comments/{commentId}/like")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createCommentLike(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+    ): CommentResponseDto {
+        return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
+    }
+
+    //TODO: delete 방식으로 수정
+    @PostMapping("/community/comments/{commentId}/unlike")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createCommentUnlike(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+    ): CommentResponseDto {
+        return commentService.createOrUpdateCommentLike(request.userId, commentId, false)
+    }
+
+    @PostMapping("/community/comments/{commentId}/report")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createCommentReport(
+        request: HttpServletRequest,
+        @PathVariable commentId: Long,
+        @RequestBody createDto: CreateCommentReportRequestDto,
+    ): CommentsReportResponseDto {
+        return commentService.createCommentReport(request.userId, commentId, createDto.reason)
     }
 }
