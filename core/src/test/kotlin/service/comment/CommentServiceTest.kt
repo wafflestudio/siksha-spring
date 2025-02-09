@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.comment.data.*
@@ -75,7 +76,7 @@ class CommentServiceTest {
             available = true,
         )
 
-        val pageable = PageRequest.of(page-1, perPage)
+        val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
 
         every { commentRepository.findPageByPostId(postId, pageable) } returns PageImpl(listOf(comment), pageable, totalCount)
         every { commentLikeRepository.findByCommentIdIn(any()) } returns emptyList()

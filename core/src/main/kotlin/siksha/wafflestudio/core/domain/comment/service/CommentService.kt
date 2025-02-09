@@ -2,6 +2,7 @@ package siksha.wafflestudio.core.domain.comment.service
 
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.comment.data.Comment
@@ -30,7 +31,7 @@ class CommentService(
         page: Int,
         perPage: Int,
     ): GetCommentsResponseDto {
-        val pageable = PageRequest.of(page-1, perPage)
+        val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id }).groupBy { it.comment.id }
@@ -65,7 +66,7 @@ class CommentService(
         page: Int,
         perPage: Int,
     ):GetCommentsResponseDto {
-        val pageable = PageRequest.of(page, perPage)
+        val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
 
