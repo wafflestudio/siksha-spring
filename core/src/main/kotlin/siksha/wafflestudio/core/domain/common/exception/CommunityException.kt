@@ -28,7 +28,7 @@ class RestaurantNotFound : SikshaException(HttpStatus.NOT_FOUND, "Restaurant not
 
 class BoardNameAlreadyExistException : CommunityException(HttpStatus.CONFLICT, "중복된 게시판 이름이 존재합니다.")
 
-class S3ImageUploadException() : CommunityException(HttpStatus.SERVICE_UNAVAILABLE, "AWS S3 오류")
+class ImageUploadFailedException : CommunityException(HttpStatus.SERVICE_UNAVAILABLE, "이미지 업로드 실패")
 
 class CommentAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 댓글입니다.")
 

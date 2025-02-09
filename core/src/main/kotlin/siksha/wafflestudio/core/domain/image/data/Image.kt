@@ -16,8 +16,9 @@ class Image(
     @Column(name = "`key`", length = 60)
     val key: String,
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 10)
-    val category: String,
+    val category: ImageCategory,
 
     // FIXME: 현재 DB에 외래키 안 걸려 있음
     @Column(nullable = false)
@@ -27,7 +28,7 @@ class Image(
 //    @JoinColumn(name = "user_id", nullable = false)
 //    val user: User,
 
-    val isDeleted: Boolean,
+    val isDeleted: Boolean = false,
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -37,3 +38,9 @@ class Image(
     @Column(nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 )
+
+enum class ImageCategory {
+    POST,
+    PROFILE,
+    REVIEW
+}

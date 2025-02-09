@@ -18,6 +18,7 @@ import siksha.wafflestudio.core.application.post.dto.PostCreateDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
+import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.data.PostLike
 import siksha.wafflestudio.core.domain.post.data.PostReport
@@ -26,6 +27,7 @@ import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.post.service.PostDomainService
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -61,10 +63,10 @@ class PostApplicationService(
         val postIdToComments = commentRepository.findByPostIdIn(posts.map { it.id }).groupBy { it.post.id }
 
         val postDtos = posts.map { post ->
-            val likeCount = postIdToPostLikes[post.id]?.size ?: 0
+            val likeCount = postIdToPostLikes[post.id]?.count { it.user.id == userId && it.isLiked == true } ?: 0
             val commentCount = postIdToComments[post.id]?.size ?: 0
             val isMine = post.user.id == userId
-            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId } ?: false
+            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId && it.isLiked == true } ?: false
             PostResponseDto.from(post, isMine, userPostLiked, likeCount, commentCount)
         }
 
@@ -79,9 +81,11 @@ class PostApplicationService(
     fun createPost(userId: Long, postCreateDto: PostCreateDto,): PostResponseDto {
         postDomainService.validateDto(postCreateDto)
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
-        val board = boardRepository.findByIdOrNull(postCreateDto.board_id) ?: throw BoardNotFoundException()
+        val board = boardRepository.findByIdOrNull(postCreateDto.boardId) ?: throw BoardNotFoundException()
 
-        val imageUrls = handleImageUpload(postCreateDto.board_id, userId, postCreateDto.images)
+        val imageUrls = postCreateDto.images
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { handleImageUpload(postCreateDto.boardId, userId, it) }
 
         val post = postCreateDto.toEntity(user = user, board = board, imageUrls = imageUrls)
 
@@ -97,23 +101,21 @@ class PostApplicationService(
 
     private fun generateImageNameKey(boardId: Long, userId: Long) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
 
-    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>?): List<String>? {
-        if (images.isNullOrEmpty()) return null
-
-        val prefix = "post-images"
+    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)
-        val urlsAndKeys = s3Service.uploadFiles(images, prefix, nameKey)
+        val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
+
         imageRepository.saveAll(
-            urlsAndKeys.second.map { key ->
+            uploadFiles.map {
                 Image(
-                    key = key,
-                    category = "POST",
+                    key = it.key,
+                    category = ImageCategory.POST,
                     userId = userId,
                     isDeleted = false
                 )
             }
         )
-        return urlsAndKeys.first
+        return uploadFiles.map { it.url }
     }
 
     fun createOrUpdatePostLike(
@@ -185,3 +187,4 @@ class PostApplicationService(
         )
     }
 }
+
