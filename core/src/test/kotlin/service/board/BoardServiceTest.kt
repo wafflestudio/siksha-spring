@@ -10,11 +10,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.application.board.BoardApplicationService
 import siksha.wafflestudio.core.application.board.dto.BoardCreateDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.board.service.BoardDomainService
+import siksha.wafflestudio.core.domain.board.service.BoardService
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
@@ -22,14 +21,12 @@ import kotlin.test.assertNotNull
 
 class BoardServiceTest {
     private lateinit var repository: BoardRepository
-    private lateinit var domainService: BoardDomainService
-    private lateinit var service: BoardApplicationService
+    private lateinit var service: BoardService
 
     @BeforeEach
     internal fun setUp() {
         repository = mockk()
-        domainService = BoardDomainService()
-        service = BoardApplicationService(repository, domainService)
+        service = BoardService(repository)
         clearAllMocks()
     }
 
