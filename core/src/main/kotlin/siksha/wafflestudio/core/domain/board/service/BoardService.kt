@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.board.service
 
 import jakarta.transaction.Transactional
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.board.BoardCreateDto
@@ -9,6 +10,7 @@ import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
 
 @Service
@@ -20,10 +22,15 @@ class BoardService(
     @Transactional
     fun addBoard(boardCreateDTO: BoardCreateDto): BoardDto {
         val board = boardCreateDTO.toEntity()
-        if (boardRepository.existsByName(board.name)) throw BoardNameAlreadyExistException()
         validateBoard(board)
-        val savedBoard = boardRepository.save(board)
-        return BoardDto.from(savedBoard)
+        try {
+            val savedBoard = boardRepository.save(board)
+            return BoardDto.from(savedBoard)
+        } catch (ex: DataIntegrityViolationException) {
+            throw BoardNameAlreadyExistException()
+        } catch (ex: Exception) {
+            throw BoardSaveFailedException(ex.message);
+        }
     }
 
     fun getBoardById(id: Long): BoardDto {
