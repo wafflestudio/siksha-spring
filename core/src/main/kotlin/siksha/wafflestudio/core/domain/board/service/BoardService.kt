@@ -3,8 +3,8 @@ package siksha.wafflestudio.core.domain.board.service
 import jakarta.transaction.Transactional
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.application.board.dto.BoardCreateDto
-import siksha.wafflestudio.core.application.board.dto.BoardDto
+import siksha.wafflestudio.core.domain.board.BoardCreateDto
+import siksha.wafflestudio.core.domain.board.BoardDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
