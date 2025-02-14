@@ -79,7 +79,7 @@ class CommentServiceTest {
         val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
 
         every { commentRepository.findPageByPostId(postId, pageable) } returns PageImpl(listOf(comment), pageable, totalCount)
-        every { commentLikeRepository.findByCommentIdInAndLiked(any()) } returns emptyList()
+        every { commentLikeRepository.findByCommentIdInAndIsLiked(any()) } returns emptyList()
 
         //when
         val response = service.getCommentsWithoutAuth(postId, page, perPage)
@@ -92,7 +92,7 @@ class CommentServiceTest {
 
         // verify
         verify { commentRepository.findPageByPostId(postId, pageable) }
-        verify { commentLikeRepository.findByCommentIdInAndLiked(any()) }
+        verify { commentLikeRepository.findByCommentIdInAndIsLiked(any()) }
     }
 
     @Test
@@ -124,7 +124,7 @@ class CommentServiceTest {
         every { commentRepository.findByIdOrNull(commentId) } returns comment
         every { commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId) } returns null
         every { commentLikeRepository.save(any()) } returns mockk()
-        every { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) } returns 1L
+        every { commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId) } returns 1L
 
         // when
         val response = service.createOrUpdateCommentLike(userId, commentId, isLiked)
@@ -138,7 +138,7 @@ class CommentServiceTest {
         verify { userRepository.findByIdOrNull(userId) }
         verify { commentRepository.findByIdOrNull(commentId) }
         verify { commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId) }
-        verify { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) }
+        verify { commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId) }
     }
 
     @Test
@@ -176,7 +176,7 @@ class CommentServiceTest {
         every { commentRepository.findByIdOrNull(commentId) } returns comment
         every { commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId) } returns commentLike
         every { commentLikeRepository.save(any()) } returns mockk()
-        every { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) } returns 0L
+        every { commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId) } returns 0L
 
         // when
         val response = service.createOrUpdateCommentLike(userId, commentId, isLiked)
@@ -190,7 +190,7 @@ class CommentServiceTest {
         verify { userRepository.findByIdOrNull(userId) }
         verify { commentRepository.findByIdOrNull(commentId) }
         verify { commentLikeRepository.findCommentLikeByCommentIdAndUserId(commentId, userId) }
-        verify { commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId) }
+        verify { commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId) }
     }
 
     @Test

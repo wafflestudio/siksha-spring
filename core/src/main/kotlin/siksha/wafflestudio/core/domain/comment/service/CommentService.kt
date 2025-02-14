@@ -34,7 +34,7 @@ class CommentService(
         val pageable = PageRequest.of(page-1, perPage, Sort.by("createdAt").ascending())
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
-        val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndLiked(comments.map { it.id }).groupBy { it.comment.id }
+        val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
             CommentResponseDto(
@@ -70,7 +70,7 @@ class CommentService(
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         val comments = commentsPage.content
 
-        val commentLikes = commentLikeRepository.findByCommentIdInAndLiked(comments.map { it.id })
+        val commentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id })
         val commentIdsILiked = commentLikes.filter { it.user.id == userId }.map { it.comment.id }.toSet()
         val commentIdToCommentLikes = commentLikes.groupBy { it.comment.id }
 
@@ -196,7 +196,7 @@ class CommentService(
         commentLike.isLiked = isLiked
         commentLikeRepository.save(commentLike)
 
-        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId)
+        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId)
         return CommentResponseDto.of(
             comment = comment,
             isMine = comment.user.id == userId,
