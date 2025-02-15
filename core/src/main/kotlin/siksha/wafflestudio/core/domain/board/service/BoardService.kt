@@ -8,7 +8,11 @@ import siksha.wafflestudio.core.domain.board.BoardCreateDto
 import siksha.wafflestudio.core.domain.board.BoardDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.common.exception.*
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
+import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
+import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
