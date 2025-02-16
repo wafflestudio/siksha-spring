@@ -52,3 +52,7 @@ data class PostPatchRequestDto(
         )
     }
 }
+
+data class CreatePostReportRequestDto(
+    val reason: String,
+)
