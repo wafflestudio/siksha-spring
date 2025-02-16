@@ -43,7 +43,7 @@ class BoardService(
         return BoardDto.from(board)
     }
 
-    fun validateBoard(board: Board) {
+    private fun validateBoard(board: Board) {
         val errors = mutableListOf<String>()
         if (board.name.isBlank() || board.name.length > 200) {
             errors.add("Name must be between 1 and 200 characters")

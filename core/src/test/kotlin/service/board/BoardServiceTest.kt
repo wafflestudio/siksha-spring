@@ -79,7 +79,7 @@ class BoardServiceTest {
         }
 
         // then
-        assertEquals("Board name already exists", exception.message)
+        assertEquals("중복된 게시판 이름이 존재합니다.", exception.message)
     }
 
     @Test
@@ -124,6 +124,6 @@ class BoardServiceTest {
             service.getBoardById(3)
         }
 
-        assertEquals("Board not found", exception.message)
+        assertEquals("해당 게시판을 찾을 수 없습니다.", exception.message)
     }
 }
