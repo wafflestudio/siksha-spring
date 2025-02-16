@@ -7,6 +7,7 @@ import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.core.application.post.dto.*
 import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
@@ -87,5 +88,34 @@ class PostController (
         @PathVariable("post_id") postId: Long,
     ) {
         postApplicationService.deletePost(userId = request.userId, postId = postId)
+    }
+
+    @PostMapping("/{postId}/like")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createPostLike(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+    ): PostResponseDto {
+        return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
+    }
+
+    //TODO: delete 방식으로 수정
+    @PostMapping("/{postId}/unlike")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createPostUnlike(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+    ): PostResponseDto {
+        return postApplicationService.createOrUpdatePostLike(request.userId, postId, false)
+    }
+
+    @PostMapping("/{postId}/report")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun createPostReport(
+        request: HttpServletRequest,
+        @PathVariable postId: Long,
+        @RequestBody createDto: CreatePostReportRequestDto,
+    ): PostsReportResponseDto {
+        return postApplicationService.createPostReport(request.userId, postId, createDto.reason)
     }
 }

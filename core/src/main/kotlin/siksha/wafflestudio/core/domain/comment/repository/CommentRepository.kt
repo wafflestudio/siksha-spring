@@ -18,4 +18,6 @@ interface CommentRepository : JpaRepository<Comment, Long> {
 
     @Query("SELECT COUNT(c) FROM comment c WHERE c.post.id = :postId")
     fun countByPostId(@Param("postId") postId: Long): Int
+
+    fun countCommentsByPostId(postId: Long): Long
 }

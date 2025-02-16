@@ -32,7 +32,7 @@ class Comment(
     val post: Post,
 
     val content: String,
-    val available: Boolean,
+    var available: Boolean,
     val anonymous: Boolean,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now(),

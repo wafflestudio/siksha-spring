@@ -8,16 +8,24 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberException
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
+import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedException
 import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
 import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.*
+import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.post.data.PostLike
+import siksha.wafflestudio.core.domain.post.data.PostReport
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
@@ -197,6 +205,75 @@ class PostApplicationService(
             }
         )
         return uploadFiles.map { it.url }
+    }
+
+    fun createOrUpdatePostLike(
+        userId: Long,
+        postId: Long,
+        isLiked: Boolean,
+    ): PostResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        val postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
+            ?: PostLike(
+                user = user,
+                post = post,
+                isLiked = isLiked,
+            )
+
+        postLike.isLiked = isLiked
+        postLikeRepository.save(postLike)
+
+        val likeCount = postLikeRepository.countPostLikesByPostIdAndLiked(postId)
+        val commentCount = commentRepository.countCommentsByPostId(postId)
+
+        return PostResponseDto.from(
+            post = post,
+            isMine = post.user.id == userId,
+            userPostLiked = isLiked,
+            likeCnt = likeCount.toInt(),
+            commentCnt = commentCount.toInt(),
+        )
+    }
+
+    @Transactional
+    fun createPostReport(
+        reportingUid: Long,
+        postId: Long,
+        reason: String,
+    ): PostsReportResponseDto {
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        if (reason.length > 200 || reason.isBlank()) {
+            throw InvalidPostReportFormException()
+        }
+        if (postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser)) {
+            throw PostAlreadyReportedException()
+        }
+
+        val postReport = postReportRepository.save(
+            PostReport(
+                post = post,
+                reason = reason,
+                reportingUser = reportingUser,
+                reportedUser = post.user,
+            )
+        )
+
+        //신고 5개 이상 누적시 숨기기
+        val postReportCount = postReportRepository.countPostReportByPostId(postId)
+        if (postReportCount >= 5 && post.available) {
+            post.available = false
+            postRepository.save(post)
+        }
+
+        return PostsReportResponseDto(
+            id = postReport.id,
+            reason = postReport.reason,
+            postId = postReport.post.id,
+        )
     }
 }
 

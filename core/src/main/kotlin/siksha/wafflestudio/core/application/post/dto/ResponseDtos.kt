@@ -57,3 +57,10 @@ data class PostResponseDto(
         if (anonymous) check(nickname==null && profileUrl==null)
     }
 }
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class PostsReportResponseDto(
+    val id: Long,
+    val reason: String,
+    val postId: Long,
+)
