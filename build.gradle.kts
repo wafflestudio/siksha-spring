@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "1.9.25"
     id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
+    kotlin("plugin.serialization") version "1.9.25" apply false
 }
 
 java {
@@ -38,6 +39,7 @@ allprojects {
         implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
         implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     }
 
     kotlin {

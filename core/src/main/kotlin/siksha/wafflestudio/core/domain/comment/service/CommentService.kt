@@ -32,6 +32,7 @@ class CommentService(
     ): GetCommentsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
@@ -67,6 +68,7 @@ class CommentService(
     ):GetCommentsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
 
         val commentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id })

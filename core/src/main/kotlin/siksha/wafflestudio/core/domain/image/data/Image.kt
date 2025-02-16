@@ -39,6 +39,7 @@ class Image(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 )
 
+// FIXME: POST 외래키 걸기
 enum class ImageCategory {
     POST,
     PROFILE,
