@@ -11,5 +11,5 @@ import siksha.wafflestudio.core.domain.image.data.Image
 interface ImageRepository: JpaRepository<Image, Long> {
     @Modifying
     @Query("UPDATE image i SET i.isDeleted = true WHERE i.key IN :keys")
-    fun softDeleteByKeyIn(@Param("keys") keys: List<String>): Long
+    fun softDeleteByKeyIn(@Param("keys") keys: List<String>): Int
 }
