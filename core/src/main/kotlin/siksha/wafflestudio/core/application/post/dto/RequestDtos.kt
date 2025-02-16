@@ -48,7 +48,7 @@ data class PostPatchRequestDto(
             content = content ?: post.content,
             available = post.available,
             anonymous = anonymous ?: post.anonymous,
-            etc = newEtcJson ?: post.etc
+            etc = newEtcJson // 아무 이미지도 안 보내면 이미지 삭제
         )
     }
 }

@@ -9,12 +9,7 @@ import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
 import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
-import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
-import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
@@ -34,7 +29,9 @@ class CommentService(
     ): GetCommentsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
+
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
@@ -69,6 +66,7 @@ class CommentService(
     ):GetCommentsResponseDto {
         val pageable = PageRequest.of(page, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
 
         val commentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id })

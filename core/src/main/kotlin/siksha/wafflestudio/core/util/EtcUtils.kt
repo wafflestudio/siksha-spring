@@ -1,13 +1,9 @@
 package siksha.wafflestudio.core.util
 
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.regex.Pattern
 
-@Serializable
-data class Etc(
-    val images: List<String> = emptyList()
-)
 
 object EtcUtils {
     private val jsonParser = Json { ignoreUnknownKeys = true }
@@ -35,4 +31,3 @@ object EtcUtils {
         return jsonEncoder.encodeToString<Etc>(etc)
     }
 }
-

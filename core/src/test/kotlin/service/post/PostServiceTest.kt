@@ -1,6 +1,5 @@
 package siksha.wafflestudio.core.service.post
 
-import aws.sdk.kotlin.runtime.config.endpoints.resolveAccountId
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -368,7 +367,7 @@ class PostServiceTest {
         every { postRepository.findByIdOrNull(notFoundPostId) } returns null
         // when
         val exception = assertThrows<PostNotFoundException> {
-            service.getAPost(notFoundPostId, null)
+            service.getPost(notFoundPostId, null)
         }
 
         // then
@@ -402,7 +401,7 @@ class PostServiceTest {
         every { commentRepository.countByPostId(postId) } returns 0
 
         // when
-        val response = service.getAPost(postId, null)
+        val response = service.getPost(postId, null)
 
         // then
         assertEquals("test", response.title)

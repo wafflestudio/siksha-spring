@@ -83,12 +83,12 @@ class PostApplicationService(
         )
     }
 
-    fun getAPost(
+    fun getPost(
         postId: Long,
         userId: Long?,
     ): PostResponseDto {
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
-        return mapAPostWithLikesAndComments(post, userId)
+        return mapPostWithLikesAndComments(post, userId)
     }
 
     @Transactional
@@ -120,6 +120,13 @@ class PostApplicationService(
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
         if (post.user.id != userId) throw NotPostOwnerException()
 
+        // 기존 이미지 무조건 삭제 후 postPatchRequestDto.images로 대체
+        post.etc?.let {
+            val parsedImageUrls = EtcUtils.parseImageUrlsFromEtc(it)
+            val keys = EtcUtils.getImageKeysFromUrlList(parsedImageUrls)
+            imageRepository.softDeleteByKeyIn(keys)
+        }
+
         val newImageUrls = postPatchRequestDto.images
             ?.takeIf { it.isNotEmpty() }
             ?.let { handleImageUpload(post.board.id, userId, it) }
@@ -132,7 +139,7 @@ class PostApplicationService(
             throw CustomNotFoundException(NotFoundItem.POST, NotFoundItem.BOARD)
         }
 
-        return mapAPostWithLikesAndComments(newPost, userId)
+        return mapPostWithLikesAndComments(newPost, userId)
     }
 
     @Transactional
@@ -163,7 +170,7 @@ class PostApplicationService(
         }
     }
 
-    private fun mapAPostWithLikesAndComments(post: Post, userId: Long?): PostResponseDto {
+    private fun mapPostWithLikesAndComments(post: Post, userId: Long?): PostResponseDto {
         val postIdToPostLike: List<PostLike> = postLikeRepository.findByPostIdAndIsLikedTrue(postId = post.id)
         val likeCount = postIdToPostLike.size
         val commentCount = commentRepository.countByPostId(postId = post.id)

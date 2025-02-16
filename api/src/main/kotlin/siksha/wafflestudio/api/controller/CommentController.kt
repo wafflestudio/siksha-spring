@@ -1,7 +1,9 @@
 package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -19,6 +21,7 @@ import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.service.CommentService
 
 @RestController
+@Validated
 class CommentController(
     private val commentService: CommentService,
 ) {
@@ -26,8 +29,8 @@ class CommentController(
     fun getCommentsWithoutAuth(
         request: HttpServletRequest,
         @RequestParam(name = "post_id") postId: Long,
-        @RequestParam(name = "page") page: Int,
-        @RequestParam(name = "per_page") perPage: Int,
+        @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
+        @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
         return commentService.getCommentsWithoutAuth(postId, page, perPage)
     }
@@ -36,8 +39,8 @@ class CommentController(
     fun getComments(
         request: HttpServletRequest,
         @RequestParam(name = "post_id") postId: Long,
-        @RequestParam(name = "page") page: Int,
-        @RequestParam(name = "per_page") perPage: Int,
+        @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
+        @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
         return commentService.getComments(request.userId,postId,  page, perPage)
     }
