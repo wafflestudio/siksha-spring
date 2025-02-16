@@ -16,8 +16,8 @@ data class GetPostsResponseDto(
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PostResponseDto(
-    val id: Long,
-    val boardId: Long,
+    val id: Int,
+    val boardId: Int,
     val title: String,
     val content: String,
     val createdAt: LocalDateTime,
@@ -33,10 +33,10 @@ data class PostResponseDto(
     val isLiked: Boolean,
 ) {
     companion object {
-        fun from(post: Post, isMine: Boolean, userPostLiked: Boolean, likeCnt: Int, commentCnt: Int,): PostResponseDto {
+        fun from(post: Post, isMine: Boolean, userPostLiked: Boolean, likeCnt: Int, commentCnt: Int): PostResponseDto {
             return PostResponseDto(
-                id = post.id.toLong(),
-                boardId = post.board.id.toLong(),
+                id = post.id,
+                boardId = post.board.id,
                 title = post.title,
                 content = post.content,
                 createdAt = post.createdAt,
@@ -60,7 +60,7 @@ data class PostResponseDto(
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PostsReportResponseDto(
-    val id: Long,
+    val id: Int,
     val reason: String,
-    val postId: Long,
+    val postId: Int,
 )

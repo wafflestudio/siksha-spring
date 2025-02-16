@@ -14,14 +14,10 @@ interface CommentRepository : JpaRepository<Comment, Int> {
     fun findPageByPostId(@Param("postId") postId: Int, pageable: Pageable): Page<Comment>
 
     @Query("SELECT c FROM comment c WHERE c.post.id IN :postIds")
-<<<<<<< HEAD
-    fun findByPostIdIn(@Param("postIds") postIds: List<Long>): List<Comment>
+    fun findByPostIdIn(@Param("postIds") postIds: List<Int>): List<Comment>
 
     @Query("SELECT COUNT(c) FROM comment c WHERE c.post.id = :postId")
-    fun countByPostId(@Param("postId") postId: Long): Int
+    fun countByPostId(@Param("postId") postId: Int): Int
 
-    fun countCommentsByPostId(postId: Long): Long
-=======
-    fun findByPostIdIn(@Param("postIds") postIds: List<Int>): List<Comment>
->>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
+    fun countCommentsByPostId(postId: Int): Int
 }

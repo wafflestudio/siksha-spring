@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 class CommentReport(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L,
+    val id: Int = 0,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
     val comment: Comment,

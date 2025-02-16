@@ -7,7 +7,7 @@ spring:
     show-sql: true
   flyway:
     enabled: true
-    baseline-on-migrate: true
+#    baseline-on-migrate: true
 
   datasource:
     url:

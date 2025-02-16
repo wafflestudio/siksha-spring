@@ -11,12 +11,7 @@ import java.time.LocalDateTime
 class CommentLike(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-<<<<<<< HEAD
-    val id: Long = 0L,
-=======
     val id: Int = 0,
-
->>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,

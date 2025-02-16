@@ -22,7 +22,7 @@ constructor(
 
     @Test
     fun testRestaurantNotExists() {
-        val testRestaurantId = -1L
+        val testRestaurantId = -1
 
         val exception = assertThrows<RestaurantNotFound> {
             service.getRestaurant(testRestaurantId)

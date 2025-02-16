@@ -182,8 +182,8 @@ class CommentService(
     }
 
     fun createOrUpdateCommentLike(
-        userId: Long,
-        commentId: Long,
+        userId: Int,
+        commentId: Int,
         isLiked: Boolean,
     ): CommentResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
@@ -210,8 +210,8 @@ class CommentService(
 
     @Transactional
     fun createCommentReport(
-        reportingUid: Long,
-        commentId: Long,
+        reportingUid: Int,
+        commentId: Int,
         reason: String,
     ): CommentsReportResponseDto {
         val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()

@@ -39,11 +39,8 @@ allprojects {
         implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
         implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
-<<<<<<< HEAD
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
-=======
         implementation("org.flywaydb:flyway-mysql")
->>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
     }
 
     kotlin {

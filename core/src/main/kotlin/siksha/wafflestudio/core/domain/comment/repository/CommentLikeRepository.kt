@@ -12,14 +12,10 @@ interface CommentLikeRepository : JpaRepository<CommentLike, Long> {
     fun findByCommentId(commentId: Int): List<CommentLike>
 
     @Query("DELETE FROM comment_like cl WHERE cl.comment.id = :commentId")
-<<<<<<< HEAD
-    fun deleteByCommentId(commentId: Long): Long
+    fun deleteByCommentId(commentId: Int): Long
 
     @Query("SELECT count(*) FROM comment_like cl WHERE cl.comment.id = :commentId AND cl.isLiked = true")
-    fun countCommentLikesByCommentIdAndLiked(commentId: Long): Long
+    fun countCommentLikesByCommentIdAndLiked(commentId: Int): Long
 
-    fun findCommentLikeByCommentIdAndUserId(commentId: Long, userId: Long): CommentLike?
-=======
-    fun deleteByCommentId(commentId: Int): Long
->>>>>>> d75df59 (feat: flyway 세팅, id 값 long -> int)
+    fun findCommentLikeByCommentIdAndUserId(commentId: Int, userId: Int): CommentLike?
 }

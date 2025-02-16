@@ -82,8 +82,8 @@ class PostServiceTest {
     @Test
     fun `get posts`() {
         // given
-        val userId = 1L
-        val boardId = 1L
+        val userId = 1
+        val boardId = 1
 
         val page = 1
         val perPage = 10
@@ -135,9 +135,9 @@ class PostServiceTest {
         // given
 
         // when
-        val dto = PostCreateRequestDto(boardId = 1L, title = " ", content = "test", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1, title = " ", content = "test", anonymous = null, images = null)
         val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1L, postCreateRequestDto = dto)
+            service.createPost(userId = 1, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
@@ -149,9 +149,9 @@ class PostServiceTest {
         // given
 
         // when
-        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = " ", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = " ", anonymous = null, images = null)
         val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1L, postCreateRequestDto = dto)
+            service.createPost(userId = 1, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
@@ -163,9 +163,9 @@ class PostServiceTest {
         // given
         every { userRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception = assertThrows<UnauthorizedUserException> {
-            service.createPost(userId = 1L, postCreateRequestDto = dto)
+            service.createPost(userId = 1, postCreateRequestDto = dto)
         }
         // then
         assertEquals(HttpStatus.UNAUTHORIZED, exception.httpStatus)
@@ -175,13 +175,13 @@ class PostServiceTest {
     @Test
     fun `create post invalid board`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle")
 
         every { userRepository.findByIdOrNull(userId) } returns user
         every { boardRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateRequestDto(boardId = 1L, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception = assertThrows<BoardNotFoundException> {
             service.createPost(userId = userId, postCreateRequestDto = dto)
         }
@@ -194,10 +194,10 @@ class PostServiceTest {
     @Test
     fun `create post anonymous without image`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
         every { userRepository.findByIdOrNull(userId) } returns user
@@ -224,10 +224,10 @@ class PostServiceTest {
     @Test
     fun `create post not anonymous without image`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
         every { userRepository.findByIdOrNull(userId) } returns user
@@ -252,10 +252,10 @@ class PostServiceTest {
     @Test
     fun `create post with images`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
         val fixedDateTime = LocalDateTime.of(2025, 1, 1, 12, 0, 0)
@@ -303,8 +303,8 @@ class PostServiceTest {
     @Test
         fun `create post like`() {
         // given
-        val userId = 1L
-        val postId = 1L
+        val userId = 1
+        val postId = 1
         val isLiked = true
         val user = User(
             id = userId,
@@ -329,8 +329,8 @@ class PostServiceTest {
         every { postRepository.findByIdOrNull(postId) } returns post
         every { postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId) } returns null
         every { postLikeRepository.save(any()) } returns mockk()
-        every { postLikeRepository.countPostLikesByPostIdAndLiked(postId) } returns 1L
-        every { commentRepository.countCommentsByPostId(postId) } returns 0L
+        every { postLikeRepository.countPostLikesByPostIdAndLiked(postId) } returns 1
+        every { commentRepository.countCommentsByPostId(postId) } returns 0
 
         // when
         val response = service.createOrUpdatePostLike(userId, postId, isLiked)
@@ -352,8 +352,8 @@ class PostServiceTest {
     @Test
     fun `update post like`() {
         // given
-        val userId = 1L
-        val postId = 1L
+        val userId = 1
+        val postId = 1
         val isLiked = false
 
         val user = User(
@@ -385,8 +385,8 @@ class PostServiceTest {
         every { postRepository.findByIdOrNull(postId) } returns post
         every { postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId) } returns postLike
         every { postLikeRepository.save(any()) } returns mockk()
-        every { postLikeRepository.countPostLikesByPostIdAndLiked(postId) } returns 0L
-        every { commentRepository.countCommentsByPostId(postId) } returns 0L
+        every { postLikeRepository.countPostLikesByPostIdAndLiked(postId) } returns 0
+        every { commentRepository.countCommentsByPostId(postId) } returns 0
 
         // when
         val response = service.createOrUpdatePostLike(userId, postId, isLiked)
@@ -408,9 +408,9 @@ class PostServiceTest {
     @Test
     fun `create post report`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val postId = 1L
+        val reportingUid = 1
+        val reportedUid = 2
+        val postId = 1
         val reason = "reason"
 
         val reportingUser = User(
@@ -439,7 +439,7 @@ class PostServiceTest {
         )
 
         val postReport = PostReport(
-            id = 100L,
+            id = 100,
             post = post,
             reason = reason,
             reportingUser = reportingUser,
@@ -470,9 +470,9 @@ class PostServiceTest {
     @Test
     fun `post already reported`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val postId = 1L
+        val reportingUid = 1
+        val reportedUid = 2
+        val postId = 1
         val reason = "reason"
 
         val reportingUser = User(
@@ -513,9 +513,9 @@ class PostServiceTest {
     @Test
     fun `invalid post report form`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val postId = 1L
+        val reportingUid = 1
+        val reportedUid = 2
+        val postId = 1
         val reason = "200자 초과".repeat(100)
 
         val reportingUser = User(
@@ -555,9 +555,9 @@ class PostServiceTest {
     @Test
     fun `get my posts`() {
         // given
-        val myId = 1L
-        val otherUserId = 2L
-        val boardId = 1L
+        val myId = 1
+        val otherUserId = 2
+        val boardId = 1
 
         val page = 1
         val perPage = 10
@@ -618,7 +618,7 @@ class PostServiceTest {
     @Test
     fun `get a post not found` () {
         // given
-        val notFoundPostId = 1L
+        val notFoundPostId = 1
         every { postRepository.findByIdOrNull(notFoundPostId) } returns null
         // when
         val exception = assertThrows<PostNotFoundException> {
@@ -633,13 +633,13 @@ class PostServiceTest {
     @Test
     fun `get a post` () {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
@@ -672,16 +672,16 @@ class PostServiceTest {
     @Test
     fun `delete a post not owner`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val otherUserId = 10000L
+        val otherUserId = 10000
         val otherUser = User(id = otherUserId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
@@ -707,13 +707,13 @@ class PostServiceTest {
     @Test
     fun `patch post invalid title`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
@@ -742,13 +742,13 @@ class PostServiceTest {
     @Test
     fun `patch post invalid content`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
@@ -777,16 +777,16 @@ class PostServiceTest {
     @Test
     fun `patch post not owner`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val otherUserId = 10000L
+        val otherUserId = 10000
         val otherUser = User(id = otherUserId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
@@ -812,13 +812,13 @@ class PostServiceTest {
     @Test
     fun `patch post not found`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val notExistsPostId = 3L
+        val notExistsPostId = 3
 
         every { postRepository.findByIdOrNull(notExistsPostId) } returns null
 
@@ -833,13 +833,13 @@ class PostServiceTest {
     @Test
     fun `patch post with images`() {
         // given
-        val userId = 1L
+        val userId = 1
         val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
 
-        val boardId = 2L
+        val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val postId = 3L
+        val postId = 3
 
         val post = Post(
             id = postId,
