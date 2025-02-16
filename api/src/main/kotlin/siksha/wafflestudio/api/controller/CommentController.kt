@@ -39,7 +39,7 @@ class CommentController(
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
-        return commentService.getComments(request.userId,postId,  page, perPage)
+        return commentService.getComments(request.userId,postId, page, perPage)
     }
 
     @PostMapping("/community/comments")

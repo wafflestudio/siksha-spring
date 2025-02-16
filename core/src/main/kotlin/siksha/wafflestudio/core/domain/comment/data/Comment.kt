@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.LocalDateTime
@@ -34,6 +35,11 @@ class Comment(
     val content: String,
     var available: Boolean,
     val anonymous: Boolean,
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
+    @UpdateTimestamp
+    @Column(nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 )
