@@ -12,6 +12,10 @@ import siksha.wafflestudio.core.domain.post.data.Post
 @Repository
 interface PostRepository: JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = ["user"])
-    @Query("SELECT p FROM post p WHERE p.board.id = :boardId")
+    @Query("SELECT p FROM post p WHERE p.board.id = :boardId ORDER BY p.createdAt DESC")
     fun findPageByBoardId(@Param("boardId") boardId: Long, pageable: Pageable): Page<Post>
+
+    @EntityGraph(attributePaths = ["user"])
+    @Query("SELECT p FROM post p WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+    fun findPageByUserId(@Param("userId") userId: Long, pageable: Pageable): Page<Post>
 }

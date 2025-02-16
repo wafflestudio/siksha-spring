@@ -1,6 +1,7 @@
 plugins {
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
+    kotlin("plugin.serialization")
 }
 
 dependencies {
