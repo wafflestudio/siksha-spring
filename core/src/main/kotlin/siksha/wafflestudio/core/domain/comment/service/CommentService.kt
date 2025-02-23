@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.comment.service
 
 import jakarta.transaction.Transactional
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -25,6 +26,7 @@ import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
 import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
+import siksha.wafflestudio.core.domain.common.exception.CommentReportSaveFailedException
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
@@ -231,30 +233,33 @@ class CommentService(
         if (reason.length > 200 || reason.isBlank()) {
             throw InvalidCommentReportFormException()
         }
-        if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
-            throw CommentAlreadyReportedException()
-        }
 
-        val commentReport = commentReportRepository.save(
-            CommentReport(
-                comment = comment,
-                reason = reason,
-                reportingUser = reportingUser,
-                reportedUser = comment.user,
+        try {
+            val commentReport = commentReportRepository.save(
+                CommentReport(
+                    comment = comment,
+                    reason = reason,
+                    reportingUser = reportingUser,
+                    reportedUser = comment.user,
+                )
             )
-        )
 
-        //신고 5개 이상 누적시 숨기기
-        val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
-        if (commentReportCount >= 5 && comment.available) {
-            comment.available = false
-            commentRepository.save(comment)
+            //신고 5개 이상 누적시 숨기기
+            val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
+            if (commentReportCount >= 5 && comment.available) {
+                comment.available = false
+                commentRepository.save(comment)
+            }
+
+            return CommentsReportResponseDto(
+                id = commentReport.id,
+                reason = commentReport.reason,
+                commentId = commentReport.comment.id,
+            )
+        } catch (ex: DataIntegrityViolationException) {
+            throw CommentAlreadyReportedException()
+        } catch (ex: Exception) {
+            throw CommentReportSaveFailedException();
         }
-
-        return CommentsReportResponseDto(
-            id = commentReport.id,
-            reason = commentReport.reason,
-            commentId = commentReport.comment.id,
-        )
     }
 }

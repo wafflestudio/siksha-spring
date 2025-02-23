@@ -20,6 +20,7 @@ import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import org.junit.jupiter.api.Assertions.*
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 
@@ -234,7 +235,6 @@ class CommentServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { commentRepository.findByIdOrNull(commentId) } returns comment
-        every { commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser) } returns false
         every { commentReportRepository.save(any()) } returns commentReport
         every { commentReportRepository.countCommentReportByCommentId(commentId) } returns 1
 
@@ -248,7 +248,6 @@ class CommentServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(reportingUid) }
         verify { commentRepository.findByIdOrNull(commentId) }
-        verify { commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser) }
         verify { commentReportRepository.save(any()) }
     }
 
@@ -286,7 +285,7 @@ class CommentServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { commentRepository.findByIdOrNull(commentId) } returns comment
-        every { commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser) } returns true
+        every { commentReportRepository.save(any()) } throws DataIntegrityViolationException("")
 
         // then
         assertThrows<CommentAlreadyReportedException> {

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
@@ -448,7 +449,6 @@ class PostServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { postRepository.findByIdOrNull(postId) } returns post
-        every { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) } returns false
         every { postReportRepository.save(any()) } returns postReport
         every { postReportRepository.countPostReportByPostId(postId) } returns 1
 
@@ -462,7 +462,6 @@ class PostServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(reportingUid) }
         verify { postRepository.findByIdOrNull(postId) }
-        verify { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) }
         verify { postReportRepository.save(any()) }
         verify { postReportRepository.countPostReportByPostId(postId) }
     }
@@ -502,7 +501,7 @@ class PostServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { postRepository.findByIdOrNull(postId) } returns post
-        every { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) } returns true
+        every { postReportRepository.save(any()) } throws DataIntegrityViolationException("")
 
         // then
         assertThrows<PostAlreadyReportedException> {

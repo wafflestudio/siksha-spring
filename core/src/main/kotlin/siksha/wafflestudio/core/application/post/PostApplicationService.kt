@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.application.post
 
 import jakarta.transaction.Transactional
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
@@ -249,31 +250,34 @@ class PostApplicationService(
         if (reason.length > 200 || reason.isBlank()) {
             throw InvalidPostReportFormException()
         }
-        if (postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser)) {
-            throw PostAlreadyReportedException()
-        }
 
-        val postReport = postReportRepository.save(
-            PostReport(
-                post = post,
-                reason = reason,
-                reportingUser = reportingUser,
-                reportedUser = post.user,
+        try {
+            val postReport = postReportRepository.save(
+                PostReport(
+                    post = post,
+                    reason = reason,
+                    reportingUser = reportingUser,
+                    reportedUser = post.user,
+                )
             )
-        )
 
-        //신고 5개 이상 누적시 숨기기
-        val postReportCount = postReportRepository.countPostReportByPostId(postId)
-        if (postReportCount >= 5 && post.available) {
-            post.available = false
-            postRepository.save(post)
+            //신고 5개 이상 누적시 숨기기
+            val postReportCount = postReportRepository.countPostReportByPostId(postId)
+            if (postReportCount >= 5 && post.available) {
+                post.available = false
+                postRepository.save(post)
+            }
+
+            return PostsReportResponseDto(
+                id = postReport.id,
+                reason = postReport.reason,
+                postId = postReport.post.id,
+            )
+        } catch (ex: DataIntegrityViolationException) {
+            throw PostAlreadyReportedException()
+        } catch (ex: Exception) {
+            throw PostReportSaveFailedException();
         }
-
-        return PostsReportResponseDto(
-            id = postReport.id,
-            reason = postReport.reason,
-            postId = postReport.post.id,
-        )
     }
 }
 
