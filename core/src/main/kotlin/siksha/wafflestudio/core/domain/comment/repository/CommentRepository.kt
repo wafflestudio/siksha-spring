@@ -10,7 +10,7 @@ import siksha.wafflestudio.core.domain.comment.data.Comment
 
 interface CommentRepository : JpaRepository<Comment, Int> {
     @EntityGraph(attributePaths = ["user", "post"])
-    @Query("SELECT c FROM comment c WHERE c.post.id = :postId")
+    @Query("SELECT c FROM comment c WHERE c.post.id = :postId ORDER BY c.id DESC")
     fun findPageByPostId(@Param("postId") postId: Int, pageable: Pageable): Page<Comment>
 
     @Query("SELECT c FROM comment c WHERE c.post.id IN :postIds")
