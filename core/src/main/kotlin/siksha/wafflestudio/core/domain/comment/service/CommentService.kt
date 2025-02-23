@@ -227,7 +227,7 @@ class CommentService(
         } catch (ex: DataIntegrityViolationException) {
             throw CommentAlreadyReportedException()
         } catch (ex: Exception) {
-            throw CommentReportSaveFailedException();
+            throw CommentReportSaveFailedException()
         }
     }
 }

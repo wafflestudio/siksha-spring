@@ -276,7 +276,7 @@ class PostApplicationService(
         } catch (ex: DataIntegrityViolationException) {
             throw PostAlreadyReportedException()
         } catch (ex: Exception) {
-            throw PostReportSaveFailedException();
+            throw PostReportSaveFailedException()
         }
     }
 }
