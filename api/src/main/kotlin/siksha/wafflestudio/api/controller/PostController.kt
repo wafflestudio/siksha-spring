@@ -22,7 +22,7 @@ class PostController (
 ) {
     @GetMapping("/web")
     fun getPostsWithoutAuth(
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
@@ -32,7 +32,7 @@ class PostController (
     @GetMapping
     fun getPostsWithAuth(
         request: HttpServletRequest,
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
@@ -59,7 +59,7 @@ class PostController (
 
     @GetMapping("/{post_id}/web")
     fun getPostWithoutAuth(
-        @PathVariable("post_id") postId: Long,
+        @PathVariable("post_id") postId: Int,
     ): PostResponseDto? {
         return postApplicationService.getPost(postId, null)
     }
@@ -67,7 +67,7 @@ class PostController (
     @GetMapping("/{post_id}")
     fun getPostWithAuth(
         request: HttpServletRequest,
-        @PathVariable("post_id") postId: Long,
+        @PathVariable("post_id") postId: Int,
     ): PostResponseDto? {
         return postApplicationService.getPost(postId, request.userId)
     }
@@ -75,7 +75,7 @@ class PostController (
     @PatchMapping("/{post_id}")
     fun patchPost(
         request: HttpServletRequest,
-        @PathVariable("post_id") postId: Long,
+        @PathVariable("post_id") postId: Int,
         @ModelAttribute patchDto: PostPatchRequestDto,
     ): PostResponseDto? {
         return postApplicationService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
@@ -85,7 +85,7 @@ class PostController (
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deletePost(
         request: HttpServletRequest,
-        @PathVariable("post_id") postId: Long,
+        @PathVariable("post_id") postId: Int,
     ) {
         postApplicationService.deletePost(userId = request.userId, postId = postId)
     }
@@ -94,7 +94,7 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostLike(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
     ): PostResponseDto {
         return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
     }
@@ -104,7 +104,7 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostUnlike(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
     ): PostResponseDto {
         return postApplicationService.createOrUpdatePostLike(request.userId, postId, false)
     }
@@ -113,7 +113,7 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostReport(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
         @RequestBody createDto: CreatePostReportRequestDto,
     ): PostsReportResponseDto {
         return postApplicationService.createPostReport(request.userId, postId, createDto.reason)

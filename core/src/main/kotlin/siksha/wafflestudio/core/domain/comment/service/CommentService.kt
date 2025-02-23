@@ -26,7 +26,7 @@ class CommentService(
     private val commentReportRepository: CommentReportRepository,
 ) {
     fun getCommentsWithoutAuth(
-        postId: Long,
+        postId: Int,
         page: Int,
         perPage: Int,
     ): GetCommentsResponseDto {
@@ -61,8 +61,8 @@ class CommentService(
     }
 
     fun getComments(
-        userId: Long,
-        postId: Long,
+        userId: Int,
+        postId: Int,
         page: Int,
         perPage: Int,
     ):GetCommentsResponseDto {
@@ -102,7 +102,7 @@ class CommentService(
         )
     }
 
-    fun createComment(userId: Long, createDto: CreateCommentRequestDto): CommentResponseDto? {
+    fun createComment(userId: Int, createDto: CreateCommentRequestDto): CommentResponseDto? {
         val me = userRepository.findById(userId).getOrNull() ?: throw UserNotFoundException()
         val post = postRepository.findById(createDto.postId).getOrNull() ?: throw PostNotFoundException()
 
@@ -132,7 +132,7 @@ class CommentService(
         )
     }
 
-    fun patchComment(userId: Long, commentId: Long, patchDto: PatchCommentRequestDto): CommentResponseDto {
+    fun patchComment(userId: Int, commentId: Int, patchDto: PatchCommentRequestDto): CommentResponseDto {
         val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
         if (comment.user.id != userId) throw NotCommentOwnerException()
 
@@ -172,7 +172,7 @@ class CommentService(
         )
     }
 
-    fun deleteComment(userId: Long, commentId: Long) {
+    fun deleteComment(userId: Int, commentId: Int) {
         val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
         if (comment.user.id != userId) throw NotCommentOwnerException()
 
@@ -180,8 +180,8 @@ class CommentService(
     }
 
     fun createOrUpdateCommentLike(
-        userId: Long,
-        commentId: Long,
+        userId: Int,
+        commentId: Int,
         isLiked: Boolean,
     ): CommentResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
@@ -208,8 +208,8 @@ class CommentService(
 
     @Transactional
     fun createCommentReport(
-        reportingUid: Long,
-        commentId: Long,
+        reportingUid: Int,
+        commentId: Int,
         reason: String,
     ): CommentsReportResponseDto {
         val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()

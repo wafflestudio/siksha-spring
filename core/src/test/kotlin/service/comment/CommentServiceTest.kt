@@ -52,13 +52,13 @@ class CommentServiceTest {
     @Test
     fun `get comment without auth`() {
         // given
-        val postId = 1L
+        val postId = 1
         val page = 1
         val perPage = 10
         val totalCount = 1L
 
         val user = User(
-            id = 1L,
+            id = 1,
             nickname = "user",
             type = "test",
             identity = "test",
@@ -67,7 +67,7 @@ class CommentServiceTest {
         val board = Board(name = "test", description = "test")
 
         val comment = Comment(
-            id = 1L,
+            id = 1,
             post = Post(id = postId, user =  user, board = board, title = "title", content = "content", anonymous = false, available = true),
             content = "Test comment",
             user = user,
@@ -97,8 +97,8 @@ class CommentServiceTest {
     @Test
     fun `create comment like`() {
         // given
-        val userId = 1L
-        val commentId = 2L
+        val userId = 1
+        val commentId = 2
         val isLiked = true
 
         val user = User(
@@ -143,8 +143,8 @@ class CommentServiceTest {
     @Test
     fun `update comment like`() {
         // given
-        val userId = 1L
-        val commentId = 2L
+        val userId = 1
+        val commentId = 2
         val isLiked = false
 
         val user = User(
@@ -195,9 +195,9 @@ class CommentServiceTest {
     @Test
     fun `create comment report`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val commentId = 2L
+        val reportingUid = 1
+        val reportedUid = 2
+        val commentId = 2
         val reason = "reason"
 
         val reportingUser = User(
@@ -225,7 +225,7 @@ class CommentServiceTest {
         )
 
         val commentReport = CommentReport(
-            id = 100L,
+            id = 100,
             comment = comment,
             reason = reason,
             reportingUser = reportingUser,
@@ -255,9 +255,9 @@ class CommentServiceTest {
     @Test
     fun `comment already reported`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val commentId = 2L
+        val reportingUid = 1
+        val reportedUid = 2
+        val commentId = 2
         val reason = "reason"
 
         val reportingUser = User(
@@ -297,9 +297,9 @@ class CommentServiceTest {
     @Test
     fun `invalid comment report form`() {
         // given
-        val reportingUid = 1L
-        val reportedUid = 2L
-        val commentId = 2L
+        val reportingUid = 1
+        val reportedUid = 2
+        val commentId = 2
         val reason = "200자 초과".repeat(100)
 
         val reportingUser = User(

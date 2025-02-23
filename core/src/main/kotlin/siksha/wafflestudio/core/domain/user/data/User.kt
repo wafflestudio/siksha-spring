@@ -9,8 +9,8 @@ import java.time.LocalDateTime
 @Table(name = "user")
 class User(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: Long = 0L,
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int = 0,
     val type: String,
     val identity: String,
     val etc: String? = null,

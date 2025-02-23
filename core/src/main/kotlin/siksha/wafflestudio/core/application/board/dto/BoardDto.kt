@@ -4,7 +4,7 @@ import siksha.wafflestudio.core.domain.board.data.Board
 import java.sql.Timestamp
 
 data class BoardDto(
-    val id: Long,
+    val id: Int,
     val name: String,
     val description: String,
     val type: Int,

@@ -11,8 +11,8 @@ import java.sql.Timestamp
 @Table(name = "restaurant")
 class Restaurant(
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: Long = 0L,
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int = 0,
     val code: String,
     val nameKr: String?,
     val nameEn: String?,

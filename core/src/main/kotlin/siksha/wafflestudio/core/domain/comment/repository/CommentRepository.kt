@@ -8,16 +8,16 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import siksha.wafflestudio.core.domain.comment.data.Comment
 
-interface CommentRepository : JpaRepository<Comment, Long> {
+interface CommentRepository : JpaRepository<Comment, Int> {
     @EntityGraph(attributePaths = ["user", "post"])
     @Query("SELECT c FROM comment c WHERE c.post.id = :postId ORDER BY c.id DESC")
-    fun findPageByPostId(@Param("postId") postId: Long, pageable: Pageable): Page<Comment>
+    fun findPageByPostId(@Param("postId") postId: Int, pageable: Pageable): Page<Comment>
 
     @Query("SELECT c FROM comment c WHERE c.post.id IN :postIds")
-    fun findByPostIdIn(@Param("postIds") postIds: List<Long>): List<Comment>
+    fun findByPostIdIn(@Param("postIds") postIds: List<Int>): List<Comment>
 
     @Query("SELECT COUNT(c) FROM comment c WHERE c.post.id = :postId")
-    fun countByPostId(@Param("postId") postId: Long): Int
+    fun countByPostId(@Param("postId") postId: Int): Int
 
-    fun countCommentsByPostId(postId: Long): Long
+    fun countCommentsByPostId(postId: Int): Int
 }

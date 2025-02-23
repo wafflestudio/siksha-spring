@@ -17,7 +17,7 @@ class BoardController(
 
     @GetMapping("/{board_id}")
     fun getBoard(
-        @PathVariable("board_id") boardId: Long,
+        @PathVariable("board_id") boardId: Int,
     ): Optional<BoardDto> = Optional.ofNullable(boardApplicationService.getBoardById(boardId))
 
     @PostMapping

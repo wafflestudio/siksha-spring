@@ -10,11 +10,11 @@ import kotlin.jvm.optionals.getOrNull
 class RestaurantService(
     private val restaurantRepository: RestaurantRepository,
 ) {
-    fun getRestaurants(userId: Long): List<Restaurant> {
+    fun getRestaurants(userId: Int): List<Restaurant> {
         return restaurantRepository.findAll()
     }
 
-    fun getRestaurant(restaurantId: Long): Restaurant {
+    fun getRestaurant(restaurantId: Int): Restaurant {
         return restaurantRepository.findById(restaurantId).getOrNull() ?: throw RestaurantNotFound()
     }
 }
