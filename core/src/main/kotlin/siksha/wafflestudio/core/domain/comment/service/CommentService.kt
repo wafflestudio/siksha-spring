@@ -52,19 +52,11 @@ class CommentService(
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
-            CommentResponseDto(
-                id = comment.id,
-                postId = comment.post.id,
-                content = comment.content,
-                createdAt = comment.createdAt,
-                updatedAt = comment.updatedAt,
-                nickname = if (comment.anonymous) null else comment.user.nickname,
-                profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-                available = comment.available,
-                anonymous = comment.anonymous,
+            CommentResponseDto.of(
+                comment = comment,
                 isMine = false,
-                likeCnt = likeCount,
-                isLiked = false,
+                likeCount = likeCount,
+                isLiked = false
             )
         }
 
@@ -94,19 +86,11 @@ class CommentService(
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
             val isLiked = comment.id in commentIdsILiked
 
-            CommentResponseDto(
-                id = comment.id,
-                postId = comment.post.id,
-                content = comment.content,
-                createdAt = comment.createdAt,
-                updatedAt = comment.updatedAt,
-                nickname = if (comment.anonymous) null else comment.user.nickname,
-                profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-                available = comment.available,
-                anonymous = comment.anonymous,
+            CommentResponseDto.of(
+                comment = comment,
                 isMine = comment.user.id == userId,
-                likeCnt = likeCount,
-                isLiked = isLiked,
+                likeCount = likeCount,
+                isLiked = isLiked
             )
         }
 
@@ -131,18 +115,10 @@ class CommentService(
             )
         )
 
-        return CommentResponseDto(
-            id = comment.id,
-            postId = comment.post.id,
-            content = comment.content,
-            createdAt = comment.createdAt,
-            updatedAt = comment.updatedAt,
-            nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-            available = comment.available,
-            anonymous = comment.anonymous,
+        return CommentResponseDto.of(
+            comment = comment,
             isMine = true,
-            likeCnt = 0,
+            likeCount = 0,
             isLiked = false,
         )
     }
@@ -171,18 +147,10 @@ class CommentService(
         val commentLikes = commentLikeRepository.findByCommentId(commentId)
         val isLiked = commentLikes.any { it.user.id == userId }
 
-        return CommentResponseDto(
-            id = newComment.id,
-            postId = newComment.post.id,
-            content = newComment.content,
-            createdAt = newComment.createdAt,
-            updatedAt = newComment.updatedAt,
-            nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-            available = newComment.available,
-            anonymous = newComment.anonymous,
+        return CommentResponseDto.of(
+            comment = comment,
             isMine = true,
-            likeCnt = commentLikes.count(),
+            likeCount = commentLikes.count(),
             isLiked = isLiked,
         )
     }
