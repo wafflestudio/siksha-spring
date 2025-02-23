@@ -14,7 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.comment.dto.*
+import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentReportRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.CommentsReportResponseDto
 import siksha.wafflestudio.core.domain.comment.service.CommentService
 
 @RestController
