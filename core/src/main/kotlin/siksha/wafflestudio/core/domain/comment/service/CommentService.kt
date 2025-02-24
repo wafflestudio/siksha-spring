@@ -26,14 +26,15 @@ class CommentService(
     private val commentReportRepository: CommentReportRepository,
 ) {
     fun getCommentsWithoutAuth(
-        postId: Long,
+        postId: Int,
         page: Int,
         perPage: Int,
     ): GetCommentsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
-        val commentIdToCommentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id }).groupBy { it.comment.id }
+        val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
             CommentResponseDto(
@@ -60,16 +61,17 @@ class CommentService(
     }
 
     fun getComments(
-        userId: Long,
-        postId: Long,
+        userId: Int,
+        postId: Int,
         page: Int,
         perPage: Int,
     ):GetCommentsResponseDto {
-        val pageable = PageRequest.of(page, perPage)
+        val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
+        if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
         val comments = commentsPage.content
 
-        val commentLikes = commentLikeRepository.findByCommentIdIn(comments.map { it.id })
+        val commentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id })
         val commentIdsILiked = commentLikes.filter { it.user.id == userId }.map { it.comment.id }.toSet()
         val commentIdToCommentLikes = commentLikes.groupBy { it.comment.id }
 
@@ -100,7 +102,7 @@ class CommentService(
         )
     }
 
-    fun createComment(userId: Long, createDto: CreateCommentRequestDto): CommentResponseDto? {
+    fun createComment(userId: Int, createDto: CreateCommentRequestDto): CommentResponseDto? {
         val me = userRepository.findById(userId).getOrNull() ?: throw UserNotFoundException()
         val post = postRepository.findById(createDto.postId).getOrNull() ?: throw PostNotFoundException()
 
@@ -130,7 +132,7 @@ class CommentService(
         )
     }
 
-    fun patchComment(userId: Long, commentId: Long, patchDto: PatchCommentRequestDto): CommentResponseDto {
+    fun patchComment(userId: Int, commentId: Int, patchDto: PatchCommentRequestDto): CommentResponseDto {
         val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
         if (comment.user.id != userId) throw NotCommentOwnerException()
 
@@ -170,17 +172,16 @@ class CommentService(
         )
     }
 
-    fun deleteComment(userId: Long, commentId: Long) {
+    fun deleteComment(userId: Int, commentId: Int) {
         val comment = commentRepository.findById(commentId).getOrNull() ?: throw CommentNotFoundException()
         if (comment.user.id != userId) throw NotCommentOwnerException()
 
         commentRepository.deleteById(commentId)
-        commentLikeRepository.deleteByCommentId(commentId)
     }
 
     fun createOrUpdateCommentLike(
-        userId: Long,
-        commentId: Long,
+        userId: Int,
+        commentId: Int,
         isLiked: Boolean,
     ): CommentResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
@@ -196,7 +197,7 @@ class CommentService(
         commentLike.isLiked = isLiked
         commentLikeRepository.save(commentLike)
 
-        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndLiked(commentId)
+        val likeCount = commentLikeRepository.countCommentLikesByCommentIdAndIsLiked(commentId)
         return CommentResponseDto.of(
             comment = comment,
             isMine = comment.user.id == userId,
@@ -207,8 +208,8 @@ class CommentService(
 
     @Transactional
     fun createCommentReport(
-        reportingUid: Long,
-        commentId: Long,
+        reportingUid: Int,
+        commentId: Int,
         reason: String,
     ): CommentsReportResponseDto {
         val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()

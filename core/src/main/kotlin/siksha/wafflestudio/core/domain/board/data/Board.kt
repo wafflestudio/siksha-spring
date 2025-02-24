@@ -15,7 +15,7 @@ import java.sql.Timestamp
 data class Board(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L,
+    val id: Int = 0,
     @Column(nullable = false, unique = true, length = 200)
     val name: String,
     @Column(nullable = false, columnDefinition = "TEXT")

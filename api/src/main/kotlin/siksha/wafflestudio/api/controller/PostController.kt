@@ -6,23 +6,23 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.application.post.dto.*
+import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
+import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
+import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.application.post.PostApplicationService
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import java.net.URL
+import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
 
 @RestController
 @RequestMapping("/community/posts")
 @Validated
 class PostController (
     private val postApplicationService: PostApplicationService,
-    private val s3Service: S3Service, // FIXME
 ) {
     @GetMapping("/web")
     fun getPostsWithoutAuth(
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
@@ -32,7 +32,7 @@ class PostController (
     @GetMapping
     fun getPostsWithAuth(
         request: HttpServletRequest,
-        @RequestParam(name = "board_id") boardId: Long,
+        @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetPostsResponseDto? {
@@ -43,16 +43,58 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPost(
         request: HttpServletRequest,
-        @ModelAttribute post: PostCreateDto,
+        @ModelAttribute createDto: PostCreateRequestDto,
     ): PostResponseDto? {
-        return postApplicationService.createPost(request.userId, post) // FIXME: request.userId로 수정
+        return postApplicationService.createPost(request.userId, createDto)
+    }
+
+    @GetMapping("/me")
+    fun getMyPosts(
+        request: HttpServletRequest,
+        @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
+        @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
+    ): GetPostsResponseDto? {
+        return postApplicationService.getMyPosts(page, perPage, request.userId)
+    }
+
+    @GetMapping("/{post_id}/web")
+    fun getPostWithoutAuth(
+        @PathVariable("post_id") postId: Int,
+    ): PostResponseDto? {
+        return postApplicationService.getPost(postId, null)
+    }
+
+    @GetMapping("/{post_id}")
+    fun getPostWithAuth(
+        request: HttpServletRequest,
+        @PathVariable("post_id") postId: Int,
+    ): PostResponseDto? {
+        return postApplicationService.getPost(postId, request.userId)
+    }
+
+    @PatchMapping("/{post_id}")
+    fun patchPost(
+        request: HttpServletRequest,
+        @PathVariable("post_id") postId: Int,
+        @ModelAttribute patchDto: PostPatchRequestDto,
+    ): PostResponseDto? {
+        return postApplicationService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
+    }
+
+    @DeleteMapping("/{post_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deletePost(
+        request: HttpServletRequest,
+        @PathVariable("post_id") postId: Int,
+    ) {
+        postApplicationService.deletePost(userId = request.userId, postId = postId)
     }
 
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostLike(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
     ): PostResponseDto {
         return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
     }
@@ -62,7 +104,7 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostUnlike(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
     ): PostResponseDto {
         return postApplicationService.createOrUpdatePostLike(request.userId, postId, false)
     }
@@ -71,7 +113,7 @@ class PostController (
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostReport(
         request: HttpServletRequest,
-        @PathVariable postId: Long,
+        @PathVariable postId: Int,
         @RequestBody createDto: CreatePostReportRequestDto,
     ): PostsReportResponseDto {
         return postApplicationService.createPostReport(request.userId, postId, createDto.reason)

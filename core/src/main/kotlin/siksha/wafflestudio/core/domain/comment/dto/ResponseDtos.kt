@@ -14,8 +14,8 @@ data class GetCommentsResponseDto(
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class CommentResponseDto(
-    val id: Long,
-    val postId: Long,
+    val id: Int,
+    val postId: Int,
     val content: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
@@ -56,7 +56,7 @@ data class CommentResponseDto(
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class CommentsReportResponseDto(
-    val id: Long,
+    val id: Int,
     val reason: String,
-    val commentId: Long,
+    val commentId: Int,
 )

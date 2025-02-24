@@ -6,8 +6,8 @@ import siksha.wafflestudio.core.domain.comment.data.CommentReport
 import siksha.wafflestudio.core.domain.user.data.User
 
 @Repository
-interface CommentReportRepository: JpaRepository<CommentReport, Long> {
-    fun existsByCommentIdAndReportingUser(commentId: Long, reportingUser: User): Boolean
+interface CommentReportRepository: JpaRepository<CommentReport, Int> {
+    fun existsByCommentIdAndReportingUser(commentId: Int, reportingUser: User): Boolean
 
-    fun countCommentReportByCommentId(commentId: Long): Int
+    fun countCommentReportByCommentId(commentId: Int): Int
 }

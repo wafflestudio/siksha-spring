@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 class Image(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0L,
+    val id: Int = 0,
 
     @Column(name = "`key`", length = 60)
     val key: String,
@@ -22,7 +22,7 @@ class Image(
 
     // FIXME: 현재 DB에 외래키 안 걸려 있음
     @Column(nullable = false)
-    val userId: Long,
+    val userId: Int,
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "user_id", nullable = false)
@@ -39,6 +39,7 @@ class Image(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 )
 
+// FIXME: POST 외래키 걸기
 enum class ImageCategory {
     POST,
     PROFILE,

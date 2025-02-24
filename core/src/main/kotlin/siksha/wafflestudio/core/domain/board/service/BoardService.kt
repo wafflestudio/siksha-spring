@@ -24,7 +24,7 @@ class BoardService(
 
     // TODO: only admin can create board
     @Transactional
-    fun addBoard(userId: Long, boardCreateDTO: BoardCreateDto): BoardDto {
+    fun addBoard(userId: Int, boardCreateDTO: BoardCreateDto): BoardDto {
         userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardCreateDTO.toEntity()
         validateBoard(board)
@@ -38,7 +38,7 @@ class BoardService(
         }
     }
 
-    fun getBoardById(id: Long): BoardDto {
+    fun getBoardById(id: Int): BoardDto {
         val board = boardRepository.findByIdOrNull(id) ?: throw BoardNotFoundException()
         return BoardDto.from(board)
     }

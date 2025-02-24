@@ -1,10 +1,13 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     show-sql: true
+  flyway:
+    enabled: true
+#    baseline-on-migrate: true
 
   datasource:
     url:

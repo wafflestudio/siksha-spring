@@ -9,7 +9,7 @@ import siksha.wafflestudio.core.domain.user.data.User
 
 data class PostCreateDto(
     @JsonProperty("board_id")
-    val boardId: Long,
+    val boardId: Int,
     val title: String,
     val content: String,
     val anonymous: Boolean?,
@@ -30,7 +30,3 @@ data class PostCreateDto(
         )
     }
 }
-
-data class CreatePostReportRequestDto(
-    val reason: String,
-)

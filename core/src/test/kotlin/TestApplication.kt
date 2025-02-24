@@ -39,19 +39,6 @@ class TestApplication(
     @EventListener(BeforeTestMethodEvent::class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     fun beforeTest() {
-        val ddlDir = resourceLoader.getResource("classpath:/schema/")
-
-        if (ddlDir.uri.scheme == "jar") {
-            runCatching { FileSystems.newFileSystem(ddlDir.uri, emptyMap<String, Any>()) }
-        }
-
-        val ddls = ddlDir.uri.toPath().listDirectoryEntries("*.sql").sortedBy { it.name }
-
-        for (ddl in ddls) {
-            ddl.readText().split(";")
-                .filter { it.isNotBlank() }
-                .forEach { sql -> jdbcTemplate.execute(sql) }
-        }
 
         val dmlDir = resourceLoader.getResource("classpath:/data/")
 
