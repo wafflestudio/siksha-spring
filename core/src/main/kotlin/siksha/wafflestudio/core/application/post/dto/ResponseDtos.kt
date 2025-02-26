@@ -3,15 +3,18 @@ package siksha.wafflestudio.core.application.post.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.post.data.Post
-import siksha.wafflestudio.core.domain.post.data.PostLike
-import siksha.wafflestudio.core.domain.user.data.User
 import java.time.LocalDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class GetPostsResponseDto(
+data class PaginatedPostsResponseDto(
     val result: List<PostResponseDto>,
     val totalCount: Long,
     val hasNext: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class PostsResponseDto(
+    val result: List<PostResponseDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

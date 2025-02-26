@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import siksha.wafflestudio.core.application.post.dto.*
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
@@ -14,12 +15,7 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
 import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedException
-import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
-import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.*
-import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
@@ -49,13 +45,12 @@ class PostApplicationService(
     private val postDomainService: PostDomainService,
     private val s3Service: S3Service,
 ){
-    // TODO: parse etc
     fun getPosts(
         boardId: Int,
         page: Int,
         perPage: Int,
         userId: Int?,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         if (!boardRepository.existsById(boardId)) throw BoardNotFoundException()
 
         val pageable = PageRequest.of(page-1, perPage)
@@ -65,7 +60,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -76,7 +71,7 @@ class PostApplicationService(
         page: Int,
         perPage: Int,
         userId: Int,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val postsPage = postRepository.findPageByUserId(userId, pageable)
 
@@ -84,7 +79,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -273,6 +268,29 @@ class PostApplicationService(
             id = postReport.id,
             reason = postReport.reason,
             postId = postReport.post.id,
+        )
+    }
+
+    fun getTrendingPosts(
+        likes: Int,
+        createdBefore: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = LocalDateTime.now().minusDays(createdBefore.toLong()))
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
+        )
+    }
+
+    fun getBestPosts(
+        likes: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findBest(minimumLikes = likes)
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
         )
     }
 }

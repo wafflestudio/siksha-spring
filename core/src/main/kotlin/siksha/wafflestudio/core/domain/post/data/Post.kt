@@ -37,4 +37,7 @@ class Post(
     @Column(nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
     val etc: String? = null,
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    val likes: List<PostLike> = mutableListOf(),
 )

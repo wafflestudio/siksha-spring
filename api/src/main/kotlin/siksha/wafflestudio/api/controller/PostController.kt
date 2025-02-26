@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.application.post.dto.*
-import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
+import siksha.wafflestudio.core.application.post.dto.PaginatedPostsResponseDto
 import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
 import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.application.post.PostApplicationService
@@ -25,7 +25,7 @@ class PostController (
         @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): GetPostsResponseDto? {
+    ): PaginatedPostsResponseDto? {
         return postApplicationService.getPosts(boardId, page, perPage, null)
     }
 
@@ -35,7 +35,7 @@ class PostController (
         @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): GetPostsResponseDto? {
+    ): PaginatedPostsResponseDto? {
         return postApplicationService.getPosts(boardId, page, perPage, request.userId)
     }
 
@@ -53,7 +53,7 @@ class PostController (
         request: HttpServletRequest,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): GetPostsResponseDto? {
+    ): PaginatedPostsResponseDto? {
         return postApplicationService.getMyPosts(page, perPage, request.userId)
     }
 
@@ -117,5 +117,37 @@ class PostController (
         @RequestBody createDto: CreatePostReportRequestDto,
     ): PostsReportResponseDto {
         return postApplicationService.createPostReport(request.userId, postId, createDto.reason)
+    }
+
+    @GetMapping("/popular/trending")
+    fun getTrendingPosts(
+        request: HttpServletRequest,
+        @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
+        @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
+    ): PostsResponseDto? {
+        return postApplicationService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = request.userId)
+    }
+
+    @GetMapping("/popular/trending/web")
+    fun getTrendingPostsWithoutAuth(
+        @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
+        @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
+    ): PostsResponseDto? {
+        return postApplicationService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = null)
+    }
+
+    @GetMapping("/popular/best")
+    fun getBestPosts(
+        request: HttpServletRequest,
+        @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
+    ): PostsResponseDto? {
+        return postApplicationService.getBestPosts(likes = likes, userId = request.userId)
+    }
+
+    @GetMapping("/popular/best/web")
+    fun getBestPostsWithoutAuth(
+        @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
+    ): PostsResponseDto? {
+        return postApplicationService.getBestPosts(likes = likes, userId = null)
     }
 }
