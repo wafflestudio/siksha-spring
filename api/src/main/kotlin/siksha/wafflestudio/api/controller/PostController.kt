@@ -1,24 +1,24 @@
 package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Validator
 import jakarta.validation.constraints.Min
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.application.post.dto.*
-import siksha.wafflestudio.core.application.post.dto.PaginatedPostsResponseDto
-import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostResponseDto
-import siksha.wafflestudio.core.application.post.PostApplicationService
-import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
+import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
+import siksha.wafflestudio.core.domain.post.dto.*
+import siksha.wafflestudio.core.domain.post.service.PostService
 
 @RestController
 @RequestMapping("/community/posts")
 @Validated
 class PostController (
-    private val postApplicationService: PostApplicationService,
+    private val postService: PostService,
+    private val validator: Validator,
 ) {
     @GetMapping("/web")
     fun getPostsWithoutAuth(
@@ -26,7 +26,7 @@ class PostController (
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): PaginatedPostsResponseDto? {
-        return postApplicationService.getPosts(boardId, page, perPage, null)
+        return postService.getPosts(boardId, page, perPage, null)
     }
 
     @GetMapping
@@ -36,16 +36,29 @@ class PostController (
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): PaginatedPostsResponseDto? {
-        return postApplicationService.getPosts(boardId, page, perPage, request.userId)
+        return postService.getPosts(boardId, page, perPage, request.userId)
     }
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
     fun createPost(
         request: HttpServletRequest,
-        @ModelAttribute createDto: PostCreateRequestDto,
+        @RequestParam("board_id") boardId: Int,
+        @RequestParam("title") title: String,
+        @RequestParam("content") content: String,
+        @RequestParam("anonymous", required = false) anonymous: Boolean? = false,
+        @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
-        return postApplicationService.createPost(request.userId, createDto)
+        val createDto = PostCreateRequestDto(
+            boardId = boardId,
+            title = title,
+            content = content,
+            anonymous = anonymous ?: false,
+            images = images
+        )
+        val violations = validator.validate(createDto)
+        if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
+        return postService.createPost(request.userId, createDto)
     }
 
     @GetMapping("/me")
@@ -54,14 +67,14 @@ class PostController (
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): PaginatedPostsResponseDto? {
-        return postApplicationService.getMyPosts(page, perPage, request.userId)
+        return postService.getMyPosts(page, perPage, request.userId)
     }
 
     @GetMapping("/{post_id}/web")
     fun getPostWithoutAuth(
         @PathVariable("post_id") postId: Int,
     ): PostResponseDto? {
-        return postApplicationService.getPost(postId, null)
+        return postService.getPost(postId, null)
     }
 
     @GetMapping("/{post_id}")
@@ -69,16 +82,27 @@ class PostController (
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
     ): PostResponseDto? {
-        return postApplicationService.getPost(postId, request.userId)
+        return postService.getPost(postId, request.userId)
     }
 
-    @PatchMapping("/{post_id}")
+    @PatchMapping("/{post_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun patchPost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
-        @ModelAttribute patchDto: PostPatchRequestDto,
+        @RequestParam("title") title: String?,
+        @RequestParam("content") content: String?,
+        @RequestParam("anonymous", required = false) anonymous: Boolean? = false,
+        @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
-        return postApplicationService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
+        val patchDto = PostPatchRequestDto(
+            title = title,
+            content = content,
+            anonymous = anonymous ?: false,
+            images = images
+        )
+        val violations = validator.validate(patchDto)
+        if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
+        return postService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
     }
 
     @DeleteMapping("/{post_id}")
@@ -87,7 +111,7 @@ class PostController (
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
     ) {
-        postApplicationService.deletePost(userId = request.userId, postId = postId)
+        postService.deletePost(userId = request.userId, postId = postId)
     }
 
     @PostMapping("/{postId}/like")
@@ -96,7 +120,7 @@ class PostController (
         request: HttpServletRequest,
         @PathVariable postId: Int,
     ): PostResponseDto {
-        return postApplicationService.createOrUpdatePostLike(request.userId, postId, true)
+        return postService.createOrUpdatePostLike(request.userId, postId, true)
     }
 
     //TODO: delete 방식으로 수정
@@ -106,7 +130,7 @@ class PostController (
         request: HttpServletRequest,
         @PathVariable postId: Int,
     ): PostResponseDto {
-        return postApplicationService.createOrUpdatePostLike(request.userId, postId, false)
+        return postService.createOrUpdatePostLike(request.userId, postId, false)
     }
 
     @PostMapping("/{postId}/report")
@@ -114,9 +138,9 @@ class PostController (
     fun createPostReport(
         request: HttpServletRequest,
         @PathVariable postId: Int,
-        @RequestBody createDto: CreatePostReportRequestDto,
+        @RequestBody createDto: siksha.wafflestudio.core.domain.post.dto.CreatePostReportRequestDto,
     ): PostsReportResponseDto {
-        return postApplicationService.createPostReport(request.userId, postId, createDto.reason)
+        return postService.createPostReport(request.userId, postId, createDto.reason)
     }
 
     @GetMapping("/popular/trending")
@@ -125,7 +149,7 @@ class PostController (
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
         @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
     ): PostsResponseDto? {
-        return postApplicationService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = request.userId)
+        return postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = request.userId)
     }
 
     @GetMapping("/popular/trending/web")
@@ -133,7 +157,7 @@ class PostController (
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
         @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
     ): PostsResponseDto? {
-        return postApplicationService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = null)
+        return postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = null)
     }
 
     @GetMapping("/popular/best")
@@ -141,13 +165,13 @@ class PostController (
         request: HttpServletRequest,
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
     ): PostsResponseDto? {
-        return postApplicationService.getBestPosts(likes = likes, userId = request.userId)
+        return postService.getBestPosts(likes = likes, userId = request.userId)
     }
 
     @GetMapping("/popular/best/web")
     fun getBestPostsWithoutAuth(
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
     ): PostsResponseDto? {
-        return postApplicationService.getBestPosts(likes = likes, userId = null)
+        return postService.getBestPosts(likes = likes, userId = null)
     }
 }
