@@ -1,10 +1,7 @@
 package siksha.wafflestudio.core.domain.post.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.common.validator.NullOrNotBlank
@@ -13,7 +10,7 @@ import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.util.EtcUtils
 
 data class PostCreateRequestDto(
-    @JsonProperty("board_id") val boardId: Int,
+    val boardId: Int,
 
     @field:NotBlank(message = "제목은 1자에서 200자 사이여야 합니다.")
     @field:Size(max = 200, message = "제목은 1자에서 200자 사이여야 합니다.")
