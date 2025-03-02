@@ -1,5 +1,7 @@
 package siksha.wafflestudio.core.domain.post.dto
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.post.data.Post
@@ -13,26 +15,42 @@ data class PaginatedPostsResponseDto(
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class PostsResponseDto(
+data class PostsResponseDto @JsonCreator constructor (
+    @JsonProperty("result")
     val result: List<PostResponseDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class PostResponseDto(
+data class PostResponseDto @JsonCreator constructor (
+    @JsonProperty("id")
     val id: Int,
+    @JsonProperty("boardId")
     val boardId: Int,
+    @JsonProperty("title")
     val title: String,
+    @JsonProperty("content")
     val content: String,
+    @JsonProperty("createdAt")
     val createdAt: LocalDateTime,
+    @JsonProperty("updatedAt")
     val updatedAt: LocalDateTime,
+    @JsonProperty("nickname")
     val nickname: String?,
+    @JsonProperty("profileUrl")
     val profileUrl: String?,
+    @JsonProperty("available")
     val available: Boolean,
+    @JsonProperty("anonymous")
     val anonymous: Boolean,
+    @JsonProperty("isMine")
     val isMine: Boolean,
+    @JsonProperty("etc")
     val etc: String?,
+    @JsonProperty("likeCnt")
     val likeCnt: Int,
+    @JsonProperty("commentCnt")
     val commentCnt: Int,
+    @JsonProperty("isLiked")
     val isLiked: Boolean,
 ) {
     companion object {

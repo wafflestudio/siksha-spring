@@ -1,5 +1,7 @@
 package siksha.wafflestudio.core.domain.board
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import siksha.wafflestudio.core.domain.board.data.Board
 import java.sql.Timestamp
 
@@ -17,12 +19,18 @@ data class BoardCreateDto(
     }
 }
 
-data class BoardDto(
+data class BoardDto @JsonCreator constructor (
+    @JsonProperty("id")
     val id: Int,
+    @JsonProperty("name")
     val name: String,
+    @JsonProperty("description")
     val description: String,
+    @JsonProperty("type")
     val type: Int,
+    @JsonProperty("createdAt")
     val createdAt: Timestamp,
+    @JsonProperty("updatedAt")
     val updatedAt: Timestamp,
 ) {
     companion object {

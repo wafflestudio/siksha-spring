@@ -21,6 +21,7 @@ class BoardController(
     fun getBoard(
         @PathVariable("board_id") boardId: Int,
     ): Optional<BoardDto> = Optional.ofNullable(boardService.getBoardById(boardId))
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun addBoard(
