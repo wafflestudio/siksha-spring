@@ -3,8 +3,8 @@ package siksha.wafflestudio.core.domain.image.data
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import siksha.wafflestudio.core.domain.image.repository.ImageRepository
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 @Entity(name = "image")
 @Table(name = "image")
@@ -32,11 +32,11 @@ class Image(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )
 
 // FIXME: POST 외래키 걸기

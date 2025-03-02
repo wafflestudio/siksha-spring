@@ -2,14 +2,15 @@ package siksha.wafflestudio.core.application.board.dto
 
 import siksha.wafflestudio.core.domain.board.data.Board
 import java.sql.Timestamp
+import java.time.OffsetDateTime
 
 data class BoardDto(
     val id: Int,
     val name: String,
     val description: String,
     val type: Int,
-    val createdAt: Timestamp,
-    val updatedAt: Timestamp,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime,
 ) {
     companion object {
         fun from(board: Board): BoardDto {

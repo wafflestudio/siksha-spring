@@ -14,7 +14,7 @@ import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -146,7 +146,7 @@ class CommentService(
                     available = comment.available,
                     anonymous = patchDto.anonymous ?: comment.anonymous,
                     createdAt = comment.createdAt,
-                    updatedAt = LocalDateTime.now(),
+                    updatedAt = OffsetDateTime.now(),
                 )
             )
         }.getOrElse {

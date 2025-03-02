@@ -3,9 +3,7 @@ package siksha.wafflestudio.core.application.post.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.post.data.Post
-import siksha.wafflestudio.core.domain.post.data.PostLike
-import siksha.wafflestudio.core.domain.user.data.User
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class GetPostsResponseDto(
@@ -20,8 +18,8 @@ data class PostResponseDto(
     val boardId: Int,
     val title: String,
     val content: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime,
     val nickname: String?,
     val profileUrl: String?,
     val available: Boolean,
