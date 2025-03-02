@@ -20,6 +20,8 @@ class InvalidPageNumberException(): CommunityException(HttpStatus.NOT_FOUND, "�
 
 class BoardNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 게시판을 찾을 수 없습니다.")
 
+class BoardSaveFailedException(message: String?): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시판 저장에 실패하였습니다 - $message")
+
 class UserNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다.")
 
 class PostNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 글을 찾을 수 없습니다.")
@@ -39,6 +41,10 @@ class InvalidCommentReportFormException() : CommunityException(HttpStatus.BAD_RE
 class PostAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "이미 신고된 글입니다.")
 
 class InvalidPostReportFormException() : CommunityException(HttpStatus.BAD_REQUEST, "이유는 1자에서 200자 사이여야 합니다.")
+
+class CommentReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 신고에 실패하였습니다.")
+
+class PostReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 신고에 실패하였습니다.")
 
 enum class NotFoundItem(val value: String) {
     USER("유저"),

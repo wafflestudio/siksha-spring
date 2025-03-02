@@ -1,16 +1,25 @@
-package siksha.wafflestudio.core.application.post.dto
+package siksha.wafflestudio.core.domain.post.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.board.data.Board
+import siksha.wafflestudio.core.domain.common.validator.NullOrNotBlank
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.util.EtcUtils
 
 data class PostCreateRequestDto(
-    @JsonProperty("board_id") val boardId: Int,
+    val boardId: Int,
+
+    @field:NotBlank(message = "제목은 1자에서 200자 사이여야 합니다.")
+    @field:Size(max = 200, message = "제목은 1자에서 200자 사이여야 합니다.")
     val title: String,
+
+    @field:NotBlank(message = "내용은 1자에서 1000자 사이여야 합니다.")
+    @field:Size(max = 200, message = "내용은 1자에서 1000자 사이여야 합니다.")
     val content: String,
+
     val anonymous: Boolean?,
     val images: List<MultipartFile>?
 ){
@@ -31,8 +40,14 @@ data class PostCreateRequestDto(
 }
 
 data class PostPatchRequestDto(
+    @field:NullOrNotBlank(message = "제목은 1자에서 200자 사이여야 합니다.")
+    @field:Size(max = 200, message = "제목은 1자에서 200자 사이여야 합니다.")
     val title: String?,
+
+    @field:NullOrNotBlank(message = "내용은 1자에서 1000자 사이여야 합니다.")
+    @field:Size(max = 200, message = "내용은 1자에서 1000자 사이여야 합니다.")
     val content: String?,
+
     val anonymous: Boolean?,
     val images: List<MultipartFile>?
 ){
