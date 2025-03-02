@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.user.data.User
 
 @Repository
-interface UserRepository: JpaRepository<User, Long> {
+interface UserRepository: JpaRepository<User, Int> {
 }

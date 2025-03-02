@@ -40,6 +40,7 @@ allprojects {
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
         implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+        implementation("org.flywaydb:flyway-mysql")
     }
 
     kotlin {

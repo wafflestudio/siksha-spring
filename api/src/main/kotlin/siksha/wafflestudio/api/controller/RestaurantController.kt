@@ -18,7 +18,7 @@ class RestaurantController(
     }
 
     @GetMapping("/restaurants/{restaurantId}")
-    fun getRestaurant(request: HttpServletRequest, @PathVariable restaurantId: Long): Restaurant {
+    fun getRestaurant(request: HttpServletRequest, @PathVariable restaurantId: Int): Restaurant {
         return restaurantService.getRestaurant(restaurantId)
     }
 }

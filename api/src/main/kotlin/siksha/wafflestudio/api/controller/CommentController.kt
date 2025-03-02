@@ -30,7 +30,7 @@ class CommentController(
     @GetMapping("/community/comments/web")
     fun getCommentsWithoutAuth(
         request: HttpServletRequest,
-        @RequestParam(name = "post_id") postId: Long,
+        @RequestParam(name = "post_id") postId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
@@ -40,11 +40,11 @@ class CommentController(
     @GetMapping("/community/comments")
     fun getComments(
         request: HttpServletRequest,
-        @RequestParam(name = "post_id") postId: Long,
+        @RequestParam(name = "post_id") postId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
-        return commentService.getComments(request.userId,postId, page, perPage)
+        return commentService.getComments(request.userId, postId,  page, perPage)
     }
 
     @PostMapping("/community/comments")
@@ -59,7 +59,7 @@ class CommentController(
     @PatchMapping("/community/comments/{commentId}")
     fun patchComment(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
         @RequestBody patchDto: PatchCommentRequestDto,
     ): CommentResponseDto {
         return commentService.patchComment(request.userId, commentId, patchDto)
@@ -69,7 +69,7 @@ class CommentController(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteComment(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
     ) {
         commentService.deleteComment(request.userId, commentId)
     }
@@ -78,7 +78,7 @@ class CommentController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createCommentLike(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
     ): CommentResponseDto {
         return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
     }
@@ -88,7 +88,7 @@ class CommentController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createCommentUnlike(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
     ): CommentResponseDto {
         return commentService.createOrUpdateCommentLike(request.userId, commentId, false)
     }
@@ -97,7 +97,7 @@ class CommentController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createCommentReport(
         request: HttpServletRequest,
-        @PathVariable commentId: Long,
+        @PathVariable commentId: Int,
         @RequestBody createDto: CreateCommentReportRequestDto,
     ): CommentsReportResponseDto {
         return commentService.createCommentReport(request.userId, commentId, createDto.reason)

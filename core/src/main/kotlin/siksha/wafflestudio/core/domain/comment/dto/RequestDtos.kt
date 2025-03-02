@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 data class CreateCommentRequestDto(
-    @JsonProperty("post_id") val postId: Long,
+    @JsonProperty("post_id") val postId: Int,
     val content: String,
     val anonymous: Boolean,
 )

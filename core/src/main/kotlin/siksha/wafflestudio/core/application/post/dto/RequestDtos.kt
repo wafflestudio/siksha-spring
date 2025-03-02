@@ -8,7 +8,7 @@ import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.util.EtcUtils
 
 data class PostCreateRequestDto(
-    @JsonProperty("board_id") val boardId: Long,
+    @JsonProperty("board_id") val boardId: Int,
     val title: String,
     val content: String,
     val anonymous: Boolean?,

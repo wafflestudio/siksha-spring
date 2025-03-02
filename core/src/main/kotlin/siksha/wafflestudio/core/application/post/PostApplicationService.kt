@@ -52,10 +52,10 @@ class PostApplicationService(
 ){
     // TODO: parse etc
     fun getPosts(
-        boardId: Long,
+        boardId: Int,
         page: Int,
         perPage: Int,
-        userId: Long?,
+        userId: Int?,
     ): GetPostsResponseDto {
         if (!boardRepository.existsById(boardId)) throw BoardNotFoundException()
 
@@ -76,7 +76,7 @@ class PostApplicationService(
     fun getMyPosts(
         page: Int,
         perPage: Int,
-        userId: Long,
+        userId: Int,
     ): GetPostsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val postsPage = postRepository.findPageByUserId(userId, pageable)
@@ -93,15 +93,15 @@ class PostApplicationService(
     }
 
     fun getPost(
-        postId: Long,
-        userId: Long?,
+        postId: Int,
+        userId: Int?,
     ): PostResponseDto {
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
         return mapPostWithLikesAndComments(post, userId)
     }
 
     @Transactional
-    fun createPost(userId: Long, postCreateRequestDto: PostCreateRequestDto): PostResponseDto {
+    fun createPost(userId: Int, postCreateRequestDto: PostCreateRequestDto): PostResponseDto {
         postDomainService.validateDto(postCreateRequestDto)
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateRequestDto.boardId) ?: throw BoardNotFoundException()
@@ -123,7 +123,7 @@ class PostApplicationService(
     }
 
     @Transactional
-    fun patchPost(userId: Long, postId: Long, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
+    fun patchPost(userId: Int, postId: Int, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
         postDomainService.validatePatchDto(postPatchRequestDto)
 
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
@@ -152,7 +152,7 @@ class PostApplicationService(
     }
 
     @Transactional
-    fun deletePost(userId: Long, postId: Long) {
+    fun deletePost(userId: Int, postId: Int) {
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
         if (post.user.id != userId) throw NotPostOwnerException()
 
@@ -165,7 +165,7 @@ class PostApplicationService(
         postRepository.deleteById(postId)
     }
 
-    private fun mapPostsPageWithLikesAndComments(postsPage: Page<Post>, userId: Long?): List<PostResponseDto> {
+    private fun mapPostsPageWithLikesAndComments(postsPage: Page<Post>, userId: Int?): List<PostResponseDto> {
         val posts = postsPage.content
         val postIdToPostLikes = postLikeRepository.findByPostIdInAndIsLikedTrue(posts.map { it.id }).groupBy { it.post.id }
         val postIdToComments = commentRepository.findByPostIdIn(posts.map { it.id }).groupBy { it.post.id }
@@ -179,7 +179,7 @@ class PostApplicationService(
         }
     }
 
-    private fun mapPostWithLikesAndComments(post: Post, userId: Long?): PostResponseDto {
+    private fun mapPostWithLikesAndComments(post: Post, userId: Int?): PostResponseDto {
         val postIdToPostLike: List<PostLike> = postLikeRepository.findByPostIdAndIsLikedTrue(postId = post.id)
         val likeCount = postIdToPostLike.size
         val commentCount = commentRepository.countByPostId(postId = post.id)
@@ -189,9 +189,9 @@ class PostApplicationService(
         return PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
     }
 
-    private fun generateImageNameKey(boardId: Long, userId: Long) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
 
-    private fun handleImageUpload(boardId: Long, userId: Long, images: List<MultipartFile>): List<String> {
+    private fun handleImageUpload(boardId: Int, userId: Int, images: List<MultipartFile>): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)
         val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
 
@@ -209,8 +209,8 @@ class PostApplicationService(
     }
 
     fun createOrUpdatePostLike(
-        userId: Long,
-        postId: Long,
+        userId: Int,
+        postId: Int,
         isLiked: Boolean,
     ): PostResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
@@ -240,8 +240,8 @@ class PostApplicationService(
 
     @Transactional
     fun createPostReport(
-        reportingUid: Long,
-        postId: Long,
+        reportingUid: Int,
+        postId: Int,
         reason: String,
     ): PostsReportResponseDto {
         val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
