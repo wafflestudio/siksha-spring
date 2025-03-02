@@ -41,6 +41,7 @@ allprojects {
         implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
     }
 
     kotlin {

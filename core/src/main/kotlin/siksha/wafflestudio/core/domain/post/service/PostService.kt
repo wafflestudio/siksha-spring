@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.application.post
+package siksha.wafflestudio.core.domain.post.service
 
 import jakarta.transaction.Transactional
 import org.springframework.dao.DataIntegrityViolationException
@@ -15,22 +15,17 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
 import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedException
-import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
-import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.*
-import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.post.data.PostLike
 import siksha.wafflestudio.core.domain.post.data.PostReport
+import siksha.wafflestudio.core.domain.post.dto.*
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.post.service.PostDomainService
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
@@ -39,7 +34,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class PostApplicationService(
+class PostService(
     private val postRepository: PostRepository,
     private val postLikeRepository: PostLikeRepository,
     private val postReportRepository: PostReportRepository,
@@ -47,16 +42,14 @@ class PostApplicationService(
     private val boardRepository: BoardRepository,
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
-    private val postDomainService: PostDomainService,
     private val s3Service: S3Service,
 ){
-    // TODO: parse etc
     fun getPosts(
         boardId: Int,
         page: Int,
         perPage: Int,
         userId: Int?,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         if (!boardRepository.existsById(boardId)) throw BoardNotFoundException()
 
         val pageable = PageRequest.of(page-1, perPage)
@@ -66,7 +59,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -77,7 +70,7 @@ class PostApplicationService(
         page: Int,
         perPage: Int,
         userId: Int,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val postsPage = postRepository.findPageByUserId(userId, pageable)
 
@@ -85,7 +78,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -102,7 +95,6 @@ class PostApplicationService(
 
     @Transactional
     fun createPost(userId: Int, postCreateRequestDto: PostCreateRequestDto): PostResponseDto {
-        postDomainService.validateDto(postCreateRequestDto)
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateRequestDto.boardId) ?: throw BoardNotFoundException()
 
@@ -124,8 +116,6 @@ class PostApplicationService(
 
     @Transactional
     fun patchPost(userId: Int, postId: Int, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
-        postDomainService.validatePatchDto(postPatchRequestDto)
-
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
         if (post.user.id != userId) throw NotPostOwnerException()
 
@@ -163,49 +153,6 @@ class PostApplicationService(
         }
 
         postRepository.deleteById(postId)
-    }
-
-    private fun mapPostsPageWithLikesAndComments(postsPage: Page<Post>, userId: Int?): List<PostResponseDto> {
-        val posts = postsPage.content
-        val postIdToPostLikes = postLikeRepository.findByPostIdInAndIsLikedTrue(posts.map { it.id }).groupBy { it.post.id }
-        val postIdToComments = commentRepository.findByPostIdIn(posts.map { it.id }).groupBy { it.post.id }
-
-        return posts.map { post ->
-            val likeCount = postIdToPostLikes[post.id]?.size ?: 0
-            val commentCount = postIdToComments[post.id]?.size ?: 0
-            val isMine = post.user.id == userId
-            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId } ?: false
-            PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
-        }
-    }
-
-    private fun mapPostWithLikesAndComments(post: Post, userId: Int?): PostResponseDto {
-        val postIdToPostLike: List<PostLike> = postLikeRepository.findByPostIdAndIsLikedTrue(postId = post.id)
-        val likeCount = postIdToPostLike.size
-        val commentCount = commentRepository.countByPostId(postId = post.id)
-        val isMine = post.user.id == userId
-        val userPostLiked = postIdToPostLike.any { it.user.id == userId }
-
-        return PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
-    }
-
-    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
-
-    private fun handleImageUpload(boardId: Int, userId: Int, images: List<MultipartFile>): List<String> {
-        val nameKey = generateImageNameKey(boardId, userId)
-        val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
-
-        imageRepository.saveAll(
-            uploadFiles.map {
-                Image(
-                    key = it.key,
-                    category = ImageCategory.POST,
-                    userId = userId,
-                    isDeleted = false
-                )
-            }
-        )
-        return uploadFiles.map { it.url }
     }
 
     fun createOrUpdatePostLike(
@@ -278,6 +225,72 @@ class PostApplicationService(
         } catch (ex: Exception) {
             throw PostReportSaveFailedException()
         }
+    }
+
+    fun getTrendingPosts(
+        likes: Int,
+        createdBefore: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = LocalDateTime.now().minusDays(createdBefore.toLong()))
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
+        )
+    }
+
+    fun getBestPosts(
+        likes: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findBest(minimumLikes = likes)
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
+        )
+    }
+
+    private fun mapPostsPageWithLikesAndComments(postsPage: Page<Post>, userId: Int?): List<PostResponseDto> {
+        val posts = postsPage.content
+        val postIdToPostLikes = postLikeRepository.findByPostIdInAndIsLikedTrue(posts.map { it.id }).groupBy { it.post.id }
+        val postIdToComments = commentRepository.findByPostIdIn(posts.map { it.id }).groupBy { it.post.id }
+
+        return posts.map { post ->
+            val likeCount = postIdToPostLikes[post.id]?.size ?: 0
+            val commentCount = postIdToComments[post.id]?.size ?: 0
+            val isMine = post.user.id == userId
+            val userPostLiked = postIdToPostLikes[post.id]?.any { it.user.id == userId } ?: false
+            PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
+        }
+    }
+
+    private fun mapPostWithLikesAndComments(post: Post, userId: Int?): PostResponseDto {
+        val postIdToPostLike: List<PostLike> = postLikeRepository.findByPostIdAndIsLikedTrue(postId = post.id)
+        val likeCount = postIdToPostLike.size
+        val commentCount = commentRepository.countByPostId(postId = post.id)
+        val isMine = post.user.id == userId
+        val userPostLiked = postIdToPostLike.any { it.user.id == userId }
+
+        return PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
+    }
+
+    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+
+    private fun handleImageUpload(boardId: Int, userId: Int, images: List<MultipartFile>): List<String> {
+        val nameKey = generateImageNameKey(boardId, userId)
+        val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
+
+        imageRepository.saveAll(
+            uploadFiles.map {
+                Image(
+                    key = it.key,
+                    category = ImageCategory.POST,
+                    userId = userId,
+                    isDeleted = false
+                )
+            }
+        )
+        return uploadFiles.map { it.url }
     }
 }
 
