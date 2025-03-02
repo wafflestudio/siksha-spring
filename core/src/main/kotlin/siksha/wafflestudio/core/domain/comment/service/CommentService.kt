@@ -1,17 +1,32 @@
 package siksha.wafflestudio.core.domain.comment.service
 
 import jakarta.transaction.Transactional
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.comment.data.Comment
 import siksha.wafflestudio.core.domain.comment.data.CommentLike
 import siksha.wafflestudio.core.domain.comment.data.CommentReport
-import siksha.wafflestudio.core.domain.comment.dto.*
+import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.CommentsReportResponseDto
 import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentReportRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.common.exception.*
+import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberException
+import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.NotCommentOwnerException
+import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
+import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
+import siksha.wafflestudio.core.domain.common.exception.CommentReportSaveFailedException
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDateTime
@@ -37,19 +52,11 @@ class CommentService(
         val commentIdToCommentLikes = commentLikeRepository.findByCommentIdInAndIsLiked(comments.map { it.id }).groupBy { it.comment.id }
         val commentDtos = comments.map { comment ->
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
-            CommentResponseDto(
-                id = comment.id,
-                postId = comment.post.id,
-                content = comment.content,
-                createdAt = comment.createdAt,
-                updatedAt = comment.updatedAt,
-                nickname = if (comment.anonymous) null else comment.user.nickname,
-                profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-                available = comment.available,
-                anonymous = comment.anonymous,
+            CommentResponseDto.of(
+                comment = comment,
                 isMine = false,
-                likeCnt = likeCount,
-                isLiked = false,
+                likeCount = likeCount,
+                isLiked = false
             )
         }
 
@@ -79,19 +86,11 @@ class CommentService(
             val likeCount = commentIdToCommentLikes[comment.id]?.size ?: 0
             val isLiked = comment.id in commentIdsILiked
 
-            CommentResponseDto(
-                id = comment.id,
-                postId = comment.post.id,
-                content = comment.content,
-                createdAt = comment.createdAt,
-                updatedAt = comment.updatedAt,
-                nickname = if (comment.anonymous) null else comment.user.nickname,
-                profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-                available = comment.available,
-                anonymous = comment.anonymous,
+            CommentResponseDto.of(
+                comment = comment,
                 isMine = comment.user.id == userId,
-                likeCnt = likeCount,
-                isLiked = isLiked,
+                likeCount = likeCount,
+                isLiked = isLiked
             )
         }
 
@@ -116,18 +115,10 @@ class CommentService(
             )
         )
 
-        return CommentResponseDto(
-            id = comment.id,
-            postId = comment.post.id,
-            content = comment.content,
-            createdAt = comment.createdAt,
-            updatedAt = comment.updatedAt,
-            nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-            available = comment.available,
-            anonymous = comment.anonymous,
+        return CommentResponseDto.of(
+            comment = comment,
             isMine = true,
-            likeCnt = 0,
+            likeCount = 0,
             isLiked = false,
         )
     }
@@ -156,18 +147,10 @@ class CommentService(
         val commentLikes = commentLikeRepository.findByCommentId(commentId)
         val isLiked = commentLikes.any { it.user.id == userId }
 
-        return CommentResponseDto(
-            id = newComment.id,
-            postId = newComment.post.id,
-            content = newComment.content,
-            createdAt = newComment.createdAt,
-            updatedAt = newComment.updatedAt,
-            nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
-            available = newComment.available,
-            anonymous = newComment.anonymous,
+        return CommentResponseDto.of(
+            comment = comment,
             isMine = true,
-            likeCnt = commentLikes.count(),
+            likeCount = commentLikes.count(),
             isLiked = isLiked,
         )
     }
@@ -218,30 +201,33 @@ class CommentService(
         if (reason.length > 200 || reason.isBlank()) {
             throw InvalidCommentReportFormException()
         }
-        if (commentReportRepository.existsByCommentIdAndReportingUser(commentId, reportingUser)) {
-            throw CommentAlreadyReportedException()
-        }
 
-        val commentReport = commentReportRepository.save(
-            CommentReport(
-                comment = comment,
-                reason = reason,
-                reportingUser = reportingUser,
-                reportedUser = comment.user,
+        try {
+            val commentReport = commentReportRepository.save(
+                CommentReport(
+                    comment = comment,
+                    reason = reason,
+                    reportingUser = reportingUser,
+                    reportedUser = comment.user,
+                )
             )
-        )
 
-        //신고 5개 이상 누적시 숨기기
-        val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
-        if (commentReportCount >= 5 && comment.available) {
-            comment.available = false
-            commentRepository.save(comment)
+            //신고 5개 이상 누적시 숨기기
+            val commentReportCount = commentReportRepository.countCommentReportByCommentId(commentId)
+            if (commentReportCount >= 5 && comment.available) {
+                comment.available = false
+                commentRepository.save(comment)
+            }
+
+            return CommentsReportResponseDto(
+                id = commentReport.id,
+                reason = commentReport.reason,
+                commentId = commentReport.comment.id,
+            )
+        } catch (ex: DataIntegrityViolationException) {
+            throw CommentAlreadyReportedException()
+        } catch (ex: Exception) {
+            throw CommentReportSaveFailedException()
         }
-
-        return CommentsReportResponseDto(
-            id = commentReport.id,
-            reason = commentReport.reason,
-            commentId = commentReport.comment.id,
-        )
     }
 }

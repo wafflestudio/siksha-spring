@@ -1,7 +1,21 @@
-package siksha.wafflestudio.core.application.board.dto
+package siksha.wafflestudio.core.domain.board
 
 import siksha.wafflestudio.core.domain.board.data.Board
 import java.sql.Timestamp
+
+data class BoardCreateDto(
+    val name: String?,
+    val description: String?,
+    val type: Int = 1,
+){
+    fun toEntity(): Board {
+        return Board(
+            name = name ?: "",
+            description = description ?: "",
+            type = type,
+        )
+    }
+}
 
 data class BoardDto(
     val id: Int,
