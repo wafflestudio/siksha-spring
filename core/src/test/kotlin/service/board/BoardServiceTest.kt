@@ -10,45 +10,47 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.application.board.BoardApplicationService
-import siksha.wafflestudio.core.application.board.dto.BoardCreateDto
+import siksha.wafflestudio.core.domain.board.BoardCreateDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.board.service.BoardDomainService
+import siksha.wafflestudio.core.domain.board.service.BoardService
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
+import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import kotlin.test.assertNotNull
 
 class BoardServiceTest {
-    private lateinit var repository: BoardRepository
-    private lateinit var domainService: BoardDomainService
-    private lateinit var service: BoardApplicationService
+    private lateinit var boardRepository: BoardRepository
+    private lateinit var userRepository: UserRepository
+    private lateinit var service: BoardService
 
     @BeforeEach
     internal fun setUp() {
-        repository = mockk()
-        domainService = BoardDomainService()
-        service = BoardApplicationService(repository, domainService)
+        boardRepository = mockk()
+        userRepository = mockk()
+        service = BoardService(userRepository, boardRepository)
         clearAllMocks()
+        every { userRepository.findByIdOrNull(any()) } returns User(1L, "", "", null, "")
     }
 
     @Test
     fun `should save board`() {
         // given
         val board = Board(name = "test", description = "테스트 게시판")
-        every { repository.save(any()) } returns board
+        every { boardRepository.save(any()) } returns board
 
         // when
         val boardCreateDTO = BoardCreateDto("test", "테스트 게시판")
-        val result = service.addBoard(boardCreateDTO)
+        val result = service.addBoard(1L, boardCreateDTO)
 
         // when
         assertNotNull(result)
         assertEquals(boardCreateDTO.name, result.name)
         assertEquals(boardCreateDTO.description, result.description)
         assertEquals(1, result.type)
-        verify(exactly = 1) { repository.save(any()) }
+        verify(exactly = 1) { boardRepository.save(any()) }
     }
 
     @Test
@@ -58,7 +60,7 @@ class BoardServiceTest {
         // when
         val boardCreateDTO = BoardCreateDto(name = null, description = "테스트")
         val exception = assertThrows<InvalidBoardFormException> {
-            service.addBoard(boardCreateDTO)
+            service.addBoard(1L, boardCreateDTO)
         }
 
         // then
@@ -68,16 +70,16 @@ class BoardServiceTest {
     @Test
     fun `create board already exists error`() {
         // given
-        every { repository.save(any()) } throws DataIntegrityViolationException("")
+        every { boardRepository.save(any()) } throws DataIntegrityViolationException("")
 
         // when
         val boardCreateDTO = BoardCreateDto("existing", "이미 존재하는 게시판")
         val exception = assertThrows<BoardNameAlreadyExistException> {
-            service.addBoard(boardCreateDTO)
+            service.addBoard(1L, boardCreateDTO)
         }
 
         // then
-        assertEquals("Board name already exists", exception.message)
+        assertEquals("중복된 게시판 이름이 존재합니다.", exception.message)
     }
 
     @Test
@@ -85,7 +87,7 @@ class BoardServiceTest {
         // given
         val board1 = Board(name = "test", description = "테스트 게시판")
         val board2 = Board(name = "test2", description = "테스트 게시판2")
-        every { repository.findAll() } returns listOf(board1, board2)
+        every { boardRepository.findAll() } returns listOf(board1, board2)
 
         // when
         val result = service.getBoards()
@@ -101,7 +103,7 @@ class BoardServiceTest {
     fun `get a board`() {
         // given
         val board = Board(name = "test", description = "테스트 게시판")
-        every { repository.findByIdOrNull(any()) } returns board
+        every { boardRepository.findByIdOrNull(any()) } returns board
 
         // when
         val result = service.getBoardById(1)
@@ -115,13 +117,13 @@ class BoardServiceTest {
     @Test
     fun `fail to get a board`() {
         // given
-        every { repository.findByIdOrNull(3) } returns null
+        every { boardRepository.findByIdOrNull(3) } returns null
 
         // when
         val exception = assertThrows<BoardNotFoundException> {
             service.getBoardById(3)
         }
 
-        assertEquals("Board not found", exception.message)
+        assertEquals("해당 게시판을 찾을 수 없습니다.", exception.message)
     }
 }

@@ -20,6 +20,8 @@ class InvalidPageNumberException(): CommunityException(HttpStatus.NOT_FOUND, "�
 
 class BoardNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 게시판을 찾을 수 없습니다.")
 
+class BoardSaveFailedException(message: String?): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시판 저장에 실패하였습니다 - $message")
+
 class UserNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다.")
 
 class PostNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 글을 찾을 수 없습니다.")
