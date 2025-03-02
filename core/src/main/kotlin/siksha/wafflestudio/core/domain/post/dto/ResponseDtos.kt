@@ -1,9 +1,15 @@
 package siksha.wafflestudio.core.domain.post.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import siksha.wafflestudio.core.domain.post.data.Post
 import java.time.LocalDateTime
 
@@ -20,6 +26,7 @@ data class PostsResponseDto @JsonCreator constructor (
     val result: List<PostResponseDto>,
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PostResponseDto @JsonCreator constructor (
     @JsonProperty("id")
@@ -31,8 +38,14 @@ data class PostResponseDto @JsonCreator constructor (
     @JsonProperty("content")
     val content: String,
     @JsonProperty("createdAt")
+    @JsonSerialize(using= LocalDateTimeSerializer::class) // TODO: OffsetDateTimeSerializer로 수정
+    @JsonDeserialize(using = LocalDateTimeDeserializer::class)  // TODO: OffsetDateTimeDeserializer로 수정 (util에 있는 커스텀 클래스 사용)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     val createdAt: LocalDateTime,
     @JsonProperty("updatedAt")
+    @JsonSerialize(using= LocalDateTimeSerializer::class) // TODO: OffsetDateTimeSerializer로 수정
+    @JsonDeserialize(using = LocalDateTimeDeserializer::class)  // TODO: OffsetDateTimeDeserializer로 수정 (util에 있는 커스텀 클래스 사용)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     val updatedAt: LocalDateTime,
     @JsonProperty("nickname")
     val nickname: String?,
