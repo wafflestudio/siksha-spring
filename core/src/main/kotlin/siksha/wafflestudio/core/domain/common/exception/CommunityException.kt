@@ -42,6 +42,10 @@ class PostAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "
 
 class InvalidPostReportFormException() : CommunityException(HttpStatus.BAD_REQUEST, "이유는 1자에서 200자 사이여야 합니다.")
 
+class CommentReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 신고에 실패하였습니다.")
+
+class PostReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 신고에 실패하였습니다.")
+
 enum class NotFoundItem(val value: String) {
     USER("유저"),
     POST("게시물"),
