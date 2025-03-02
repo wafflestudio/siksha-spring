@@ -23,10 +23,10 @@ interface PostRepository: JpaRepository<Post, Int> {
 
     // limit 5
     @EntityGraph(attributePaths = ["user"])
-    @Query("SELECT p FROM post p WHERE p.createdAt >= :createdDays GROUP BY p.id HAVING (SELECT COUNT(DISTINCT pl.id) FROM post_like pl WHERE pl.post = p AND pl.isLiked = true) >= :minimumLikes ORDER BY (SELECT COUNT(DISTINCT pl.id) FROM post_like pl WHERE pl.post = p AND pl.isLiked = true) DESC, p.createdAt DESC")
+    @Query("SELECT p FROM post p LEFT JOIN post_like pl ON pl.post = p AND pl.isLiked = true WHERE p.createdAt >= :createdDays GROUP BY p.id HAVING COUNT(DISTINCT pl.id) >= :minimumLikes ORDER BY COUNT(DISTINCT pl.id) DESC, p.createdAt DESC")
     fun findTrending(@Param("minimumLikes") minimumLikes: Int, @Param("createdDays") createdDays: LocalDateTime, pageable: Pageable = PageRequest.of(0, 5)): Page<Post>
 
     @EntityGraph(attributePaths = ["user"])
-    @Query("SELECT p FROM post p GROUP BY p.id HAVING (SELECT COUNT(DISTINCT pl.id) FROM post_like pl WHERE pl.post = p AND pl.isLiked = true) >= :minimumLikes ORDER BY (SELECT COUNT(DISTINCT pl.id) FROM post_like pl WHERE pl.post = p AND pl.isLiked = true) DESC, p.createdAt DESC")
+    @Query("SELECT p FROM post p LEFT JOIN post_like pl ON pl.post = p AND pl.isLiked = true GROUP BY p.id HAVING COUNT(DISTINCT pl.id) >= :minimumLikes ORDER BY COUNT(DISTINCT pl.id) DESC, p.createdAt DESC")
     fun findBest(@Param("minimumLikes") minimumLikes: Int, pageable: Pageable = PageRequest.of(0, 5)): Page<Post>
 }
