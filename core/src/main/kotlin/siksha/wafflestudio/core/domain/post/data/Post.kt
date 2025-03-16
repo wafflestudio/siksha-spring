@@ -5,8 +5,8 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.user.data.User
-import java.sql.Timestamp
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 @Entity(name = "post")
 @Table(name = "post")
@@ -31,10 +31,10 @@ class Post(
     val anonymous: Boolean,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
     val etc: String? = null,
 )

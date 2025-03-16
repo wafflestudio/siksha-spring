@@ -34,7 +34,8 @@ import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
 import siksha.wafflestudio.core.util.EtcUtils
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
@@ -227,7 +228,7 @@ class PostServiceTest {
         val boardId = 2
         val board = Board(id = boardId, name = "test board", description = "test")
 
-        val fixedDateTime = LocalDateTime.of(2025, 1, 1, 12, 0, 0)
+        val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
         val prefix = S3ImagePrefix.POST
 
         val nameKey = "board-${boardId}/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
@@ -245,8 +246,8 @@ class PostServiceTest {
             )
         )
 
-        mockkStatic(LocalDateTime::class)
-        every { LocalDateTime.now() } returns fixedDateTime
+        mockkStatic(OffsetDateTime::class)
+        every { OffsetDateTime.now() } returns fixedDateTime
 
         every { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
         every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
@@ -749,7 +750,7 @@ class PostServiceTest {
             etc = null,
         )
 
-        val fixedDateTime = LocalDateTime.of(2025, 1, 1, 12, 0, 0)
+        val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
         val prefix = S3ImagePrefix.POST
 
         val nameKey = "board-${boardId}/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
@@ -778,8 +779,8 @@ class PostServiceTest {
             etc = EtcUtils.convertImageUrlsToEtcJson(uploadFileDtos.map { it.url }) // 이미지 URL 적용
         )
 
-        mockkStatic(LocalDateTime::class)
-        every { LocalDateTime.now() } returns fixedDateTime
+        mockkStatic(OffsetDateTime::class)
+        every { OffsetDateTime.now() } returns fixedDateTime
 
         every { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
         every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
@@ -813,7 +814,7 @@ class PostServiceTest {
         assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
 
         // verify
-        verify { LocalDateTime.now() }
+        verify { OffsetDateTime.now() }
         verify { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) }
         verify { imageRepository.saveAll(any<List<Image>>()) }
         verify { postRepository.save(any()) }

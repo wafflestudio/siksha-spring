@@ -31,7 +31,7 @@ import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.util.EtcUtils
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
@@ -234,7 +234,7 @@ class PostService(
         createdBefore: Int,
         userId: Int?,
     ): PostsResponseDto {
-        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = LocalDateTime.now().minusDays(createdBefore.toLong()))
+        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = OffsetDateTime.now().minusDays(createdBefore.toLong()))
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
         return PostsResponseDto(
             result = postDtos
@@ -277,7 +277,7 @@ class PostService(
         return PostResponseDto.from(post = post, isMine = isMine, userPostLiked = userPostLiked, likeCnt = likeCount, commentCnt = commentCount)
     }
 
-    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+    private fun generateImageNameKey(boardId: Int, userId: Int) = "board-${boardId}/user-$userId/${OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
 
     private fun handleImageUpload(boardId: Int, userId: Int, images: List<MultipartFile>): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)

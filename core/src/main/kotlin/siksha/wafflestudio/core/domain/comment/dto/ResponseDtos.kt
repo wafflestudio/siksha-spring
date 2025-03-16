@@ -3,7 +3,7 @@ package siksha.wafflestudio.core.domain.comment.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.comment.data.Comment
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class GetCommentsResponseDto(
@@ -17,8 +17,8 @@ data class CommentResponseDto(
     val id: Int,
     val postId: Int,
     val content: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime,
     val nickname: String?,
     val profileUri: String?,
     val available: Boolean,

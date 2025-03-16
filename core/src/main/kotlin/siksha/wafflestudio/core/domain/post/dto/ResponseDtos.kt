@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.post.data.Post
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PaginatedPostsResponseDto(
@@ -34,11 +34,11 @@ data class PostResponseDto @JsonCreator constructor (
     @JsonProperty("content")
     val content: String,
     @JsonProperty("created_at")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    val createdAt: LocalDateTime,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
+    val createdAt: OffsetDateTime,
     @JsonProperty("updated_at")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-    val updatedAt: LocalDateTime,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
+    val updatedAt: OffsetDateTime,
     @JsonProperty("nickname")
     val nickname: String?,
     @JsonProperty("profile_url")

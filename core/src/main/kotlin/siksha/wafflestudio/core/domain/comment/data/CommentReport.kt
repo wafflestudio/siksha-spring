@@ -14,7 +14,8 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.user.data.User
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 @Entity(name = "comment_report")
 @Table(name = "comment_report")
@@ -38,8 +39,8 @@ class CommentReport(
     val reportedUser: User,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )

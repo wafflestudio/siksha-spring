@@ -8,7 +8,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Column
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
 
 @Entity(name = "board")
 @Table(name = "board")
@@ -24,8 +25,8 @@ data class Board(
     val type: Int = 1,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )
