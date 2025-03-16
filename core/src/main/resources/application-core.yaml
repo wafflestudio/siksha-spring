@@ -30,5 +30,7 @@ spring:
         profile-name: dev
       s3:
         bucket:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
 
 jwt.secret-key:

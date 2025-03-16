@@ -1,9 +1,10 @@
 package siksha.wafflestudio.core.domain.board
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import siksha.wafflestudio.core.domain.board.data.Board
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 data class BoardCreateDto(
     val name: String?,
@@ -28,10 +29,12 @@ data class BoardDto @JsonCreator constructor (
     val description: String,
     @JsonProperty("type")
     val type: Int,
-    @JsonProperty("createdAt")
-    val createdAt: Timestamp,
-    @JsonProperty("updatedAt")
-    val updatedAt: Timestamp,
+    @JsonProperty("created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    val createdAt: LocalDateTime,
+    @JsonProperty("updated_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    val updatedAt: LocalDateTime,
 ) {
     companion object {
         fun from(board: Board): BoardDto {

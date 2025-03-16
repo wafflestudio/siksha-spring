@@ -8,7 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Column
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.sql.Timestamp
+import java.time.LocalDateTime
 
 @Entity(name = "board")
 @Table(name = "board")
@@ -24,8 +24,8 @@ data class Board(
     val type: Int = 1,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    val createdAt: Timestamp = Timestamp(System.currentTimeMillis()),
+    val createdAt: LocalDateTime = LocalDateTime.now(),
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: Timestamp = Timestamp(System.currentTimeMillis()),
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
 )

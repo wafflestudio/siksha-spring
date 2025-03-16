@@ -5,11 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import siksha.wafflestudio.core.domain.post.data.Post
 import java.time.LocalDateTime
 
@@ -31,25 +27,21 @@ data class PostsResponseDto @JsonCreator constructor (
 data class PostResponseDto @JsonCreator constructor (
     @JsonProperty("id")
     val id: Int,
-    @JsonProperty("boardId")
+    @JsonProperty("board_id")
     val boardId: Int,
     @JsonProperty("title")
     val title: String,
     @JsonProperty("content")
     val content: String,
-    @JsonProperty("createdAt")
-    @JsonSerialize(using= LocalDateTimeSerializer::class) // TODO: OffsetDateTimeSerializer로 수정
-    @JsonDeserialize(using = LocalDateTimeDeserializer::class)  // TODO: OffsetDateTimeDeserializer로 수정 (util에 있는 커스텀 클래스 사용)
+    @JsonProperty("created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     val createdAt: LocalDateTime,
-    @JsonProperty("updatedAt")
-    @JsonSerialize(using= LocalDateTimeSerializer::class) // TODO: OffsetDateTimeSerializer로 수정
-    @JsonDeserialize(using = LocalDateTimeDeserializer::class)  // TODO: OffsetDateTimeDeserializer로 수정 (util에 있는 커스텀 클래스 사용)
+    @JsonProperty("updated_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     val updatedAt: LocalDateTime,
     @JsonProperty("nickname")
     val nickname: String?,
-    @JsonProperty("profileUrl")
+    @JsonProperty("profile_url")
     val profileUrl: String?,
     @JsonProperty("available")
     val available: Boolean,
@@ -59,11 +51,11 @@ data class PostResponseDto @JsonCreator constructor (
     val isMine: Boolean,
     @JsonProperty("etc")
     val etc: String?,
-    @JsonProperty("likeCnt")
+    @JsonProperty("like_cnt")
     val likeCnt: Int,
-    @JsonProperty("commentCnt")
+    @JsonProperty("comment_cnt")
     val commentCnt: Int,
-    @JsonProperty("isLiked")
+    @JsonProperty("is_liked")
     val isLiked: Boolean,
 ) {
     companion object {
