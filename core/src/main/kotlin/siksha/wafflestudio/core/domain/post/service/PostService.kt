@@ -234,7 +234,7 @@ class PostService(
         createdBefore: Int,
         userId: Int?,
     ): PostsResponseDto {
-        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = LocalDateTime.now().minusDays(createdBefore.toLong()))
+        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = OffsetDateTime.now().minusDays(createdBefore.toLong()))
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
         return PostsResponseDto(
             result = postDtos

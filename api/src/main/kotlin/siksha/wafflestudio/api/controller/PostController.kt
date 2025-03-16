@@ -44,9 +44,9 @@ class PostController (
     fun createPost(
         request: HttpServletRequest,
         @RequestParam("board_id") boardId: Int,
-        @RequestParam("title") title: String,
-        @RequestParam("content") content: String,
-        @RequestParam("anonymous", required = false) anonymous: Boolean? = false,
+        @RequestPart("title") title: String,
+        @RequestPart("content") content: String,
+        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
         @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
         val createDto = PostCreateRequestDto(
@@ -89,9 +89,9 @@ class PostController (
     fun patchPost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
-        @RequestParam("title") title: String?,
-        @RequestParam("content") content: String?,
-        @RequestParam("anonymous", required = false) anonymous: Boolean? = false,
+        @RequestPart("title") title: String?,
+        @RequestPart("content") content: String?,
+        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
         @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
         val patchDto = PostPatchRequestDto(
@@ -138,7 +138,7 @@ class PostController (
     fun createPostReport(
         request: HttpServletRequest,
         @PathVariable postId: Int,
-        @RequestBody createDto: siksha.wafflestudio.core.domain.post.dto.CreatePostReportRequestDto,
+        @RequestBody createDto: CreatePostReportRequestDto,
     ): PostsReportResponseDto {
         return postService.createPostReport(request.userId, postId, createDto.reason)
     }
