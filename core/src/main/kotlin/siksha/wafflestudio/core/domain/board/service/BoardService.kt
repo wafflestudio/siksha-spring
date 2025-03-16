@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.board.service
 
 import jakarta.transaction.Transactional
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -20,6 +21,7 @@ class BoardService(
     private val userRepository: UserRepository,
     private val boardRepository: BoardRepository,
 ) {
+    @Cacheable(value = ["boardCache"], key = "'allBoards'")
     fun getBoards(): List<BoardDto> = boardRepository.findAll().map { BoardDto.from(it) }
 
     // TODO: only admin can create board
@@ -38,6 +40,7 @@ class BoardService(
         }
     }
 
+    @Cacheable(value = ["boardCache"], key = "#id")
     fun getBoardById(id: Int): BoardDto {
         val board = boardRepository.findByIdOrNull(id) ?: throw BoardNotFoundException()
         return BoardDto.from(board)

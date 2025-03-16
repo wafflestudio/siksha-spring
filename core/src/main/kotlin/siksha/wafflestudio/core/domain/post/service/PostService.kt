@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.post.service
 
 import jakarta.transaction.Transactional
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -181,7 +182,7 @@ class PostService(
             isMine = post.user.id == userId,
             userPostLiked = isLiked,
             likeCnt = likeCount.toInt(),
-            commentCnt = commentCount.toInt(),
+            commentCnt = commentCount,
         )
     }
 
@@ -227,6 +228,7 @@ class PostService(
         }
     }
 
+    @Cacheable(value = ["popularPostCache"], key = "#likes + '-' + #createdBefore")
     fun getTrendingPosts(
         likes: Int,
         createdBefore: Int,
@@ -239,6 +241,7 @@ class PostService(
         )
     }
 
+    @Cacheable(value = ["bestPostCache"], key = "#likes")
     fun getBestPosts(
         likes: Int,
         userId: Int?,
