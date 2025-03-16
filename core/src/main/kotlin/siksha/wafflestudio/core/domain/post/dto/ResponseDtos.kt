@@ -47,7 +47,7 @@ data class PostResponseDto @JsonCreator constructor (
     val available: Boolean,
     @JsonProperty("anonymous")
     val anonymous: Boolean,
-    @JsonProperty("isMine")
+    @JsonProperty("is_mine")
     val isMine: Boolean,
     @JsonProperty("etc")
     val etc: String?,
