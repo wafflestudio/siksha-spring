@@ -1,9 +1,13 @@
 package siksha.wafflestudio.core.domain.board.data
 
-import jakarta.persistence.*
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Column
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.sql.Timestamp
 import java.time.OffsetDateTime
 import java.time.ZoneId
 

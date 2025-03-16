@@ -29,8 +29,6 @@ allprojects {
     dependencies {
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         implementation("org.springframework.boot:spring-boot-starter-web")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-        implementation("org.jetbrains.kotlin:kotlin-reflect")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
         testImplementation("io.mockk:mockk:1.12.0")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -41,6 +39,7 @@ allprojects {
         implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
     }
 
     kotlin {

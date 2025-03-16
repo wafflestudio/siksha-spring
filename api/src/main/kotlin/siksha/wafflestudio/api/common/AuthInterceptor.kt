@@ -32,6 +32,7 @@ class AuthInterceptor(
         response: HttpServletResponse,
         handler: Any,
     ): Boolean {
+        if (request.method == HttpMethod.GET.name() && request.requestURI == "/community/boards") return true
         if (request.method == HttpMethod.OPTIONS.name()) return true
 
         return runCatching {

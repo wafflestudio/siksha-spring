@@ -6,15 +6,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.web.multipart.MultipartFile
 import org.testcontainers.junit.jupiter.Testcontainers
-import siksha.wafflestudio.core.application.post.PostApplicationService
-import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
+import siksha.wafflestudio.core.domain.post.service.PostService
+import siksha.wafflestudio.core.domain.post.dto.PostCreateRequestDto
+import siksha.wafflestudio.core.domain.post.dto.PostPatchRequestDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
@@ -27,7 +28,6 @@ import siksha.wafflestudio.core.domain.post.data.PostReport
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.post.service.PostDomainService
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
@@ -50,9 +50,8 @@ class PostServiceTest {
     private lateinit var boardRepository: BoardRepository
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
-    private lateinit var domainService: PostDomainService
     private lateinit var s3Service: S3Service
-    private lateinit var service: PostApplicationService
+    private lateinit var service: PostService
 
 
     @BeforeEach
@@ -64,9 +63,8 @@ class PostServiceTest {
         boardRepository = mockk()
         userRepository = mockk()
         imageRepository = mockk()
-        domainService = PostDomainService()
         s3Service = mockk()
-        service = PostApplicationService(
+        service = PostService(
             postRepository,
             postLikeRepository,
             postReportRepository,
@@ -74,7 +72,6 @@ class PostServiceTest {
             boardRepository,
             userRepository,
             imageRepository,
-            domainService,
             s3Service,
         )
         clearAllMocks()
@@ -129,34 +126,6 @@ class PostServiceTest {
         verify { postLikeRepository.findByPostIdInAndIsLikedTrue(any()) }
         verify { commentRepository.findByPostIdIn(any()) }
 
-    }
-
-    @Test
-    fun `create post invalid title`() {
-        // given
-
-        // when
-        val dto = PostCreateRequestDto(boardId = 1, title = " ", content = "test", anonymous = null, images = null)
-        val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1, postCreateRequestDto = dto)
-        }
-        // then
-        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
-        assertEquals("제목은 1자에서 200자 사이여야 합니다.", exception.errorMessage)
-    }
-
-    @Test
-    fun `create post invalid content`() {
-        // given
-
-        // when
-        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = " ", anonymous = null, images = null)
-        val exception = assertThrows<InvalidPostFormException> {
-            service.createPost(userId = 1, postCreateRequestDto = dto)
-        }
-        // then
-        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
-        assertEquals("내용은 1자에서 1000자 사이여야 합니다.", exception.errorMessage)
     }
 
     @Test
@@ -449,7 +418,6 @@ class PostServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { postRepository.findByIdOrNull(postId) } returns post
-        every { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) } returns false
         every { postReportRepository.save(any()) } returns postReport
         every { postReportRepository.countPostReportByPostId(postId) } returns 1
 
@@ -463,7 +431,6 @@ class PostServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(reportingUid) }
         verify { postRepository.findByIdOrNull(postId) }
-        verify { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) }
         verify { postReportRepository.save(any()) }
         verify { postReportRepository.countPostReportByPostId(postId) }
     }
@@ -503,7 +470,7 @@ class PostServiceTest {
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { postRepository.findByIdOrNull(postId) } returns post
-        every { postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser) } returns true
+        every { postReportRepository.save(any()) } throws DataIntegrityViolationException("")
 
         // then
         assertThrows<PostAlreadyReportedException> {
@@ -703,76 +670,6 @@ class PostServiceTest {
 
         // then
         assertEquals(HttpStatus.FORBIDDEN, exception.httpStatus)
-    }
-
-    @Test
-    fun `patch post invalid title`() {
-        // given
-        val userId = 1
-        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
-
-        val boardId = 2
-        val board = Board(id = boardId, name = "test board", description = "test")
-
-        val postId = 3
-
-        val post = Post(
-            id = postId,
-            user = user,
-            board = board,
-            title = "test",
-            content = "test",
-            available = true,
-            anonymous = false,
-            etc = null,
-        )
-
-        // when
-        val exception = assertThrows<InvalidPostFormException> {
-            service.patchPost(
-                userId = userId,
-                postId = postId,
-                postPatchRequestDto = PostPatchRequestDto(title = "", content = null, anonymous = null, images = null)
-            )
-        }
-        // then
-        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
-        assertEquals("제목은 1자에서 200자 사이여야 합니다.", exception.errorMessage)
-    }
-
-    @Test
-    fun `patch post invalid content`() {
-        // given
-        val userId = 1
-        val user = User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
-
-        val boardId = 2
-        val board = Board(id = boardId, name = "test board", description = "test")
-
-        val postId = 3
-
-        val post = Post(
-            id = postId,
-            user = user,
-            board = board,
-            title = "test",
-            content = "test",
-            available = true,
-            anonymous = false,
-            etc = null,
-        )
-
-        // when
-        val exception = assertThrows<InvalidPostFormException> {
-            service.patchPost(
-                userId = userId,
-                postId = postId,
-                postPatchRequestDto = PostPatchRequestDto(title = null, content = "", anonymous = null, images = null)
-            )
-        }
-        // then
-        assertEquals(HttpStatus.BAD_REQUEST, exception.httpStatus)
-        assertEquals("내용은 1자에서 1000자 사이여야 합니다.", exception.errorMessage)
     }
 
     @Test

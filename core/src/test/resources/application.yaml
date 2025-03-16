@@ -16,3 +16,4 @@ spring:
     aws:
       s3:
         bucket: test-bucket
+        region: ap-northeast-2

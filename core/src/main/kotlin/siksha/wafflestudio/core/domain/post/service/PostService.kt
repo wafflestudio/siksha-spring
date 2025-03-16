@@ -1,6 +1,8 @@
-package siksha.wafflestudio.core.application.post
+package siksha.wafflestudio.core.domain.post.service
 
 import jakarta.transaction.Transactional
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
@@ -14,22 +16,17 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
 import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedException
-import siksha.wafflestudio.core.application.post.dto.GetPostsResponseDto
-import siksha.wafflestudio.core.application.post.dto.PostCreateRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostPatchRequestDto
-import siksha.wafflestudio.core.application.post.dto.PostResponseDto
 import siksha.wafflestudio.core.domain.common.exception.*
-import siksha.wafflestudio.core.application.post.dto.PostsReportResponseDto
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.post.data.Post
 import siksha.wafflestudio.core.domain.post.data.PostLike
 import siksha.wafflestudio.core.domain.post.data.PostReport
+import siksha.wafflestudio.core.domain.post.dto.*
 import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.post.service.PostDomainService
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
@@ -38,7 +35,7 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class PostApplicationService(
+class PostService(
     private val postRepository: PostRepository,
     private val postLikeRepository: PostLikeRepository,
     private val postReportRepository: PostReportRepository,
@@ -46,16 +43,14 @@ class PostApplicationService(
     private val boardRepository: BoardRepository,
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
-    private val postDomainService: PostDomainService,
     private val s3Service: S3Service,
 ){
-    // TODO: parse etc
     fun getPosts(
         boardId: Int,
         page: Int,
         perPage: Int,
         userId: Int?,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         if (!boardRepository.existsById(boardId)) throw BoardNotFoundException()
 
         val pageable = PageRequest.of(page-1, perPage)
@@ -65,7 +60,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -76,7 +71,7 @@ class PostApplicationService(
         page: Int,
         perPage: Int,
         userId: Int,
-    ): GetPostsResponseDto {
+    ): PaginatedPostsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val postsPage = postRepository.findPageByUserId(userId, pageable)
 
@@ -84,7 +79,7 @@ class PostApplicationService(
 
         val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
 
-        return GetPostsResponseDto(
+        return PaginatedPostsResponseDto(
             result = postDtos,
             totalCount = postsPage.totalElements,
             hasNext = postsPage.hasNext(),
@@ -101,7 +96,6 @@ class PostApplicationService(
 
     @Transactional
     fun createPost(userId: Int, postCreateRequestDto: PostCreateRequestDto): PostResponseDto {
-        postDomainService.validateDto(postCreateRequestDto)
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardRepository.findByIdOrNull(postCreateRequestDto.boardId) ?: throw BoardNotFoundException()
 
@@ -123,8 +117,6 @@ class PostApplicationService(
 
     @Transactional
     fun patchPost(userId: Int, postId: Int, postPatchRequestDto: PostPatchRequestDto): PostResponseDto {
-        postDomainService.validatePatchDto(postPatchRequestDto)
-
         val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
         if (post.user.id != userId) throw NotPostOwnerException()
 
@@ -162,6 +154,103 @@ class PostApplicationService(
         }
 
         postRepository.deleteById(postId)
+    }
+
+    fun createOrUpdatePostLike(
+        userId: Int,
+        postId: Int,
+        isLiked: Boolean,
+    ): PostResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        val postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
+            ?: PostLike(
+                user = user,
+                post = post,
+                isLiked = isLiked,
+            )
+
+        postLike.isLiked = isLiked
+        postLikeRepository.save(postLike)
+
+        val likeCount = postLikeRepository.countPostLikesByPostIdAndLiked(postId)
+        val commentCount = commentRepository.countCommentsByPostId(postId)
+
+        return PostResponseDto.from(
+            post = post,
+            isMine = post.user.id == userId,
+            userPostLiked = isLiked,
+            likeCnt = likeCount.toInt(),
+            commentCnt = commentCount,
+        )
+    }
+
+    @Transactional
+    fun createPostReport(
+        reportingUid: Int,
+        postId: Int,
+        reason: String,
+    ): PostsReportResponseDto {
+        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
+        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
+
+        if (reason.length > 200 || reason.isBlank()) {
+            throw InvalidPostReportFormException()
+        }
+
+        try {
+            val postReport = postReportRepository.save(
+                PostReport(
+                    post = post,
+                    reason = reason,
+                    reportingUser = reportingUser,
+                    reportedUser = post.user,
+                )
+            )
+
+            //신고 5개 이상 누적시 숨기기
+            val postReportCount = postReportRepository.countPostReportByPostId(postId)
+            if (postReportCount >= 5 && post.available) {
+                post.available = false
+                postRepository.save(post)
+            }
+
+            return PostsReportResponseDto(
+                id = postReport.id,
+                reason = postReport.reason,
+                postId = postReport.post.id,
+            )
+        } catch (ex: DataIntegrityViolationException) {
+            throw PostAlreadyReportedException()
+        } catch (ex: Exception) {
+            throw PostReportSaveFailedException()
+        }
+    }
+
+    @Cacheable(value = ["popularPostCache"], key = "#likes + '-' + #createdBefore")
+    fun getTrendingPosts(
+        likes: Int,
+        createdBefore: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findTrending(minimumLikes = likes, createdDays = LocalDateTime.now().minusDays(createdBefore.toLong()))
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
+        )
+    }
+
+    @Cacheable(value = ["bestPostCache"], key = "#likes")
+    fun getBestPosts(
+        likes: Int,
+        userId: Int?,
+    ): PostsResponseDto {
+        val postsPage = postRepository.findBest(minimumLikes = likes)
+        val postDtos = mapPostsPageWithLikesAndComments(postsPage, userId)
+        return PostsResponseDto(
+            result = postDtos
+        )
     }
 
     private fun mapPostsPageWithLikesAndComments(postsPage: Page<Post>, userId: Int?): List<PostResponseDto> {
@@ -205,75 +294,6 @@ class PostApplicationService(
             }
         )
         return uploadFiles.map { it.url }
-    }
-
-    fun createOrUpdatePostLike(
-        userId: Int,
-        postId: Int,
-        isLiked: Boolean,
-    ): PostResponseDto {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
-        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
-
-        val postLike = postLikeRepository.findPostLikeByPostIdAndUserId(postId, userId)
-            ?: PostLike(
-                user = user,
-                post = post,
-                isLiked = isLiked,
-            )
-
-        postLike.isLiked = isLiked
-        postLikeRepository.save(postLike)
-
-        val likeCount = postLikeRepository.countPostLikesByPostIdAndLiked(postId)
-        val commentCount = commentRepository.countCommentsByPostId(postId)
-
-        return PostResponseDto.from(
-            post = post,
-            isMine = post.user.id == userId,
-            userPostLiked = isLiked,
-            likeCnt = likeCount.toInt(),
-            commentCnt = commentCount.toInt(),
-        )
-    }
-
-    @Transactional
-    fun createPostReport(
-        reportingUid: Int,
-        postId: Int,
-        reason: String,
-    ): PostsReportResponseDto {
-        val reportingUser = userRepository.findByIdOrNull(reportingUid) ?: throw UnauthorizedUserException()
-        val post = postRepository.findByIdOrNull(postId) ?: throw PostNotFoundException()
-
-        if (reason.length > 200 || reason.isBlank()) {
-            throw InvalidPostReportFormException()
-        }
-        if (postReportRepository.existsByPostIdAndReportingUser(postId, reportingUser)) {
-            throw PostAlreadyReportedException()
-        }
-
-        val postReport = postReportRepository.save(
-            PostReport(
-                post = post,
-                reason = reason,
-                reportingUser = reportingUser,
-                reportedUser = post.user,
-            )
-        )
-
-        //신고 5개 이상 누적시 숨기기
-        val postReportCount = postReportRepository.countPostReportByPostId(postId)
-        if (postReportCount >= 5 && post.available) {
-            post.available = false
-            postRepository.save(post)
-        }
-
-        return PostsReportResponseDto(
-            id = postReport.id,
-            reason = postReport.reason,
-            postId = postReport.post.id,
-        )
     }
 }
 
