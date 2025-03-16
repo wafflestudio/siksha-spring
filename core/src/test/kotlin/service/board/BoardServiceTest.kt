@@ -32,7 +32,7 @@ class BoardServiceTest {
         userRepository = mockk()
         service = BoardService(userRepository, boardRepository)
         clearAllMocks()
-        every { userRepository.findByIdOrNull(any()) } returns User(1L, "", "", null, "")
+        every { userRepository.findByIdOrNull(any()) } returns User(1, "", "", null, "")
     }
 
     @Test
@@ -43,7 +43,7 @@ class BoardServiceTest {
 
         // when
         val boardCreateDTO = BoardCreateDto("test", "테스트 게시판")
-        val result = service.addBoard(1L, boardCreateDTO)
+        val result = service.addBoard(1, boardCreateDTO)
 
         // when
         assertNotNull(result)
@@ -60,7 +60,7 @@ class BoardServiceTest {
         // when
         val boardCreateDTO = BoardCreateDto(name = null, description = "테스트")
         val exception = assertThrows<InvalidBoardFormException> {
-            service.addBoard(1L, boardCreateDTO)
+            service.addBoard(1, boardCreateDTO)
         }
 
         // then
@@ -75,7 +75,7 @@ class BoardServiceTest {
         // when
         val boardCreateDTO = BoardCreateDto("existing", "이미 존재하는 게시판")
         val exception = assertThrows<BoardNameAlreadyExistException> {
-            service.addBoard(1L, boardCreateDTO)
+            service.addBoard(1, boardCreateDTO)
         }
 
         // then
