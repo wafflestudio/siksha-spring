@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
@@ -21,6 +23,7 @@ subprojects {
 allprojects {
     repositories {
         mavenCentral()
+        mavenCodeArtifact()
     }
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -40,6 +43,9 @@ allprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
         implementation("org.springframework.boot:spring-boot-starter-validation")
+        implementation("com.wafflestudio.spring:spring-boot-starter-waffle-secret-manager:1.0.1")
+        implementation("software.amazon.awssdk:secretsmanager")
+        implementation("software.amazon.awssdk:sts")
     }
 
     kotlin {
@@ -51,10 +57,36 @@ allprojects {
     dependencyManagement {
         imports {
             mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+            mavenBom("software.amazon.awssdk:bom:2.25.70")
         }
     }
 
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+}
+
+fun RepositoryHandler.mavenCodeArtifact() {
+    maven {
+        val authToken =
+            properties["codeArtifactAuthToken"] as String? ?: ByteArrayOutputStream().use {
+                runCatching {
+                    exec {
+                        commandLine =
+                            listOf(
+                                "aws", "codeartifact", "get-authorization-token",
+                                "--domain", "wafflestudio", "--domain-owner", "405906814034",
+                                "--query", "authorizationToken", "--region", "ap-northeast-1", "--output", "text",
+                            )
+                        standardOutput = it
+                    }
+                }
+                it.toString()
+            }
+        url = uri("https://wafflestudio-405906814034.d.codeartifact.ap-northeast-1.amazonaws.com/maven/spring-waffle/")
+        credentials {
+            username = "aws"
+            password = authToken
+        }
     }
 }

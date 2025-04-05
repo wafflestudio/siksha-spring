@@ -36,3 +36,5 @@ spring:
     property-naming-strategy: SNAKE_CASE
 
 jwt.secret-key:
+
+secret-names: dev/siksha-api-server
