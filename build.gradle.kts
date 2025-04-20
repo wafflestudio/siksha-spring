@@ -43,9 +43,7 @@ allprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
         implementation("org.springframework.boot:spring-boot-starter-validation")
-        implementation("com.wafflestudio.spring:spring-boot-starter-waffle-secret-manager:1.0.1")
-        implementation("software.amazon.awssdk:secretsmanager")
-        implementation("software.amazon.awssdk:sts")
+        implementation("com.wafflestudio.spring:spring-boot-starter-waffle-secret-manager:1.0.2")
     }
 
     kotlin {
