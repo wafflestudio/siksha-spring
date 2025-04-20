@@ -10,20 +10,20 @@ spring:
   flyway:
     enabled: true
 #    baseline-on-migrate: true
-
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  cache:
+    type: redis
+---
+spring:
+  config:
+    activate:
+      on-profile: local
   datasource:
     url:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-
-  redis:
-    host: localhost
-    port: 6379
-
-  cache:
-    type: redis
-
   cloud:
     aws:
       region:
@@ -32,7 +32,66 @@ spring:
         profile-name: dev
       s3:
         bucket:
-  jackson:
-    property-naming-strategy: SNAKE_CASE
+  data:
+    redis:
+      host:
+      port:
 
-jwt.secret-key:
+jwt:
+  secret-key:
+
+secret-names: dev/siksha-api-server
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url:
+    username:
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        profile-name: dev
+      s3:
+        bucket:
+  data:
+    redis:
+      host:
+      port:
+
+jwt:
+  secret-key:
+
+secret-names: dev/siksha-api-server
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url:
+    username:
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        profile-name: prod
+      s3:
+        bucket:
+  data:
+    redis:
+      host:
+      port:
+
+jwt:
+  secret-key:
+
+secret-names: prod/siksha-api-server
