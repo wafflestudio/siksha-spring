@@ -2,9 +2,10 @@
 FROM --platform=linux/x86_64 openjdk:17-jdk-alpine AS build
 
 WORKDIR /app
+ARG CODEARTIFACT_AUTH_TOKEN
 
 COPY . .
-RUN ./gradlew clean bootJar --no-daemon
+RUN ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken=$CODEARTIFACT_AUTH_TOKEN
 
 # launch jar
 FROM --platform=linux/x86_64 openjdk:17-jdk-alpine
