@@ -30,6 +30,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Get and save Auth Token for CodeArtifact
+        id: get-save-codeartifact-auth-token
+        run: |
+          aws codeartifact get-authorization-token --domain wafflestudio --domain-owner 405906814034 --query authorizationToken --region ap-northeast-1 --output text > .codeartifact-auth-token
+
       - name: FOR K8S) Build, tag, and push image to Amazon ECR
         id: build-image-k8s
         env:
@@ -37,7 +42,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           docker build --platform linux/x86_64 -t $ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG . \
-                      --build-arg PROFILE="dev"
+                      --build-arg PROFILE="dev" --build-arg CODEARTIFACT_AUTH_TOKEN=$(cat .codeartifact-auth-token)
 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG" >> $GITHUB_OUTPUT
