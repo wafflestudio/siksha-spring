@@ -16,7 +16,7 @@ COPY --from=build /app/api/build/libs/*.jar app.jar
 ARG PROFILE
 ENV SPRING_PROFILES_ACTIVE=${PROFILE:-dev}
 
-ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=60.0 -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -Xss256k -XX:MaxMetaspaceSize=64m"
+ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=60.0 -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -Xss256k"
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "app.jar"]
