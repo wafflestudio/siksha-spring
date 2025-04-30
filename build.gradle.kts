@@ -32,6 +32,7 @@ allprojects {
     dependencies {
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         implementation("org.springframework.boot:spring-boot-starter-web")
+        implementation("org.springframework.boot:spring-boot-starter-actuator")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
         testImplementation("io.mockk:mockk:1.12.0")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")

@@ -16,6 +16,7 @@ class WebMvcConfig(
                 "/error",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
+                "/actuator/health",
             )
     }
 }
