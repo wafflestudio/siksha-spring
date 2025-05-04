@@ -1,5 +1,7 @@
 package siksha.wafflestudio.core.util
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.regex.Pattern
@@ -29,5 +31,13 @@ object EtcUtils {
     fun convertImageUrlsToEtcJson(imageUrls: List<String>): String? {
         val etc = Etc(images = imageUrls)
         return jsonEncoder.encodeToString<Etc>(etc)
+    }
+
+    fun convertEtc(etc: String?): Map<String, Any> {
+        return if (etc.isNullOrBlank()) {
+            emptyMap()
+        } else {
+            jacksonObjectMapper().readValue(etc)
+        }
     }
 }

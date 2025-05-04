@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.restaurant.data.Restaurant
 import java.time.OffsetDateTime
+import siksha.wafflestudio.core.util.EtcUtils
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantResponseDto @JsonCreator constructor (
@@ -25,7 +26,7 @@ data class RestaurantResponseDto @JsonCreator constructor (
     @JsonProperty("lng")
     val lng: Double?,
     @JsonProperty("etc")
-    val etc: String?,
+    val etc: Map<String, Any>,
     @JsonProperty("created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
     val createdAt: OffsetDateTime,
@@ -43,7 +44,7 @@ data class RestaurantResponseDto @JsonCreator constructor (
                 addr = restaurant.addr,
                 lat = restaurant.lat,
                 lng = restaurant.lng,
-                etc = restaurant.etc,
+                etc = EtcUtils.convertEtc(restaurant.etc),
                 createdAt = restaurant.createdAt,
                 updatedAt = restaurant.updatedAt,
             )
