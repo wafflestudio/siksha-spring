@@ -26,7 +26,8 @@ class RedisCacheConfig {
         val cacheConfigurations = mapOf(
             "boardCache" to createCacheConfiguration(Duration.ofDays(1)),
             "popularPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
-            "bestPostCache" to createCacheConfiguration(Duration.ofMinutes(10))
+            "bestPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
+            "restaurantCache" to createCacheConfiguration(Duration.ofDays(1)),
         )
 
         return RedisCacheManager.builder(redisConnectionFactory)
