@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
-@Entity(name = "board")
+@Entity(name = "menu")
 @Table(name = "menu")
 data class Menu(
     @Id
