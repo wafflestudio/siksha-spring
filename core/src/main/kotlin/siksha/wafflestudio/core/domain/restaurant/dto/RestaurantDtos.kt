@@ -3,6 +3,7 @@ package siksha.wafflestudio.core.domain.restaurant.dto
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.restaurant.data.Restaurant
@@ -26,7 +27,7 @@ data class RestaurantResponseDto @JsonCreator constructor (
     @JsonProperty("lng")
     val lng: Double?,
     @JsonProperty("etc")
-    val etc: Map<String, Any>,
+    val etc: JsonNode,
     @JsonProperty("created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Seoul")
     val createdAt: OffsetDateTime,

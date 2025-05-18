@@ -1,7 +1,7 @@
 package siksha.wafflestudio.core.util
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.regex.Pattern
@@ -33,11 +33,11 @@ object EtcUtils {
         return jsonEncoder.encodeToString<Etc>(etc)
     }
 
-    fun convertEtc(etc: String?): Map<String, Any> {
+    fun convertEtc(etc: String?): JsonNode {
         return if (etc.isNullOrBlank()) {
-            emptyMap()
+            jacksonObjectMapper().createObjectNode()
         } else {
-            jacksonObjectMapper().readValue(etc)
+            jacksonObjectMapper().readTree(etc)
         }
     }
 }
