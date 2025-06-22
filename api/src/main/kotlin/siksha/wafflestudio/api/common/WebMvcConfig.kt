@@ -17,6 +17,7 @@ class WebMvcConfig(
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/actuator/health",
+                "/restaurants"
             )
     }
 }
