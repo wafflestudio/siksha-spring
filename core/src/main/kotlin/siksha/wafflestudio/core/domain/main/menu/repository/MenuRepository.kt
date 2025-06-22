@@ -21,20 +21,20 @@ interface MenuRepository : JpaRepository<Menu, Int> {
                 FROM menu me LEFT JOIN review r ON me.id = r.menu_id
                 GROUP BY me.restaurant_id, me.code
             ) agg ON m.restaurant_id = agg.restaurant_id AND m.code = agg.code
-        WHERE m.date BETWEEN :start_date AND :end_date;
+        WHERE m.date BETWEEN :startDate AND :endDate
         """, nativeQuery = true)
-    fun findMenusByDate(@Param("start_date") startDate: String, @Param("end_date") endDate: String): List<MenuSummary>;
+    fun findMenusByDate(@Param("startDate") startDate: String, @Param("endDate") endDate: String): List<MenuSummary>;
 
     @Query(
         """
-        SELECT m.id, COUNT(ml.id) AS likeCnt, MAX(IF(ml.user_id = :user_id, 1, 0)) AS isLiked
+        SELECT m.id, COUNT(ml.id) AS likeCnt, MAX(IF(ml.user_id = :userId, 1, 0)) AS isLiked
         FROM menu m
         JOIN menu me ON m.restaurant_id = me.restaurant_id AND m.code = me.code
         LEFT OUTER JOIN siksha.menu_like ml ON me.id = ml.menu_id AND ml.is_liked = 1
-        WHERE m.date >= :start_date AND m.date <= :end_date
+        WHERE m.date >= :startDate AND m.date <= :endDate
         GROUP BY m.id
     """, nativeQuery = true)
-    fun findMenuLikesByDateAndUserId(@Param("user_id") userId: String, @Param("start_date") startDate: String, @Param("end_date") endDate: String): List<MenuLikeSummary>
+    fun findMenuLikesByDateAndUserId(@Param("userId") userId: String, @Param("startDate") startDate: String, @Param("endDate") endDate: String): List<MenuLikeSummary>
 
     @Query(
         """
@@ -49,10 +49,10 @@ interface MenuRepository : JpaRepository<Menu, Int> {
                 FROM menu me LEFT JOIN review r ON me.id = r.menu_id
                 GROUP BY me.restaurant_id, me.code
             ) agg ON m.restaurant_id = agg.restaurant_id AND m.code = agg.code
-        WHERE m.id = :menu_id;
+        WHERE m.id = :menuId;
         """, nativeQuery = true
     )
-    fun findMenuById(@Param("menu_id") menuId: String): MenuSummary
+    fun findMenuById(@Param("menuId") menuId: String): MenuSummary
 
     @Query("""
         SELECT m.id, agg.like_cnt AS likeCnt
@@ -63,17 +63,17 @@ interface MenuRepository : JpaRepository<Menu, Int> {
                      LEFT JOIN menu_like ml ON m.id = ml.menu_id AND ml.is_liked = 1
             GROUP BY m.restaurant_id, m.code
         ) agg ON m.restaurant_id = agg.restaurant_id AND m.code = agg.code
-        WHERE m.id = :menu_id;
+        WHERE m.id = :menuId
     """, nativeQuery = true)
-    fun findMenuLikeByMenuId(@Param("menu_id") menuId: String): MenuLikeCount
+    fun findMenuLikeByMenuId(@Param("menuId") menuId: String): MenuLikeCount
 
     @Query("""
-        SELECT m.id, COUNT(ml.id) AS likeCnt, MAX(IF(ml.user_id = :user_id, 1, 0)) AS isLiked
+        SELECT m.id, COUNT(ml.id) AS likeCnt, MAX(IF(ml.user_id = :userId, 1, 0)) AS isLiked
         FROM menu m
         JOIN menu me ON m.restaurant_id = me.restaurant_id AND m.code = me.code
         LEFT OUTER JOIN menu_like  ml ON me.id = ml.menu_id AND ml.is_liked = 1
-        WHERE m.id = :menu_id
+        WHERE m.id = :menuId
         GROUP BY m.id
     """, nativeQuery = true)
-    fun findMenuLikeByMenuIdAndUserId(@Param("menu_id") menuId: String, userId: String): MenuLikeSummary
+    fun findMenuLikeByMenuIdAndUserId(@Param("menuId") menuId: String, @Param("userId") userId: String): MenuLikeSummary
 }
