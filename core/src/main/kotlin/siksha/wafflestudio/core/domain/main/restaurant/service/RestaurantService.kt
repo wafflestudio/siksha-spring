@@ -1,10 +1,10 @@
-package siksha.wafflestudio.core.domain.main.menu.restaurant.service
+package siksha.wafflestudio.core.domain.main.restaurant.service
 
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.domain.main.menu.restaurant.dto.RestaurantResponseDto
-import siksha.wafflestudio.core.domain.main.menu.restaurant.dto.RestaurantListResponseDto
-import siksha.wafflestudio.core.domain.main.menu.restaurant.repository.RestaurantRepository
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantResponseDto
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantListResponseDto
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
 
 @Service
 class RestaurantService(
