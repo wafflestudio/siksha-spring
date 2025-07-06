@@ -1,14 +1,14 @@
-package siksha.wafflestudio.core.domain.board.service
+package siksha.wafflestudio.core.domain.community.board.service
 
 import jakarta.transaction.Transactional
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.domain.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.board.BoardDto
-import siksha.wafflestudio.core.domain.board.data.Board
-import siksha.wafflestudio.core.domain.board.repository.BoardRepository
+import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.BoardDto
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException

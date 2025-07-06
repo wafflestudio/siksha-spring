@@ -1,9 +1,9 @@
-package siksha.wafflestudio.core.domain.post.data
+package siksha.wafflestudio.core.domain.community.post.data
 
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import siksha.wafflestudio.core.domain.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.OffsetDateTime
 import java.time.ZoneId

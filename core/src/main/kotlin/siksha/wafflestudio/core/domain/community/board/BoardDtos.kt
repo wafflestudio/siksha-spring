@@ -1,9 +1,9 @@
-package siksha.wafflestudio.core.domain.board
+package siksha.wafflestudio.core.domain.community.board
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
-import siksha.wafflestudio.core.domain.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.data.Board
 import java.time.OffsetDateTime
 
 data class BoardCreateDto(

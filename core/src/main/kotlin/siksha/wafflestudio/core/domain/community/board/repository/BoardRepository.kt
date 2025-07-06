@@ -1,8 +1,8 @@
-package siksha.wafflestudio.core.domain.board.repository
+package siksha.wafflestudio.core.domain.community.board.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import siksha.wafflestudio.core.domain.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.data.Board
 
 @Repository
 interface BoardRepository : JpaRepository<Board, Int> {

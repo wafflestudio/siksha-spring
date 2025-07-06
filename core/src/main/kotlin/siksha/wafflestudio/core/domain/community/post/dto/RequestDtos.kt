@@ -1,11 +1,11 @@
-package siksha.wafflestudio.core.domain.post.dto
+package siksha.wafflestudio.core.domain.community.post.dto
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.common.validator.NullOrNotBlank
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.util.EtcUtils
 

@@ -1,10 +1,10 @@
-package siksha.wafflestudio.core.domain.post.dto
+package siksha.wafflestudio.core.domain.community.post.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.board.data.Board
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 
 data class PostCreateDto(

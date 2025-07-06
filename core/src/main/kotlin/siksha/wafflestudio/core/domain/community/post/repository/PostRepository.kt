@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.post.repository
+package siksha.wafflestudio.core.domain.community.post.repository
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import java.time.OffsetDateTime
 
 @Repository

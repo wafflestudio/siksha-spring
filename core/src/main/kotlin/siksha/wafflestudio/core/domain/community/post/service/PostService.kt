@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.post.service
+package siksha.wafflestudio.core.domain.community.post.service
 
 import jakarta.transaction.Transactional
 import org.springframework.cache.annotation.Cacheable
@@ -8,8 +8,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberException
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
@@ -20,13 +20,14 @@ import siksha.wafflestudio.core.domain.common.exception.*
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
-import siksha.wafflestudio.core.domain.post.data.Post
-import siksha.wafflestudio.core.domain.post.data.PostLike
-import siksha.wafflestudio.core.domain.post.data.PostReport
+import siksha.wafflestudio.core.domain.community.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.dto.*
+import siksha.wafflestudio.core.domain.community.post.data.PostLike
+import siksha.wafflestudio.core.domain.community.post.data.PostReport
 import siksha.wafflestudio.core.domain.post.dto.*
-import siksha.wafflestudio.core.domain.post.repository.PostLikeRepository
-import siksha.wafflestudio.core.domain.post.repository.PostReportRepository
-import siksha.wafflestudio.core.domain.post.repository.PostRepository
+import siksha.wafflestudio.core.domain.community.post.repository.PostLikeRepository
+import siksha.wafflestudio.core.domain.community.post.repository.PostReportRepository
+import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service

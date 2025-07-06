@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.comment.dto
+package siksha.wafflestudio.core.domain.community.comment.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonNaming

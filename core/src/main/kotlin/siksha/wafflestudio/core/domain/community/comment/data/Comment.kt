@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.comment.data
+package siksha.wafflestudio.core.domain.community.comment.data
 
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -13,7 +13,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.UpdateTimestamp
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.OffsetDateTime
 import java.time.ZoneId

@@ -1,8 +1,8 @@
-package siksha.wafflestudio.core.domain.comment.repository
+package siksha.wafflestudio.core.domain.community.comment.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import siksha.wafflestudio.core.domain.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
 
 interface CommentLikeRepository : JpaRepository<CommentLike, Long> {
     @Query("SELECT cl FROM comment_like cl WHERE cl.comment.id IN :commentIds AND cl.isLiked = true")

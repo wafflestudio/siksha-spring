@@ -1,8 +1,8 @@
-package siksha.wafflestudio.core.domain.comment.dto
+package siksha.wafflestudio.core.domain.community.comment.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.comment.data.Comment
+import siksha.wafflestudio.core.domain.community.comment.data.Comment
 import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

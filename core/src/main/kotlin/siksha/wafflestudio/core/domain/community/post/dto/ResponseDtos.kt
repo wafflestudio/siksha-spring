@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.post.dto
+package siksha.wafflestudio.core.domain.community.post.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

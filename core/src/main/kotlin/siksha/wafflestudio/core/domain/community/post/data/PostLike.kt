@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.post.data
+package siksha.wafflestudio.core.domain.community.post.data
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

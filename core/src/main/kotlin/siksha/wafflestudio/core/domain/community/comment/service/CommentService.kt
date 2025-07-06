@@ -1,21 +1,21 @@
-package siksha.wafflestudio.core.domain.comment.service
+package siksha.wafflestudio.core.domain.community.comment.service
 
 import jakarta.transaction.Transactional
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.domain.comment.data.Comment
-import siksha.wafflestudio.core.domain.comment.data.CommentLike
-import siksha.wafflestudio.core.domain.comment.data.CommentReport
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.CommentsReportResponseDto
-import siksha.wafflestudio.core.domain.comment.repository.CommentLikeRepository
-import siksha.wafflestudio.core.domain.comment.repository.CommentReportRepository
-import siksha.wafflestudio.core.domain.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.community.comment.data.Comment
+import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.community.comment.dto.GetCommentsResponseDto
+import siksha.wafflestudio.core.domain.community.comment.dto.CommentResponseDto
+import siksha.wafflestudio.core.domain.community.comment.dto.CreateCommentRequestDto
+import siksha.wafflestudio.core.domain.community.comment.dto.PatchCommentRequestDto
+import siksha.wafflestudio.core.domain.community.comment.dto.CommentsReportResponseDto
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentReportRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.common.exception.InvalidPageNumberException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
@@ -27,7 +27,7 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
 import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
 import siksha.wafflestudio.core.domain.common.exception.CommentReportSaveFailedException
-import siksha.wafflestudio.core.domain.post.repository.PostRepository
+import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
@@ -72,7 +72,7 @@ class CommentService(
         postId: Int,
         page: Int,
         perPage: Int,
-    ):GetCommentsResponseDto {
+    ): GetCommentsResponseDto {
         val pageable = PageRequest.of(page-1, perPage)
         val commentsPage = commentRepository.findPageByPostId(postId, pageable)
         if (commentsPage.isEmpty && commentsPage.totalElements > 0) throw InvalidPageNumberException()
