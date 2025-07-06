@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.review.data
+package siksha.wafflestudio.core.domain.main.review.data
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
