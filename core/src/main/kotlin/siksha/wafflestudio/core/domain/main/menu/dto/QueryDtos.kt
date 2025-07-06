@@ -19,6 +19,12 @@ interface MenuSummary {
     fun getReviewCnt(): Int;
 }
 
+interface MenuPlainSummary {
+    fun getId(): Int;
+    fun getRestaurantId(): Int;
+    fun getCode(): String;
+}
+
 interface MenuLikeSummary {
     fun getId(): Int;
     fun getLikeCnt(): Int;

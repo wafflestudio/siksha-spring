@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeCount
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeSummary
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
 
 interface MenuRepository : JpaRepository<Menu, Int> {
@@ -53,6 +54,13 @@ interface MenuRepository : JpaRepository<Menu, Int> {
         """, nativeQuery = true
     )
     fun findMenuById(@Param("menuId") menuId: String): MenuSummary
+
+    @Query("""
+        SELECT m.id, m.restaurant_id AS restaurantId, m.code
+        FROM menu m
+        WHERE m.id = :menuId
+    """, nativeQuery = true)
+    fun findPlainMenuById(menuId: String): MenuPlainSummary
 
     @Query("""
         SELECT m.id, agg.like_cnt AS likeCnt
