@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.restaurant.dto
+package siksha.wafflestudio.core.domain.main.menu.restaurant.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.restaurant.data.Restaurant
+import siksha.wafflestudio.core.domain.main.menu.restaurant.data.Restaurant
 import java.time.OffsetDateTime
 import siksha.wafflestudio.core.util.EtcUtils
 

@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.restaurant.data
+package siksha.wafflestudio.core.domain.main.menu.restaurant.data
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
