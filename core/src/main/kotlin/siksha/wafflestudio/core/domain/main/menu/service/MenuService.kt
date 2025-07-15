@@ -18,10 +18,9 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
 import siksha.wafflestudio.core.util.EtcUtils
 import java.io.InputStream
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Calendar.SATURDAY
-import java.util.Calendar.SUNDAY
 
 @Service
 class MenuService(
@@ -49,14 +48,11 @@ class MenuService(
     }
 
     private fun getDateType(date: LocalDate): String {
-        val day = date.dayOfWeek.value
-        return if (day == SUNDAY || isHoliday(date)) {
-            "HOLIDAY"
-        }
-        else if (day == SATURDAY) {
-            "SATURDAY"
-        } else {
-            "WEEKDAY"
+        return when {
+            isHoliday(date) -> "HOLIDAY"
+            date.dayOfWeek == DayOfWeek.SUNDAY -> "HOLIDAY"
+            date.dayOfWeek == DayOfWeek.SATURDAY -> "SATURDAY"
+            else -> "WEEKDAY"
         }
     }
 
