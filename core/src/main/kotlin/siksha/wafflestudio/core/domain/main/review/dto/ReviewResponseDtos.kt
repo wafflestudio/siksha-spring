@@ -1,6 +1,5 @@
 package siksha.wafflestudio.core.domain.main.review.dto
 
-import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class ReviewResponse(
@@ -27,22 +26,3 @@ data class CommentRecommendationResponse(
 data class ReviewScoreDistributionResponse(
     val dist: List<Int>
 )
-
-data class MenuDetailsDto(
-    val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime,
-    val id: Int,
-    val restaurantId: Int,
-    val code: String,
-    val date: LocalDate,
-    val type: String,
-    val nameKr: String?,
-    val nameEn: String?,
-    val price: Int?,
-    val etc: List<String>?,
-    val score: Double?,
-    val reviewCnt: Int,
-    val isLiked: Boolean,
-    val likeCnt: Int
-)
-
