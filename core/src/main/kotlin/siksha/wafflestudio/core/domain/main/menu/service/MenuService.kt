@@ -1,5 +1,7 @@
 package siksha.wafflestudio.core.domain.main.menu.service
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.http.HttpStatus
@@ -15,8 +17,11 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
 import siksha.wafflestudio.core.util.EtcUtils
+import java.io.InputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Calendar.SATURDAY
+import java.util.Calendar.SUNDAY
 
 @Service
 class MenuService(
@@ -24,6 +29,37 @@ class MenuService(
     private val restaurantRepository: RestaurantRepository,
     private val menuLikeRepository: MenuLikeRepository
 ) {
+    private val holidays: Set<LocalDate> = loadHolidays()
+
+    private fun loadHolidays(): Set<LocalDate> {
+        val resourcePath = "/2025.json"
+        val stream: InputStream = this::class.java.getResourceAsStream(resourcePath)
+            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+
+        val mapper = jacksonObjectMapper()
+        val raw: Map<String, List<String>> = mapper.readValue(stream)
+
+        return raw.keys
+            .map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+            .toSet()
+    }
+
+    private fun isHoliday(date: LocalDate): Boolean {
+        return holidays.contains(date)
+    }
+
+    private fun getDateType(date: LocalDate): String {
+        val day = date.dayOfWeek.value
+        return if (day == SUNDAY || isHoliday(date)) {
+            "HOLIDAY"
+        }
+        else if (day == SATURDAY) {
+            "SATURDAY"
+        } else {
+            "WEEKDAY"
+        }
+    }
+
     fun getMenusWhereDate(
         startDate: LocalDate,
         endDate: LocalDate,
@@ -122,6 +158,7 @@ class MenuService(
             .map { (date, typedMap) ->
                 DateWithTypeInListDto(
                     date = date,
+                    dateType = getDateType(date),
                     BR = typedMap["BR"] ?: emptyList(),
                     LU = typedMap["LU"] ?: emptyList(),
                     DN = typedMap["DN"] ?: emptyList()

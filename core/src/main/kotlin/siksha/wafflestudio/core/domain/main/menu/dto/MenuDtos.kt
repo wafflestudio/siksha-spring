@@ -75,6 +75,8 @@ data class DateWithTypeInListDto @JsonCreator constructor(
     @JsonProperty("date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val date: LocalDate,
+    @JsonProperty("date_type")
+    val dateType: String,
     @JsonProperty("BR")
     val BR: List<RestaurantInListDto> = emptyList(),
     @JsonProperty("LU")
