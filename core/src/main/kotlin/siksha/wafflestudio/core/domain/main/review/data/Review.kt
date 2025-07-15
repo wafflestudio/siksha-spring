@@ -12,6 +12,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -22,9 +23,9 @@ data class Review(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
     // TODO: uncomment this after implement Menu
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "menu_id", nullable = false)
-//    val menu: Menu,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id", nullable = false)
+    val menu: Menu,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
