@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
-import siksha.wafflestudio.core.domain.post.dto.*
-import siksha.wafflestudio.core.domain.post.service.PostService
+import siksha.wafflestudio.core.domain.community.post.dto.*
+import siksha.wafflestudio.core.domain.community.post.service.PostService
 
 @RestController
 @RequestMapping("/community/posts")

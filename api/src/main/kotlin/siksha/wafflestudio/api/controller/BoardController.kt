@@ -4,9 +4,9 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.board.BoardDto
-import siksha.wafflestudio.core.domain.board.service.BoardService
+import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.BoardDto
+import siksha.wafflestudio.core.domain.community.board.service.BoardService
 import java.util.*
 
 @RestController

@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -18,7 +19,11 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Entity(name = "menu_like")
-@Table(name = "menu_like")
+@Table(name = "menu_like",
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["user_id", "menu_id"])
+    ]
+)
 data class MenuLike(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

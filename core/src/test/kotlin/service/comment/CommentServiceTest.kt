@@ -9,20 +9,24 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.board.data.Board
-import siksha.wafflestudio.core.domain.comment.data.*
-import siksha.wafflestudio.core.domain.comment.repository.*
-import siksha.wafflestudio.core.domain.comment.service.CommentService
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.comment.service.CommentService
 import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
-import siksha.wafflestudio.core.domain.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
-import siksha.wafflestudio.core.domain.post.repository.PostRepository
+import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import org.junit.jupiter.api.Assertions.*
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import siksha.wafflestudio.core.domain.community.comment.data.Comment
+import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentReportRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
 
 @SpringBootTest
 class CommentServiceTest {

@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.board.data.Board
-import siksha.wafflestudio.core.domain.board.repository.BoardRepository
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
 import kotlin.test.assertNotNull
 
 @DataJpaTest
