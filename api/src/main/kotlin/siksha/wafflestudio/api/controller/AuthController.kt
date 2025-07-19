@@ -1,9 +1,12 @@
 package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
@@ -28,8 +31,13 @@ class AuthController(
 //    @GetMapping("/privacy-policy")
 //    fun getPrivacyPolicy() {}
 //
-//    @DeleteMapping
-//    fun deleteUser() {}
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteUser(
+        request: HttpServletRequest
+    ) {
+        userService.deleteUser(request.userId)
+    }
 //
 //    @PostMapping("/login/test")
 //    fun loginTypeTest(){}
@@ -45,7 +53,7 @@ class AuthController(
 
     // TODO: deprecate this
     @GetMapping("/me")
-    fun getUserInfo(
+    fun getMyInfo(
         request: HttpServletRequest
     ): UserResponseDto {
         return userService.getUserInfo(request.userId)
@@ -55,9 +63,8 @@ class AuthController(
 //    fun updateUserProfile() {}
 
     @GetMapping("/me/image")
-    fun getUserInfoWithProfileUrl(request: HttpServletRequest
+    fun getMyInfoWithProfileUrl(request: HttpServletRequest
     ): UserWithProfileUrlResponseDto {
         return userService.getUserInfoWithProfileUrl(request.userId)
     }
-
 }

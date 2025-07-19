@@ -4,10 +4,6 @@ import org.springframework.http.HttpStatus
 
 sealed class MainException(httpStatus: HttpStatus, errorMessage: String) : SikshaException(httpStatus, errorMessage)
 
-/**
- * User 객체의 정보를 직접 가져오는 경우 사용
- * Auth에서는 UnauthorizedUserException (401 Unauthorized)를 사용
- */
 class UserNotFoundException: MainException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다.")
 
 /**
