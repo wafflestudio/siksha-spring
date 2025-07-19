@@ -8,8 +8,6 @@ class InvalidBoardFormException(message: String) : CommunityException(HttpStatus
 
 class InvalidPostFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
 
-class UnauthorizedUserException : CommunityException(HttpStatus.UNAUTHORIZED, "존재하지 않는 사용자입니다.")
-
 class NotCommentOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 댓글의 작성자가 아닙니다.")
 
 class NotPostOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 글의 작성자가 아닙니다.")

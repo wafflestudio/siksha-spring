@@ -3,4 +3,15 @@ package siksha.wafflestudio.core.domain.common.exception
 import org.springframework.http.HttpStatus
 
 sealed class MainException(httpStatus: HttpStatus, errorMessage: String) : SikshaException(httpStatus, errorMessage)
+
+/**
+ * User 객체의 정보를 직접 가져오는 경우 사용
+ * Auth에서는 UnauthorizedUserException (401 Unauthorized)를 사용
+ */
 class UserNotFoundException: MainException(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다.")
+
+/**
+ * Auth 시 토큰이 무효한 경우 사용
+ * 토큰은 유효하지만 DB에 userId에 해당하는 User가 없는 경우에도 사용
+ */
+class UnauthorizedUserException : MainException(HttpStatus.UNAUTHORIZED, "존재하지 않는 사용자입니다.")
