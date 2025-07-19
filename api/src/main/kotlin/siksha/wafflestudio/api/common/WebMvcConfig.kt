@@ -17,7 +17,10 @@ class WebMvcConfig(
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/actuator/health",
-                "/restaurants"
+                "/restaurants",
+                "/auth/privacy-policy",
+                "/auth/login/**",
+                "/auth/nicknames/validate"
             )
     }
 }
