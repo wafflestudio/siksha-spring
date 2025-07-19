@@ -14,4 +14,4 @@ class UserNotFoundException: MainException(HttpStatus.NOT_FOUND, "해당 사용�
  * Auth 시 토큰이 무효한 경우 사용
  * 토큰은 유효하지만 DB에 userId에 해당하는 User가 없는 경우에도 사용
  */
-class UnauthorizedUserException : MainException(HttpStatus.UNAUTHORIZED, "존재하지 않는 사용자입니다.")
+class UnauthorizedUserException : MainException(HttpStatus.UNAUTHORIZED, "인증 정보가 유효하지 않습니다.")
