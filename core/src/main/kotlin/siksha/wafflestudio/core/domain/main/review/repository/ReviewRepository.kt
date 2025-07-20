@@ -54,7 +54,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
     fun countFilteredReviews(
         @Param("menuId") menuId: Int,
         @Param("comment") comment: Boolean?,
-        @Param("etc") etc: Boolean?
+        @Param("imageExist") imageExist: Boolean?
     ): Long
 
     @Query("""
