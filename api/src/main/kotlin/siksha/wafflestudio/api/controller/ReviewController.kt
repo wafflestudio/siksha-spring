@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
-import siksha.wafflestudio.core.domain.main.review.dto.MenuDetailsDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
