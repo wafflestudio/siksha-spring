@@ -16,6 +16,7 @@ import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -53,7 +54,7 @@ class UserService(
 
             // TODO: refactor this after modify API request spec
             if (it.changeToDefaultImage) {
-                user = this.deleteProfileImage(user)
+                this.deleteProfileImage(user)
             } else if (it.image != null) {
                 val profileUrl = this.uploadProfileImage(userId, it.image)
                 user.profileUrl = profileUrl
@@ -67,7 +68,7 @@ class UserService(
     // TODO remove duplicated code
     @Transactional
     fun patchUserWithProfileUrl(userId: Int, patchDto: UserProfilePatchDto): UserWithProfileUrlResponseDto {
-        var user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
         patchDto.let {
             it.nickname?.let { nickname ->
@@ -77,7 +78,7 @@ class UserService(
 
             // TODO: refactor this after modify API request spec
             if (it.changeToDefaultImage) {
-                user = this.deleteProfileImage(user)
+                this.deleteProfileImage(user)
             } else if (it.image != null) {
                 val profileUrl = this.uploadProfileImage(userId, it.image)
                 user.profileUrl = profileUrl
@@ -89,24 +90,26 @@ class UserService(
     }
 
     /**
-     * throws exception if the nickname is invalid (duplicated or contains banned words)
-     * this method does not guarantee that there is no duplicated entry, due to race condition
-     * @param nickname: String
-     * @return null
+     * validates a nickname (uniqueness and filtering banned words)
+     * this method does not guarantee that there is no duplicated entry, due to potential race conditions.
+     * @param nickname The nickname to validate
+     * @throws DuplicatedNicknameException if the nickname already exists
+     * @throws BannedWordException if the nickname contains banned words
+     * @return true if valid
      */
-    private fun validateNickname(nickname: String) {
+    private fun validateNickname(nickname: String): Boolean {
         // TODO: implement this
         if (this.userRepository.existsByNickname(nickname)) throw DuplicatedNicknameException()
-        return
+        return true
     }
 
     private fun generateImageNameKey(userId: Int) = "user-$userId/${OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
 
     /**
-     * upload a profile image to S3, and save the url to DB
-     * @param userId: Int
-     * @param image: MultipartFile
-     * @return S3 url of uploaded image
+     * Uploads a profile image to S3 and saves its metadata to the database.
+     * @param userId The ID of the user uploading the profile image.
+     * @param image The new profile image file
+     * @return The public S3 URL of the new image
      */
     private fun uploadProfileImage(userId: Int, image: MultipartFile): String {
         val nameKey = generateImageNameKey(userId)
@@ -124,10 +127,12 @@ class UserService(
     }
 
     /**
-     * reset profile image to default
-     * soft-delete from DB
+     * Resets the user's profile image to the default by setting the profileUrl to null.
+     * This method must be called within a @Transactional context to ensure that changes to the User entity are persisted.
+     *
+     * @param user The User entity to modify.
      */
-    private fun deleteProfileImage(user: User): User {
+    private fun deleteProfileImage(user: User) {
         user.profileUrl?.let {
             val oldKey = s3Service.getKeyFromUrl(it)
             oldKey?.let {key ->
@@ -135,7 +140,5 @@ class UserService(
             }
             user.profileUrl = null
         }
-        return user
     }
-
 }
