@@ -14,8 +14,8 @@ class User(
     val type: String,
     val identity: String,
     val etc: String? = null,
-    val nickname: String,
-    val profileUrl: String? = null,
+    var nickname: String,
+    var profileUrl: String? = null,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

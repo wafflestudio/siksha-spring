@@ -29,7 +29,7 @@ class S3Service (
      * @param nameKey S3 key에 사용할 파일명
      * @return UploadFileDto
      */
-    fun uploadOneFile(file: MultipartFile, prefix: S3ImagePrefix, nameKey: String): UploadFileDto {
+    fun uploadFile(file: MultipartFile, prefix: S3ImagePrefix, nameKey: String): UploadFileDto {
         val key = "${prefix.prefix}/$nameKey.jpeg"
 
         return runCatching {
@@ -86,6 +86,13 @@ class S3Service (
             }.getOrThrow()
         }
         return uploadFiles
+    }
+
+    fun getKeyFromUrl(url: String): String? {
+        val pattern = Regex("https://.*\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(.*)")
+        val match = pattern.matchEntire(url)
+
+        return match?.groupValues?.get(1)
     }
 }
 
