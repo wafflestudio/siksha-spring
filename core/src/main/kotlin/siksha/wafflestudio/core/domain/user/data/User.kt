@@ -7,7 +7,7 @@ import java.time.ZoneId
 
 @Entity(name = "user")
 @Table(name = "user")
-class User(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
