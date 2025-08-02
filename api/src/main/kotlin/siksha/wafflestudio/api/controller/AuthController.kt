@@ -1,8 +1,11 @@
 package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -25,6 +28,7 @@ import siksha.wafflestudio.core.domain.user.service.UserService
 class AuthController(
     private val authService: AuthService,
     private val userService: UserService,
+    private val resourceLoader: ResourceLoader,
 ) {
     @PostMapping("/refresh")
     fun refreshAccessToken(
@@ -32,10 +36,13 @@ class AuthController(
     ): AuthResponseDto {
         return authService.getAccessTokenByUserId(request.userId)
     }
-//
-//    @GetMapping("/privacy-policy")
-//    fun getPrivacyPolicy() {}
-//
+
+    @GetMapping("/privacy-policy", produces = [MediaType.TEXT_HTML_VALUE])
+    fun getPrivacyPolicy(): ResponseEntity<Resource> {
+        val resource = resourceLoader.getResource("classpath:static/privacy_policy.html")
+        return ResponseEntity.ok(resource)
+    }
+
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteUser(
