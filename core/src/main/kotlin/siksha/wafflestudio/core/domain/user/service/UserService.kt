@@ -42,30 +42,20 @@ class UserService(
         userRepository.deleteById(userId)
     }
 
-    @Transactional
+    // TODO deprecate this
     fun patchUser(userId: Int, patchDto: UserProfilePatchDto): UserResponseDto {
-        var user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
-
-        patchDto.let {
-            it.nickname?.let { nickname ->
-                this.validateNickname(nickname)
-                user.nickname = nickname
-            }
-
-            // TODO: refactor this after modify API request spec
-            if (it.changeToDefaultImage) {
-                this.deleteProfileImage(user)
-            } else if (it.image != null) {
-                val profileUrl = this.uploadProfileImage(userId, it.image)
-                user.profileUrl = profileUrl
-            }
-        }
-
-        userRepository.save(user)
-        return UserResponseDto.from(user)
+        val dto = this.patchUserWithProfileUrl(userId, patchDto)
+        return UserResponseDto(
+            id = dto.id,
+            type = dto.type,
+            identity = dto.identity,
+            etc = dto.etc,
+            nickname = dto.nickname,
+            createdAt = dto.createdAt,
+            updatedAt = dto.updatedAt
+        )
     }
 
-    // TODO remove duplicated code
     @Transactional
     fun patchUserWithProfileUrl(userId: Int, patchDto: UserProfilePatchDto): UserWithProfileUrlResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
