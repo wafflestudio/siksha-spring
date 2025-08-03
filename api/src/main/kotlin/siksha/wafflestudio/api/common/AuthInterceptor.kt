@@ -1,8 +1,5 @@
 package siksha.wafflestudio.api.common
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -12,12 +9,11 @@ import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
-import javax.crypto.SecretKey
 
 @Component
 class AuthInterceptor(
     @Value("\${jwt.secret-key}") private val jwtSecretKey: String,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
 ) : HandlerInterceptor {
     private val logger = LoggerFactory.getLogger(javaClass)
 

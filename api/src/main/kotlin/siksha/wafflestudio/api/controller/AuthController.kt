@@ -20,8 +20,8 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
-import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
+import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.service.UserService
 
 @RestController
@@ -32,9 +32,7 @@ class AuthController(
     private val resourceLoader: ResourceLoader,
 ) {
     @PostMapping("/refresh")
-    fun refreshAccessToken(
-        request: HttpServletRequest
-    ): AuthResponseDto {
+    fun refreshAccessToken(request: HttpServletRequest): AuthResponseDto {
         return authService.getAccessTokenByUserId(request.userId)
     }
 
@@ -46,9 +44,7 @@ class AuthController(
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteUser(
-        request: HttpServletRequest
-    ) {
+    fun deleteUser(request: HttpServletRequest) {
         userService.deleteUser(request.userId)
     }
 //
@@ -66,9 +62,7 @@ class AuthController(
 
     // TODO: deprecate this
     @GetMapping("/me")
-    fun getMyInfo(
-        request: HttpServletRequest
-    ): UserResponseDto {
+    fun getMyInfo(request: HttpServletRequest): UserResponseDto {
         return userService.getUser(request.userId)
     }
 
@@ -78,20 +72,20 @@ class AuthController(
         request: HttpServletRequest,
         @RequestPart("nickname") nickname: String?,
         @RequestPart("image") image: MultipartFile?,
-        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false
+        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false,
     ): UserResponseDto {
-        val patchDto = UserProfilePatchDto(
-            nickname = nickname,
-            image = image,
-            changeToDefaultImage = changeToDefaultImage ?: false
-        )
+        val patchDto =
+            UserProfilePatchDto(
+                nickname = nickname,
+                image = image,
+                changeToDefaultImage = changeToDefaultImage ?: false,
+            )
 
         return userService.patchUser(request.userId, patchDto)
     }
 
     @GetMapping("/me/image")
-    fun getMyInfoWithProfileUrl(request: HttpServletRequest
-    ): UserWithProfileUrlResponseDto {
+    fun getMyInfoWithProfileUrl(request: HttpServletRequest): UserWithProfileUrlResponseDto {
         return userService.getUserWithProfileUrl(request.userId)
     }
 
@@ -100,13 +94,14 @@ class AuthController(
         request: HttpServletRequest,
         @RequestPart("nickname") nickname: String?,
         @RequestPart("image") image: MultipartFile?,
-        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false
+        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false,
     ): UserWithProfileUrlResponseDto {
-        val patchDto = UserProfilePatchDto(
-            nickname = nickname,
-            image = image,
-            changeToDefaultImage = changeToDefaultImage ?: false
-        )
+        val patchDto =
+            UserProfilePatchDto(
+                nickname = nickname,
+                image = image,
+                changeToDefaultImage = changeToDefaultImage ?: false,
+            )
 
         return userService.patchUserWithProfileUrl(request.userId, patchDto)
     }
@@ -114,7 +109,7 @@ class AuthController(
     @GetMapping("/nicknames/validate")
     @ResponseStatus(HttpStatus.OK)
     fun validateNickname(
-        @RequestParam("nickname") nickname: String
+        @RequestParam("nickname") nickname: String,
     ) {
         userService.validateNickname(nickname)
     }

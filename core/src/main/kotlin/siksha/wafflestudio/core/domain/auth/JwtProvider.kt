@@ -22,7 +22,10 @@ class JwtProvider(
         encodedJwtSecretKey = Keys.hmacShaKeyFor(extendedKey)
     }
 
-    fun generateAccessToken(userId: Int, lifetimeInDays: Long): String {
+    fun generateAccessToken(
+        userId: Int,
+        lifetimeInDays: Long,
+    ): String {
         val exp = Date.from(Instant.now().plus(lifetimeInDays, ChronoUnit.DAYS))
 
         return Jwts.builder()
@@ -41,4 +44,3 @@ class JwtProvider(
             .payload
     }
 }
-

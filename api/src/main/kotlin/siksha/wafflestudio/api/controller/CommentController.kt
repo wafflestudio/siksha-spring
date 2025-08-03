@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.dto.CommentResponseDto
-import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
-import siksha.wafflestudio.core.domain.comment.dto.CreateCommentReportRequestDto
 import siksha.wafflestudio.core.domain.comment.dto.CommentsReportResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentReportRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.CreateCommentRequestDto
+import siksha.wafflestudio.core.domain.comment.dto.GetCommentsResponseDto
+import siksha.wafflestudio.core.domain.comment.dto.PatchCommentRequestDto
 import siksha.wafflestudio.core.domain.comment.service.CommentService
 
 @RestController
@@ -44,7 +44,7 @@ class CommentController(
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
     ): GetCommentsResponseDto? {
-        return commentService.getComments(request.userId, postId,  page, perPage)
+        return commentService.getComments(request.userId, postId, page, perPage)
     }
 
     @PostMapping("/community/comments")
@@ -83,7 +83,7 @@ class CommentController(
         return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
     }
 
-    //TODO: delete 방식으로 수정
+    // TODO: delete 방식으로 수정
     @PostMapping("/community/comments/{commentId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun createCommentUnlike(

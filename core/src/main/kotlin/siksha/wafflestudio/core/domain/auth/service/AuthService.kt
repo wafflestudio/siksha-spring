@@ -9,7 +9,7 @@ import siksha.wafflestudio.core.domain.user.repository.UserRepository
 @Service
 class AuthService(
     private val jwtProvider: JwtProvider,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     fun getAccessTokenByUserId(userId: Int): AuthResponseDto {
         if (!userRepository.existsById(userId)) throw UnauthorizedUserException()

@@ -9,11 +9,11 @@ import siksha.wafflestudio.core.domain.board.BoardCreateDto
 import siksha.wafflestudio.core.domain.board.BoardDto
 import siksha.wafflestudio.core.domain.board.data.Board
 import siksha.wafflestudio.core.domain.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
-import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
@@ -26,7 +26,10 @@ class BoardService(
 
     // TODO: only admin can create board
     @Transactional
-    fun addBoard(userId: Int, boardCreateDTO: BoardCreateDto): BoardDto {
+    fun addBoard(
+        userId: Int,
+        boardCreateDTO: BoardCreateDto,
+    ): BoardDto {
         userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
         val board = boardCreateDTO.toEntity()
         validateBoard(board)
@@ -36,7 +39,7 @@ class BoardService(
         } catch (ex: DataIntegrityViolationException) {
             throw BoardNameAlreadyExistException()
         } catch (ex: Exception) {
-            throw BoardSaveFailedException(ex.message);
+            throw BoardSaveFailedException(ex.message)
         }
     }
 

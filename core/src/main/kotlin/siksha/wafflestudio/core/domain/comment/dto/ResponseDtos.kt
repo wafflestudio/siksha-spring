@@ -28,7 +28,7 @@ data class CommentResponseDto(
     val isLiked: Boolean,
 ) {
     init {
-        if (anonymous) check(nickname==null && profileUri==null)
+        if (anonymous) check(nickname == null && profileUri == null)
     }
 
     companion object {
@@ -36,7 +36,7 @@ data class CommentResponseDto(
             comment: Comment,
             isMine: Boolean,
             likeCount: Int,
-            isLiked: Boolean
+            isLiked: Boolean,
         ) = CommentResponseDto(
             id = comment.id,
             postId = comment.post.id,
