@@ -65,9 +65,9 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
         patchDto.let {
-            it.nickname?.let { nickname ->
-                this.validateNickname(nickname)
-                user.nickname = nickname
+            if (it.nickname != user.nickname && it.nickname != null) {
+                this.validateNickname(it.nickname)
+                user.nickname = it.nickname
             }
 
             // TODO: refactor this after modify API request spec
@@ -92,7 +92,7 @@ class UserService(
      * @return true if valid
      */
     fun validateNickname(nickname: String): Boolean {
-        if (this.userRepository.existsByNickname(nickname)) throw DuplicatedNicknameException()
+        if (userRepository.existsByNickname(nickname)) throw DuplicatedNicknameException()
         if (bannedWords.any { nickname.contains(it, ignoreCase = true) }) throw BannedWordException()
         return true
     }
