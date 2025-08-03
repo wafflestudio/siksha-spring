@@ -1,11 +1,10 @@
 package siksha.wafflestudio.core.domain.main.menu.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
-import siksha.wafflestudio.core.domain.main.menu.data.MenuLike
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import org.springframework.transaction.annotation.Transactional
+import siksha.wafflestudio.core.domain.main.menu.data.MenuLike
 
 interface MenuLikeRepository : JpaRepository<MenuLike, Int> {
     @Modifying
@@ -15,11 +14,11 @@ interface MenuLikeRepository : JpaRepository<MenuLike, Int> {
             VALUES (:userId, :menuId, 1)
             ON DUPLICATE KEY UPDATE is_liked = 1
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun postMenuLike(
         @Param("userId") userId: Int,
-        @Param("menuId") menuId: Int
+        @Param("menuId") menuId: Int,
     )
 
     @Modifying
@@ -33,12 +32,11 @@ interface MenuLikeRepository : JpaRepository<MenuLike, Int> {
               AND m.restaurant_id = :restaurantId
               AND m.code          = :code
           """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun deleteMenuLike(
-        @Param("userId")        userId: Int,
-        @Param("restaurantId")  restaurantId: Int,
-        @Param("code")          code: String
+        @Param("userId") userId: Int,
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
     )
-
 }

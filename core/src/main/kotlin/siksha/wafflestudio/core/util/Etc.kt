@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Etc(
-    val images: List<String> = emptyList()
+    val images: List<String> = emptyList(),
 )

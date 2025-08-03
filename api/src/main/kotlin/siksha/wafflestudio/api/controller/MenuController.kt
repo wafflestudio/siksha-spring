@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
-import siksha.wafflestudio.core.domain.main.menu.service.MenuService
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.service.MenuService
 import java.time.LocalDate
 
 @RestController
 @RequestMapping("/menus")
-class MenuController (
-    private val menuService: MenuService
+class MenuController(
+    private val menuService: MenuService,
 ) {
     // GET /menus
     // score, review_cnt, like_cnt, is_liked (if logged in)
@@ -29,7 +29,7 @@ class MenuController (
     @ResponseStatus(HttpStatus.OK)
     fun getMenusWhereDate(
         @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam("end_date")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate:   LocalDate,
+        @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
         @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
         request: HttpServletRequest,
     ): MenuListResponseDto {
@@ -79,5 +79,4 @@ class MenuController (
         menuId = menuId,
         userId = request.userId,
     )
-
 }

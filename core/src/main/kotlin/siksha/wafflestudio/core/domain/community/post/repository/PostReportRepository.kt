@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.community.post.data.PostReport
 
 @Repository
-interface PostReportRepository: JpaRepository<PostReport, Int> {
+interface PostReportRepository : JpaRepository<PostReport, Int> {
     fun countPostReportByPostId(postId: Int): Int
 }

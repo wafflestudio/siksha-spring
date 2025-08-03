@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
+import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
@@ -26,7 +26,6 @@ import siksha.wafflestudio.core.domain.main.review.service.ReviewService
 class ReviewController(
     private val reviewService: ReviewService,
 ) {
-
     @PostMapping("/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
     fun postReviewWithImages(
@@ -34,15 +33,16 @@ class ReviewController(
         @RequestPart("menu_id") menuId: Int,
         @RequestPart("score") score: Int,
         @RequestPart("comment", required = false) comment: String?,
-        @RequestPart("images", required = false) images: List<MultipartFile>?
+        @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): MenuDetailsDto {
         val userId = request.userId
-        val createDto = ReviewWithImagesRequest(
-            menuId = menuId,
-            score = score,
-            comment = comment,
-            images = images
-        )
+        val createDto =
+            ReviewWithImagesRequest(
+                menuId = menuId,
+                score = score,
+                comment = comment,
+                images = images,
+            )
         return reviewService.postReviewWithImages(userId, createDto)
     }
 
@@ -50,7 +50,7 @@ class ReviewController(
     @ResponseStatus(HttpStatus.CREATED)
     fun postReview(
         request: HttpServletRequest,
-        @RequestBody reviewRequest: ReviewRequest
+        @RequestBody reviewRequest: ReviewRequest,
     ): MenuDetailsDto {
         val userId = request.userId
         return reviewService.postReview(userId, reviewRequest)
@@ -61,7 +61,7 @@ class ReviewController(
     fun getReviews(
         @RequestParam("menu_id") menuId: Int,
         @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
+        @RequestParam(defaultValue = "10") size: Int,
     ): ReviewListResponse {
         return reviewService.getReviews(menuId, page, size)
     }
@@ -69,14 +69,16 @@ class ReviewController(
     @GetMapping("/comments/recommendation")
     @ResponseStatus(HttpStatus.OK)
     fun getCommentRecommendation(
-        @RequestParam score: Int
+        @RequestParam score: Int,
     ): CommentRecommendationResponse {
         return reviewService.getCommentRecommendation(score)
     }
 
     @GetMapping("/dist")
     @ResponseStatus(HttpStatus.OK)
-    fun getReviewScoreDistribution(@RequestParam("menu_id") menuId: Int): ReviewScoreDistributionResponse {
+    fun getReviewScoreDistribution(
+        @RequestParam("menu_id") menuId: Int,
+    ): ReviewScoreDistributionResponse {
         return reviewService.getScoreDistribution(menuId)
     }
 
@@ -87,7 +89,7 @@ class ReviewController(
         @RequestParam("comment", required = false) comment: Boolean?,
         @RequestParam("etc", required = false) etc: Boolean?,
         @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
+        @RequestParam(defaultValue = "10") size: Int,
     ): ReviewListResponse {
         return reviewService.getFilteredReviews(menuId, comment, etc, page, size)
     }
@@ -97,7 +99,7 @@ class ReviewController(
     fun getMyReviews(
         request: HttpServletRequest,
         @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "10") perPage: Int
+        @RequestParam(defaultValue = "10") perPage: Int,
     ): ReviewListResponse {
         val userId = request.userId
         return reviewService.getMyReviews(userId, page, perPage)

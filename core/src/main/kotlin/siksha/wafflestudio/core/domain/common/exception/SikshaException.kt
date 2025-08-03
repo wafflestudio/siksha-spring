@@ -11,5 +11,3 @@ data class ErrorBody(
     // 추후 code 추가 가능
     val message: String,
 )
-
-

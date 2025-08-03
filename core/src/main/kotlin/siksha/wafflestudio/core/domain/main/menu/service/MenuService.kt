@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
@@ -26,14 +26,15 @@ import java.time.format.DateTimeFormatter
 class MenuService(
     private val menuRepository: MenuRepository,
     private val restaurantRepository: RestaurantRepository,
-    private val menuLikeRepository: MenuLikeRepository
+    private val menuLikeRepository: MenuLikeRepository,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
     private fun loadHolidays(): Set<LocalDate> {
         val resourcePath = "/2025.json"
-        val stream: InputStream = this::class.java.getResourceAsStream(resourcePath)
-            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+        val stream: InputStream =
+            this::class.java.getResourceAsStream(resourcePath)
+                ?: throw IllegalArgumentException("Resource not found: $resourcePath")
 
         val mapper = jacksonObjectMapper()
         val raw: Map<String, List<String>> = mapper.readValue(stream)
@@ -101,8 +102,8 @@ class MenuService(
                             lat = restaurant.lat,
                             lng = restaurant.lng,
                             etc = EtcUtils.convertRestEtc(restaurant.etc),
-                            menus = mutableListOf()
-                        )
+                            menus = mutableListOf(),
+                        ),
                     )
                 }
                 typeMap[type] = list
@@ -114,23 +115,24 @@ class MenuService(
         // 메뉴 데이터를 날짜·타입·식당별로 그룹핑해서 DTO 변환 후 추가
         val menusByKey = menuSummaries.groupBy { Triple(it.getDate(), it.getType(), it.getRestaurantId()) }
         menusByKey.forEach { (date, type, restaurantId), summaries ->
-            val menuDtos = summaries.map { menu ->
-                val likeInfo = likeInfoMap[menu.getId()]
-                MenuInListDto(
-                    createdAt = menu.getCreatedAt(),
-                    updatedAt = menu.getUpdatedAt(),
-                    id = menu.getId(),
-                    code = menu.getCode(),
-                    nameKr = menu.getNameKr(),
-                    nameEn = menu.getNameEn(),
-                    price = menu.getPrice(),
-                    etc = EtcUtils.convertMenuEtc(menu.getEtc()),
-                    score = menu.getScore(),
-                    reviewCnt = menu.getReviewCnt(),
-                    likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                    isLiked = likeInfo?.getIsLiked() ?: false
-                )
-            }
+            val menuDtos =
+                summaries.map { menu ->
+                    val likeInfo = likeInfoMap[menu.getId()]
+                    MenuInListDto(
+                        createdAt = menu.getCreatedAt(),
+                        updatedAt = menu.getUpdatedAt(),
+                        id = menu.getId(),
+                        code = menu.getCode(),
+                        nameKr = menu.getNameKr(),
+                        nameEn = menu.getNameEn(),
+                        price = menu.getPrice(),
+                        etc = EtcUtils.convertMenuEtc(menu.getEtc()),
+                        score = menu.getScore(),
+                        reviewCnt = menu.getReviewCnt(),
+                        likeCnt = likeInfo?.getLikeCnt() ?: 0,
+                        isLiked = likeInfo?.getIsLiked() ?: false,
+                    )
+                }
             val restaurantList = dateGroupMap[date]?.get(type) ?: return@forEach
             restaurantList.find { it.id == restaurantId }?.let {
                 (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
@@ -141,43 +143,49 @@ class MenuService(
         if (exceptEmpty) {
             dateGroupMap.forEach { (_, typedMap) ->
                 typedMap.forEach { (type, restaurantList) ->
-                    typedMap[type] = restaurantList
-                        .filter { (it.menus as List<MenuInListDto>).isNotEmpty() }
-                        .toMutableList()
+                    typedMap[type] =
+                        restaurantList
+                            .filter { (it.menus as List<MenuInListDto>).isNotEmpty() }
+                            .toMutableList()
                 }
             }
         }
 
         // 최종 응답 DTO로 변환
-        val resultList = dateGroupMap.entries
-            .sortedBy { it.key }
-            .map { (date, typedMap) ->
-                DateWithTypeInListDto(
-                    date = date,
-                    dateType = getDateType(date),
-                    BR = typedMap["BR"] ?: emptyList(),
-                    LU = typedMap["LU"] ?: emptyList(),
-                    DN = typedMap["DN"] ?: emptyList()
-                )
-            }
+        val resultList =
+            dateGroupMap.entries
+                .sortedBy { it.key }
+                .map { (date, typedMap) ->
+                    DateWithTypeInListDto(
+                        date = date,
+                        dateType = getDateType(date),
+                        BR = typedMap["BR"] ?: emptyList(),
+                        LU = typedMap["LU"] ?: emptyList(),
+                        DN = typedMap["DN"] ?: emptyList(),
+                    )
+                }
 
         return MenuListResponseDto(count = resultList.size, result = resultList)
     }
 
-    fun getMenuById(menuId: Int, userId: Int): MenuDetailsDto {
+    fun getMenuById(
+        menuId: Int,
+        userId: Int,
+    ): MenuDetailsDto {
         // userId가 0인 경우 비로그인 -> is_liked = false
         val targetUserId = userId.toString()
         val menuIdStr = menuId.toString()
 
         // 1) 메뉴 기본 정보 조회 (score, review_cnt 포함)
-        val menu = try {
-            menuRepository.findMenuById(menuIdStr)
-        } catch (e: EmptyResultDataAccessException) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "해당 메뉴를 찾을 수 없습니다."
-            )
-        }
+        val menu =
+            try {
+                menuRepository.findMenuById(menuIdStr)
+            } catch (e: EmptyResultDataAccessException) {
+                throw ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "해당 메뉴를 찾을 수 없습니다.",
+                )
+            }
 
         // 메뉴 좋아요 정보 조회 (like_cnt, is_liked 포함)
         val menuLikeInfo = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, targetUserId)
@@ -202,7 +210,10 @@ class MenuService(
     }
 
     @Transactional
-    fun likeMenu(menuId: Int, userId: Int): MenuDetailsDto {
+    fun likeMenu(
+        menuId: Int,
+        userId: Int,
+    ): MenuDetailsDto {
         // 메뉴 좋아요 처리
         try {
             menuLikeRepository.postMenuLike(userId = userId, menuId = menuId)
@@ -210,12 +221,12 @@ class MenuService(
             // menu가 존재하지 않는 경우
             throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                "해당 메뉴를 찾을 수 없습니다."
+                "해당 메뉴를 찾을 수 없습니다.",
             )
         } catch (e: Exception) {
             throw ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "좋아요 처리 중에 오류가 발생했습니다."
+                "좋아요 처리 중에 오류가 발생했습니다.",
             )
         }
 
@@ -224,29 +235,33 @@ class MenuService(
     }
 
     @Transactional
-    fun unlikeMenu(menuId: Int, userId: Int): MenuDetailsDto {
+    fun unlikeMenu(
+        menuId: Int,
+        userId: Int,
+    ): MenuDetailsDto {
         // subquery를 없애기 위해 menu 정보를 먼저 조회
         val menuIdStr = menuId.toString()
-        val menu = try {
-            menuRepository.findPlainMenuById(menuIdStr)
-        } catch (e: EmptyResultDataAccessException) {
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "해당 메뉴를 찾을 수 없습니다."
-            )
-        }
+        val menu =
+            try {
+                menuRepository.findPlainMenuById(menuIdStr)
+            } catch (e: EmptyResultDataAccessException) {
+                throw ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "해당 메뉴를 찾을 수 없습니다.",
+                )
+            }
 
         // 메뉴 좋아요 취소 처리
         try {
             menuLikeRepository.deleteMenuLike(
                 userId = userId,
                 restaurantId = menu.getRestaurantId(),
-                code = menu.getCode()
+                code = menu.getCode(),
             )
         } catch (e: Exception) {
             throw ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "좋아요 취소 처리 중에 오류가 발생했습니다."
+                "좋아요 취소 처리 중에 오류가 발생했습니다.",
             )
         }
         // like 없는 경우에 대해 별도 exception 처리 안함

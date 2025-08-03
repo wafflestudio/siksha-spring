@@ -18,7 +18,7 @@ class AuthInterceptor(
     @Value("\${jwt.secret-key}") private val jwtSecretKey: String,
 ) : HandlerInterceptor {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val menuGetPattern = Regex("^/menus(?:/\\d+)?$")  // /menus 또는 /menus/{menu_id}
+    private val menuGetPattern = Regex("^/menus(?:/\\d+)?$") // /menus 또는 /menus/{menu_id}
     private lateinit var encodedJwtSecretKey: SecretKey
 
     init {
@@ -26,7 +26,6 @@ class AuthInterceptor(
         val extendedKey = jwtSecretKey.toByteArray().copyOf(32)
         encodedJwtSecretKey = Keys.hmacShaKeyFor(extendedKey)
     }
-
 
     override fun preHandle(
         request: HttpServletRequest,

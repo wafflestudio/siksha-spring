@@ -9,18 +9,24 @@ import siksha.wafflestudio.core.domain.main.review.data.Review
 
 @Repository
 interface ReviewRepository : JpaRepository<Review, Int> {
-
-    @Query("""
+    @Query(
+        """
         SELECT r FROM review r
         WHERE r.menu.id = :menuId
         ORDER BY r.createdAt DESC
-    """)
-    fun findByMenuIdOrderByCreatedAtDesc(menuId: Int, pageable: Pageable): List<Review>
+    """,
+    )
+    fun findByMenuIdOrderByCreatedAtDesc(
+        menuId: Int,
+        pageable: Pageable,
+    ): List<Review>
 
-    @Query("""
+    @Query(
+        """
         SELECT COUNT(r) FROM review r
         WHERE r.menu.id = :menuId
-    """)
+    """,
+    )
     fun countByMenuId(menuId: Int): Long
 
     @Query(
@@ -32,14 +38,14 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         ORDER BY r.created_at DESC
         LIMIT :limit OFFSET :offset
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findFilteredReviews(
         @Param("menuId") menuId: Int,
         @Param("comment") comment: Boolean?,
         @Param("etc") etc: Boolean?,
         @Param("limit") limit: Int,
-        @Param("offset") offset: Int
+        @Param("offset") offset: Int,
     ): List<Review>
 
     @Query(
@@ -49,21 +55,23 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
         AND (:imageExist IS NULL OR (:imageExist = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun countFilteredReviews(
         @Param("menuId") menuId: Int,
         @Param("comment") comment: Boolean?,
-        @Param("imageExist") imageExist: Boolean?
+        @Param("imageExist") imageExist: Boolean?,
     ): Long
 
-    @Query("""
+    @Query(
+        """
     SELECT r FROM review r
     WHERE r.menu.id = :menuId AND r.user.id = :userId
-""")
+""",
+    )
     fun findByMenuIdAndUserId(
         @Param("menuId") menuId: Int,
-        @Param("userId") userId: Int
+        @Param("userId") userId: Int,
     ): Review?
 
     @Query(
@@ -73,12 +81,12 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         ORDER BY created_at DESC
         LIMIT :limit OFFSET :offset
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findByUserId(
         @Param("userId") userId: Int,
         @Param("limit") limit: Int,
-        @Param("offset") offset: Int
+        @Param("offset") offset: Int,
     ): List<Review>
 
     @Query(
@@ -86,10 +94,11 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         SELECT COUNT(*) FROM review
         WHERE user_id = :userId
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
-    fun countByUserId(@Param("userId") userId: Int): Long
-
+    fun countByUserId(
+        @Param("userId") userId: Int,
+    ): Long
 
     @Query(
         value = """
@@ -98,9 +107,11 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         ORDER BY RAND()
         LIMIT 1
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
-    fun findRandomCommentByScore(@Param("score") score: Int): String?
+    fun findRandomCommentByScore(
+        @Param("score") score: Int,
+    ): String?
 
     @Query(
         value = """
@@ -109,7 +120,9 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         WHERE menu_id = :menuId 
         GROUP BY score
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
-    fun findScoreCountsByMenuId(@Param("menuId") menuId: Int): List<Array<Any>>
+    fun findScoreCountsByMenuId(
+        @Param("menuId") menuId: Int,
+    ): List<Array<Any>>
 }

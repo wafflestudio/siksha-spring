@@ -13,12 +13,17 @@ data class PostCreateDto(
     val title: String,
     val content: String,
     val anonymous: Boolean?,
-    val images: List<MultipartFile>?
-){
-    fun toEntity(user: User, board: Board, imageUrls: List<String>?): Post {
-        val etcJson: String? = imageUrls?.let {
-            ObjectMapper().writeValueAsString(mapOf("images" to it))
-        }
+    val images: List<MultipartFile>?,
+) {
+    fun toEntity(
+        user: User,
+        board: Board,
+        imageUrls: List<String>?,
+    ): Post {
+        val etcJson: String? =
+            imageUrls?.let {
+                ObjectMapper().writeValueAsString(mapOf("images" to it))
+            }
         return Post(
             user = user,
             board = board,
@@ -26,7 +31,7 @@ data class PostCreateDto(
             content = content,
             available = true,
             anonymous = anonymous ?: false,
-            etc = etcJson
+            etc = etcJson,
         )
     }
 }

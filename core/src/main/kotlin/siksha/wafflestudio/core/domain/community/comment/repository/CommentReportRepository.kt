@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
 
 @Repository
-interface CommentReportRepository: JpaRepository<CommentReport, Int> {
+interface CommentReportRepository : JpaRepository<CommentReport, Int> {
     fun countCommentReportByCommentId(commentId: Int): Int
 }

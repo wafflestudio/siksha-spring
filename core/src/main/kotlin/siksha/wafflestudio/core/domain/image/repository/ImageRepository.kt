@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.image.data.Image
 
 @Repository
-interface ImageRepository: JpaRepository<Image, Long> {
+interface ImageRepository : JpaRepository<Image, Long> {
     @Modifying
     @Query("UPDATE image i SET i.isDeleted = true WHERE i.key IN :keys")
-    fun softDeleteByKeyIn(@Param("keys") keys: List<String>): Int
+    fun softDeleteByKeyIn(
+        @Param("keys") keys: List<String>,
+    ): Int
 }

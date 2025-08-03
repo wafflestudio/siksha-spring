@@ -19,32 +19,28 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Entity(name = "menu_like")
-@Table(name = "menu_like",
+@Table(
+    name = "menu_like",
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "menu_id"])
-    ]
+        UniqueConstraint(columnNames = ["user_id", "menu_id"]),
+    ],
 )
 data class MenuLike(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     val user: User,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     val menu: Menu,
-
     val isLiked: Boolean,
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
-
     @UpdateTimestamp
     @Column(nullable = false)
     val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
