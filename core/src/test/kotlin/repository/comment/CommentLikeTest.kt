@@ -7,23 +7,25 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.community.comment.data.Comment
-import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentLikeRepository
 import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class CommentTest {
+class CommentLikeTest {
     @Autowired
-    lateinit var repository: CommentRepository
+    lateinit var repository: CommentLikeRepository
 
     @Autowired
     lateinit var entityManager: TestEntityManager
 
     @Test
-    fun `save comment`() {
+    fun `save comment like`() {
         // given
         val user =
             entityManager.persist(
@@ -56,25 +58,34 @@ class CommentTest {
                 ),
             )
 
-        // when
         val comment =
-            Comment(
+            entityManager.persist(
+                Comment(
+                    user = user,
+                    post = post,
+                    content = "test",
+                    available = true,
+                    anonymous = true,
+                ),
+            )
+
+        // when
+        val commentLike =
+            CommentLike(
                 user = user,
-                post = post,
-                content = "test",
-                available = true,
-                anonymous = true,
+                comment = comment,
+                isLiked = true,
             )
 
-        val savedComment = repository.save(comment)
+        val savedCommentLike = repository.save(commentLike)
 
         // then
-        assertNotNull(savedComment)
-        assertEquals(savedComment.content, comment.content)
+        assertNotNull(savedCommentLike)
+        assertTrue(savedCommentLike.isLiked)
     }
 
     @Test
-    fun `find by post ids`() {
+    fun `find comment like by comment id and user id`() {
         // given
         val user =
             entityManager.persist(
@@ -119,56 +130,12 @@ class CommentTest {
             )
 
         // when
-        val result = repository.findByPostIdIn(listOf(post.id))
-
-        // then
-        assertNotNull(result)
-        assertEquals(result.size, 1)
-        assertEquals(result[0].id, post.id)
-    }
-
-    @Test
-    fun `count by post id`() {
-        // given
-        val user =
+        val commentLike =
             entityManager.persist(
-                User(
-                    type = "test",
-                    identity = "siksha",
-                    nickname = "waffle",
-                    profileUrl = "https://siksha.wafflestudio.com/",
-                ),
-            )
-
-        val board =
-            entityManager.persist(
-                Board(
-                    name = "test",
-                    description = "test",
-                ),
-            )
-
-        val post =
-            entityManager.persist(
-                Post(
+                CommentLike(
                     user = user,
-                    board = board,
-                    title = "test",
-                    content = "test",
-                    available = true,
-                    anonymous = false,
-                    etc = null,
-                ),
-            )
-
-        val comment =
-            entityManager.persist(
-                Comment(
-                    user = user,
-                    post = post,
-                    content = "test",
-                    available = true,
-                    anonymous = true,
+                    comment = comment,
+                    isLiked = true,
                 ),
             )
 
@@ -176,9 +143,11 @@ class CommentTest {
         entityManager.clear()
 
         // when
-        val result = repository.countCommentsByPostId(post.id)
+        val result = repository.findCommentLikeByCommentIdAndUserId(comment.id, user.id)
 
         // then
-        assertEquals(result, 1)
+        assertNotNull(result)
+        assertEquals(comment.id, result.comment.id)
+        assertEquals(user.id, result.user.id)
     }
 }

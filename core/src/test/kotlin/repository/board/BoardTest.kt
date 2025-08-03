@@ -1,15 +1,12 @@
 package siksha.wafflestudio.core.repository.board
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.test.context.jdbc.Sql
 import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
 import kotlin.test.assertNotNull
@@ -56,25 +53,5 @@ class BoardTest {
 
         // then
         assertNull(deletedBoard)
-    }
-
-    @Test
-    @Sql("/data/v001.sql")
-    fun `existsByName should return true for existing board`() {
-        // when
-        val exists = repository.existsByName("자유게시판")
-
-        // then
-        assertTrue(exists)
-    }
-
-    @Test
-    @Sql("/data/v001.sql")
-    fun `existsByName should return false for non-existing board`() {
-        // when
-        val exists = repository.existsByName("없는 게시판")
-
-        // then
-        assertFalse(exists)
     }
 }

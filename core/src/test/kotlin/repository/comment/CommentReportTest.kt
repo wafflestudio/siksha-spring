@@ -7,7 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.community.comment.data.Comment
-import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentReportRepository
 import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.user.data.User
 import kotlin.test.assertEquals
@@ -15,66 +16,15 @@ import kotlin.test.assertNotNull
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class CommentTest {
+class CommentReportTest {
     @Autowired
-    lateinit var repository: CommentRepository
+    lateinit var repository: CommentReportRepository
 
     @Autowired
     lateinit var entityManager: TestEntityManager
 
     @Test
-    fun `save comment`() {
-        // given
-        val user =
-            entityManager.persist(
-                User(
-                    type = "test",
-                    identity = "siksha",
-                    nickname = "waffle",
-                    profileUrl = "https://siksha.wafflestudio.com/",
-                ),
-            )
-
-        val board =
-            entityManager.persist(
-                Board(
-                    name = "test",
-                    description = "test",
-                ),
-            )
-
-        val post =
-            entityManager.persist(
-                Post(
-                    user = user,
-                    board = board,
-                    title = "test",
-                    content = "test",
-                    available = true,
-                    anonymous = false,
-                    etc = null,
-                ),
-            )
-
-        // when
-        val comment =
-            Comment(
-                user = user,
-                post = post,
-                content = "test",
-                available = true,
-                anonymous = true,
-            )
-
-        val savedComment = repository.save(comment)
-
-        // then
-        assertNotNull(savedComment)
-        assertEquals(savedComment.content, comment.content)
-    }
-
-    @Test
-    fun `find by post ids`() {
+    fun `save comment report`() {
         // given
         val user =
             entityManager.persist(
@@ -119,16 +69,23 @@ class CommentTest {
             )
 
         // when
-        val result = repository.findByPostIdIn(listOf(post.id))
+        val commentReport =
+            CommentReport(
+                reason = "test",
+                reportingUser = user,
+                reportedUser = user,
+                comment = comment,
+            )
+
+        val savedCommentReport = repository.save(commentReport)
 
         // then
-        assertNotNull(result)
-        assertEquals(result.size, 1)
-        assertEquals(result[0].id, post.id)
+        assertNotNull(savedCommentReport)
+        assertEquals(savedCommentReport.reason, commentReport.reason)
     }
 
     @Test
-    fun `count by post id`() {
+    fun `count comment report`() {
         // given
         val user =
             entityManager.persist(
@@ -169,6 +126,16 @@ class CommentTest {
                     content = "test",
                     available = true,
                     anonymous = true,
+                ),
+            )
+
+        val commentReport =
+            entityManager.persist(
+                CommentReport(
+                    reason = "test",
+                    reportingUser = user,
+                    reportedUser = user,
+                    comment = comment,
                 ),
             )
 
@@ -176,7 +143,7 @@ class CommentTest {
         entityManager.clear()
 
         // when
-        val result = repository.countCommentsByPostId(post.id)
+        val result = repository.countCommentReportByCommentId(comment.id)
 
         // then
         assertEquals(result, 1)
