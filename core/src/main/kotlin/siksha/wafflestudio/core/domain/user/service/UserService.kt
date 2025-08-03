@@ -1,9 +1,11 @@
 package siksha.wafflestudio.core.domain.user.service
 
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import siksha.wafflestudio.core.domain.common.exception.BannedWordException
 import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
@@ -25,7 +27,9 @@ class UserService(
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
     private val s3Service: S3Service,
+    @Value("\${siksha.banned.words:}") private val bannedWords: List<String>
 ) {
+
     fun getUser(userId: Int): UserResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
         return UserResponseDto.from(user)
@@ -87,9 +91,9 @@ class UserService(
      * @throws BannedWordException if the nickname contains banned words
      * @return true if valid
      */
-    private fun validateNickname(nickname: String): Boolean {
-        // TODO: implement this
+    fun validateNickname(nickname: String): Boolean {
         if (this.userRepository.existsByNickname(nickname)) throw DuplicatedNicknameException()
+        if (bannedWords.any { nickname.contains(it, ignoreCase = true) }) throw BannedWordException()
         return true
     }
 
