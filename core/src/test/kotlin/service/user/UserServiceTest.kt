@@ -40,7 +40,7 @@ class UserServiceTest {
         userRepository = mockk()
         imageRepository = mockk()
         s3Service = mockk()
-        userService = UserService(userRepository, imageRepository, s3Service)
+        userService = UserService(userRepository, imageRepository, s3Service, listOf())
         clearAllMocks()
     }
 

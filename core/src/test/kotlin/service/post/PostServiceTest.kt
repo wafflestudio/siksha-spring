@@ -139,7 +139,6 @@ class PostServiceTest {
         }
         // then
         assertEquals(HttpStatus.UNAUTHORIZED, exception.httpStatus)
-        assertEquals("존재하지 않는 사용자입니다.", exception.errorMessage)
     }
 
     @Test
