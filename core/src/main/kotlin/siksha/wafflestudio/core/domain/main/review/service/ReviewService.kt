@@ -1,6 +1,5 @@
 package siksha.wafflestudio.core.domain.main.review.service
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -16,11 +15,18 @@ import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.review.data.Review
-import siksha.wafflestudio.core.domain.main.review.dto.*
+import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewResponse
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewWithImagesRequest
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -84,10 +90,6 @@ class ReviewService(
             user.id.toString()
         )
 
-        val etcList: List<String>? = menuSummary.getEtc()?.let {
-            objectMapper.readValue(it, object : TypeReference<List<String>>() {})
-        }
-
         return MenuDetailsDto(
             createdAt = menuSummary.getCreatedAt(),
             updatedAt = menuSummary.getUpdatedAt(),
@@ -99,7 +101,7 @@ class ReviewService(
             nameKr = menuSummary.getNameKr(),
             nameEn = menuSummary.getNameEn(),
             price = menuSummary.getPrice(),
-            etc = etcList,
+            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
             score = menuSummary.getScore(),
             reviewCnt = menuSummary.getReviewCnt(),
             isLiked = menuLikeSummary.getIsLiked(),
@@ -130,10 +132,6 @@ class ReviewService(
             user.id.toString()
         )
 
-        val etcList: List<String>? = menuSummary.getEtc()?.let {
-            objectMapper.readValue(it, object : TypeReference<List<String>>() {})
-        }
-
         return MenuDetailsDto(
             createdAt = review.createdAt,
             updatedAt = review.updatedAt,
@@ -145,7 +143,7 @@ class ReviewService(
             nameKr = menuSummary.getNameKr(),
             nameEn = menuSummary.getNameEn(),
             price = menuSummary.getPrice(),
-            etc = etcList,
+            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
             score = menuSummary.getScore(),
             reviewCnt = menuSummary.getReviewCnt(),
             isLiked = menuLikeSummary.getIsLiked(),
