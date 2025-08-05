@@ -16,7 +16,7 @@ import siksha.wafflestudio.core.domain.post.service.PostService
 @RestController
 @RequestMapping("/community/posts")
 @Validated
-class PostController (
+class PostController(
     private val postService: PostService,
     private val validator: Validator,
 ) {
@@ -49,13 +49,14 @@ class PostController (
         @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
         @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
-        val createDto = PostCreateRequestDto(
-            boardId = boardId,
-            title = title,
-            content = content,
-            anonymous = anonymous ?: false,
-            images = images
-        )
+        val createDto =
+            PostCreateRequestDto(
+                boardId = boardId,
+                title = title,
+                content = content,
+                anonymous = anonymous ?: false,
+                images = images,
+            )
         val violations = validator.validate(createDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.createPost(request.userId, createDto)
@@ -94,12 +95,13 @@ class PostController (
         @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
         @RequestPart("images", required = false) images: List<MultipartFile>?,
     ): PostResponseDto? {
-        val patchDto = PostPatchRequestDto(
-            title = title,
-            content = content,
-            anonymous = anonymous ?: false,
-            images = images
-        )
+        val patchDto =
+            PostPatchRequestDto(
+                title = title,
+                content = content,
+                anonymous = anonymous ?: false,
+                images = images,
+            )
         val violations = validator.validate(patchDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)
@@ -123,7 +125,7 @@ class PostController (
         return postService.createOrUpdatePostLike(request.userId, postId, true)
     }
 
-    //TODO: delete 방식으로 수정
+    // TODO: delete 방식으로 수정
     @PostMapping("/{postId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun createPostUnlike(

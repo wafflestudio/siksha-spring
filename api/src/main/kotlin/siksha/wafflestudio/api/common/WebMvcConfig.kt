@@ -1,7 +1,6 @@
 package siksha.wafflestudio.api.common
 
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.Ordered
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -17,8 +16,10 @@ class WebMvcConfig(
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/actuator/health",
-                "/restaurants"
+                "/restaurants",
+                "/auth/privacy-policy",
+                "/auth/login/**",
+                "/auth/nicknames/validate",
             )
     }
 }
-

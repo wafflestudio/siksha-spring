@@ -7,13 +7,13 @@ import siksha.wafflestudio.core.domain.restaurant.repository.RestaurantRepositor
 
 @SpringBootTest
 class CommentTest
-@Autowired
-constructor(
-    private val repository: RestaurantRepository,
-) {
-    @Test
-    fun testRestaurant() {
-        val restaurants = repository.findAll()
-        assert(restaurants.isNotEmpty())
+    @Autowired
+    constructor(
+        private val repository: RestaurantRepository,
+    ) {
+        @Test
+        fun testRestaurant() {
+            val restaurants = repository.findAll()
+            assert(restaurants.isNotEmpty())
+        }
     }
-}
