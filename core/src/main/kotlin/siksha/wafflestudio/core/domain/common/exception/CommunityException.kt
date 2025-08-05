@@ -31,8 +31,6 @@ class PostNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 �
 
 class CommentNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다.")
 
-class RestaurantNotFound : SikshaException(HttpStatus.NOT_FOUND, "Restaurant not found")
-
 class BoardNameAlreadyExistException : CommunityException(HttpStatus.CONFLICT, "중복된 게시판 이름이 존재합니다.")
 
 class ImageUploadFailedException : CommunityException(HttpStatus.SERVICE_UNAVAILABLE, "이미지 업로드 실패")
