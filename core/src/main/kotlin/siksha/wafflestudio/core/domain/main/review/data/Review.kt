@@ -22,7 +22,6 @@ data class Review(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
-    // TODO: uncomment this after implement Menu
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
     val menu: Menu,
