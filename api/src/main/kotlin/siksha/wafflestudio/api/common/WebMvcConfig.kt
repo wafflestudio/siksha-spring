@@ -17,6 +17,9 @@ class WebMvcConfig(
                 "/v3/api-docs/**",
                 "/actuator/health",
                 "/restaurants",
+                "/auth/privacy-policy",
+                "/auth/login/**",
+                "/auth/nicknames/validate",
             )
     }
 }

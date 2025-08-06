@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.user.data.User
 
 @Repository
-interface UserRepository : JpaRepository<User, Int>
+interface UserRepository: JpaRepository<User, Int> {
+    fun existsByNickname(nickname: String): Boolean
+}

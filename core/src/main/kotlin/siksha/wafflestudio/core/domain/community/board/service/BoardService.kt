@@ -5,15 +5,15 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.BoardDto
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
-import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.community.board.BoardDto
-import siksha.wafflestudio.core.domain.community.board.data.Board
-import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service

@@ -12,15 +12,15 @@ import java.time.ZoneId
 
 @Entity(name = "user")
 @Table(name = "user")
-class User(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
     val type: String,
     val identity: String,
     val etc: String? = null,
-    val nickname: String,
-    val profileUrl: String? = null,
+    var nickname: String,
+    var profileUrl: String? = null,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
