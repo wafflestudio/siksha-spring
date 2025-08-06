@@ -10,10 +10,8 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.multipart.MultipartFile
-import org.testcontainers.junit.jupiter.Testcontainers
 import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
@@ -27,8 +25,6 @@ import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@Testcontainers
-@SpringBootTest
 class UserServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
@@ -163,10 +159,11 @@ class UserServiceTest {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "old-nickname", type = "test", identity = "test-identity")
+        val updatedUser = user.copy(nickname = "new-nickname")
         val request = UserProfilePatchDto(nickname = "new-nickname", image = null, changeToDefaultImage = false)
         every { userRepository.findByIdOrNull(userId) } returns user
         every { userRepository.existsByNickname("new-nickname") } returns false
-        every { userRepository.save(any()) } returns user.apply { nickname = request.nickname!! }
+        every { userRepository.save(any()) } returns updatedUser
 
         // when
         val result = userService.patchUserWithProfileUrl(userId, request)
@@ -177,7 +174,7 @@ class UserServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(userId) }
         verify { userRepository.existsByNickname("new-nickname") }
-        verify { userRepository.save(any()) }
+        verify { userRepository.save(match { it.nickname == "new-nickname" }) }
     }
 
     @Test
