@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.community.board.BoardDto
+import siksha.wafflestudio.core.domain.community.board.dto.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.dto.BoardDto
 import siksha.wafflestudio.core.domain.community.board.service.BoardService
 import java.util.Optional
 

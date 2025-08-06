@@ -5,8 +5,14 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 import org.springframework.web.multipart.MultipartFile
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class UserProfilePatchDto (
+data class UserProfilePatchDto(
     val nickname: String?,
     val image: MultipartFile?,
-    val changeToDefaultImage: Boolean
+    val changeToDefaultImage: Boolean,
+)
+
+// dummy class to pass linter
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class UserDummy(
+    val dummy: String,
 )

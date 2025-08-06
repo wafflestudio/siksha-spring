@@ -31,15 +31,14 @@ class ExceptionHandler {
     @ExceptionHandler(UserNotFoundException::class)
     fun handleAuthUserNotFoundException(
         request: HttpServletRequest,
-        userNotFoundException: UserNotFoundException
+        userNotFoundException: UserNotFoundException,
     ): ResponseEntity<ErrorBody> {
         if (request.requestURI.contains("/auth")) {
             return ResponseEntity(
                 UnauthorizedUserException().message?.let { ErrorBody(it) },
-                HttpStatus.UNAUTHORIZED
+                HttpStatus.UNAUTHORIZED,
             )
-        }
-        else {
+        } else {
             return ResponseEntity(
                 ErrorBody(userNotFoundException.errorMessage),
                 userNotFoundException.httpStatus,

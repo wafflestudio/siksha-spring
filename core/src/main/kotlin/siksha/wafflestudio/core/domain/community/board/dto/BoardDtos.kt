@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.community.board
+package siksha.wafflestudio.core.domain.community.board.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
