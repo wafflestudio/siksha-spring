@@ -17,7 +17,7 @@ spring:
 
 siksha:
   banned:
-    words:
+    words: ${SIKSHA_BANNED_WORDS:}
 ---
 spring:
   config:
