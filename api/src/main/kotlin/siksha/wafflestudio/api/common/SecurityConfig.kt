@@ -10,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
-import org.springframework.web.client.RestTemplate
 
 @Configuration
 @EnableWebSecurity
@@ -53,10 +52,5 @@ class SecurityConfig(
                 }
             }
             .build()
-    }
-
-    @Bean
-    fun restTemplate(): RestTemplate {
-        return RestTemplate()
     }
 }

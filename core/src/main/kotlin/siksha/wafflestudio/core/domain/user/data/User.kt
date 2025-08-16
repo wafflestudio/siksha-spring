@@ -11,33 +11,16 @@ import java.time.OffsetDateTime
 import java.time.ZoneId
 
 @Entity(name = "user")
-@Table(
-    name = "user",
-    uniqueConstraints = [
-        UniqueConstraint(columnNames = ["type", "identity"]),
-        UniqueConstraint(columnNames = ["nickname"])
-    ]
-)
+@Table(name = "user")
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
-
-    @Column(nullable = false, length = 10)
     val type: String,
-
-    @Column(nullable = false, length = 200)
     val identity: String,
-
-    @Column(columnDefinition = "TEXT")
     val etc: String? = null,
-
-    @Column(nullable = false, length = 30)
     var nickname: String,
-
-    @Column(length = 100)
     var profileUrl: String? = null,
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

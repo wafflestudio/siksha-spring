@@ -3,16 +3,13 @@ package siksha.wafflestudio.api.controller
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -34,15 +31,6 @@ class AuthController(
     private val userService: UserService,
     private val resourceLoader: ResourceLoader,
 ) {
-    @PostMapping("/login/{provider}")
-    fun socialLogin(
-        @PathVariable provider: String,
-        @RequestHeader(HttpHeaders.AUTHORIZATION) authorization: String,
-    ): AuthResponseDto {
-        val token = authorization.substringAfter("Bearer ")
-        return authService.signIn(provider, token)
-    }
-
     @PostMapping("/refresh")
     fun refreshAccessToken(request: HttpServletRequest): AuthResponseDto {
         return authService.getAccessTokenByUserId(request.userId)
@@ -59,6 +47,18 @@ class AuthController(
     fun deleteUser(request: HttpServletRequest) {
         userService.deleteUser(request.userId)
     }
+//
+//    @PostMapping("/login/test")
+//    fun loginTypeTest(){}
+//
+//    @PostMapping("/login/apple")
+//    fun loginTypeApple(){}
+//
+//    @PostMapping("/login/kakao")
+//    fun loginTypeKakao(){}
+//
+//    @PostMapping("/login/google")
+//    fun loginTypeGoogle(){}
 
     // TODO: deprecate this
     @GetMapping("/me")
