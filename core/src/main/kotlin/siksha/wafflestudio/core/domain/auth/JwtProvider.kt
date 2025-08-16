@@ -36,11 +36,10 @@ class JwtProvider(
     }
 
     fun verifyJwtGetClaims(token: String): Claims {
-        val trimmed = token.removePrefix("Bearer ")
         return Jwts.parser()
             .verifyWith(encodedJwtSecretKey)
             .build()
-            .parseSignedClaims(trimmed)
+            .parseSignedClaims(token)
             .payload
     }
 }
