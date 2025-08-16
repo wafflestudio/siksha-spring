@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @Configuration
 @EnableWebSecurity
@@ -27,8 +28,8 @@ class SecurityConfig(
                 // set whitelist here
                 it.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                   .requestMatchers(HttpMethod.GET, "/community/boards").permitAll()
+                  .requestMatchers(AntPathRequestMatcher.antMatcher("/community/**/web")).permitAll()
                   .requestMatchers(
-                      "/community/**/web",
                       "/error",
                       "/swagger-ui/**",
                       "/v3/api-docs/**",
