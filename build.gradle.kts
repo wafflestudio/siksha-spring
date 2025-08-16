@@ -33,6 +33,8 @@ allprojects {
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("org.springframework.boot:spring-boot-starter-actuator")
+        implementation("org.springframework.boot:spring-boot-starter-security")
+        implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
         testImplementation("io.mockk:mockk:1.12.0")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -45,6 +47,7 @@ allprojects {
         implementation("org.flywaydb:flyway-mysql")
         implementation("org.springframework.boot:spring-boot-starter-validation")
         implementation("com.wafflestudio.spring:spring-boot-starter-waffle-secret-manager:1.0.2")
+        implementation("com.nimbusds:nimbus-jose-jwt:9.40")
     }
 
     kotlin {
