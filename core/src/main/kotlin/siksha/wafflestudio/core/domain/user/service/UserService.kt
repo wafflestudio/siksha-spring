@@ -18,7 +18,6 @@ import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -27,9 +26,8 @@ class UserService(
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
     private val s3Service: S3Service,
-    @Value("\${siksha.banned.words:}") private val bannedWords: List<String>
+    @Value("\${siksha.banned.words:}") private val bannedWords: List<String>,
 ) {
-
     fun getUser(userId: Int): UserResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
         return UserResponseDto.from(user)
@@ -47,7 +45,10 @@ class UserService(
     }
 
     // TODO deprecate this
-    fun patchUser(userId: Int, patchDto: UserProfilePatchDto): UserResponseDto {
+    fun patchUser(
+        userId: Int,
+        patchDto: UserProfilePatchDto,
+    ): UserResponseDto {
         val dto = this.patchUserWithProfileUrl(userId, patchDto)
         return UserResponseDto(
             id = dto.id,
@@ -56,12 +57,15 @@ class UserService(
             etc = dto.etc,
             nickname = dto.nickname,
             createdAt = dto.createdAt,
-            updatedAt = dto.updatedAt
+            updatedAt = dto.updatedAt,
         )
     }
 
     @Transactional
-    fun patchUserWithProfileUrl(userId: Int, patchDto: UserProfilePatchDto): UserWithProfileUrlResponseDto {
+    fun patchUserWithProfileUrl(
+        userId: Int,
+        patchDto: UserProfilePatchDto,
+    ): UserWithProfileUrlResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
         patchDto.let {
@@ -97,7 +101,10 @@ class UserService(
         return true
     }
 
-    private fun generateImageNameKey(userId: Int) = "user-$userId/${OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
+    private fun generateImageNameKey(userId: Int) =
+        "user-$userId/${OffsetDateTime.now().format(
+            DateTimeFormatter.ofPattern("yyMMddHHmmss"),
+        )}"
 
     /**
      * Uploads a profile image to S3 and saves its metadata to the database.
@@ -105,16 +112,20 @@ class UserService(
      * @param image The new profile image file
      * @return The public S3 URL of the new image
      */
-    private fun uploadProfileImage(userId: Int, image: MultipartFile): String {
+    private fun uploadProfileImage(
+        userId: Int,
+        image: MultipartFile,
+    ): String {
         val nameKey = generateImageNameKey(userId)
         val uploadFile = s3Service.uploadFile(image, S3ImagePrefix.PROFILE, nameKey)
 
-        val imageEntity = Image(
-            key = uploadFile.key,
-            category = ImageCategory.PROFILE,
-            userId = userId,
-            isDeleted = false
-        )
+        val imageEntity =
+            Image(
+                key = uploadFile.key,
+                category = ImageCategory.PROFILE,
+                userId = userId,
+                isDeleted = false,
+            )
         imageRepository.save(imageEntity)
 
         return uploadFile.url
@@ -129,7 +140,7 @@ class UserService(
     private fun deleteProfileImage(user: User) {
         user.profileUrl?.let {
             val oldKey = s3Service.getKeyFromUrl(it)
-            oldKey?.let {key ->
+            oldKey?.let { key ->
                 imageRepository.softDeleteByKeyIn(listOf(key))
             }
             user.profileUrl = null

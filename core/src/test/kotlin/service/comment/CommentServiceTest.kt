@@ -4,25 +4,29 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.board.data.Board
-import siksha.wafflestudio.core.domain.comment.data.*
-import siksha.wafflestudio.core.domain.comment.repository.*
-import siksha.wafflestudio.core.domain.comment.service.CommentService
-import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
-import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
-import siksha.wafflestudio.core.domain.post.data.Post
-import siksha.wafflestudio.core.domain.user.data.User
-import siksha.wafflestudio.core.domain.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import org.junit.jupiter.api.Assertions.*
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.repository.findByIdOrNull
+import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
+import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.comment.data.Comment
+import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentReportRepository
+import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.community.comment.service.CommentService
+import siksha.wafflestudio.core.domain.community.post.data.Post
+import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
+import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @SpringBootTest
 class CommentServiceTest {
@@ -40,13 +44,14 @@ class CommentServiceTest {
         commentRepository = mockk()
         commentLikeRepository = mockk()
         commentReportRepository = mockk()
-        service = CommentService(
-            userRepository,
-            postRepository,
-            commentRepository,
-            commentLikeRepository,
-            commentReportRepository
-        )
+        service =
+            CommentService(
+                userRepository,
+                postRepository,
+                commentRepository,
+                commentLikeRepository,
+                commentReportRepository,
+            )
         clearAllMocks()
     }
 
@@ -58,30 +63,41 @@ class CommentServiceTest {
         val perPage = 10
         val totalCount = 1L
 
-        val user = User(
-            id = 1,
-            nickname = "user",
-            type = "test",
-            identity = "test",
-        )
+        val user =
+            User(
+                id = 1,
+                nickname = "user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = 1,
-            post = Post(id = postId, user =  user, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = user,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = 1,
+                post =
+                    Post(
+                        id = postId,
+                        user = user,
+                        board = board,
+                        title = "title",
+                        content = "content",
+                        anonymous = false,
+                        available = true,
+                    ),
+                content = "Test comment",
+                user = user,
+                anonymous = false,
+                available = true,
+            )
 
-        val pageable = PageRequest.of(page-1, perPage)
+        val pageable = PageRequest.of(page - 1, perPage)
 
         every { commentRepository.findPageByPostId(postId, pageable) } returns PageImpl(listOf(comment), pageable, totalCount)
         every { commentLikeRepository.findByCommentIdInAndIsLiked(any()) } returns emptyList()
 
-        //when
+        // when
         val response = service.getCommentsWithoutAuth(postId, page, perPage)
 
         // then
@@ -102,23 +118,25 @@ class CommentServiceTest {
         val commentId = 2
         val isLiked = true
 
-        val user = User(
-            id = userId,
-            nickname = "user",
-            type = "test",
-            identity = "test",
-        )
+        val user =
+            User(
+                id = userId,
+                nickname = "user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = commentId,
-            post = Post(user = user, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = user,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = commentId,
+                post = Post(user = user, board = board, title = "title", content = "content", anonymous = false, available = true),
+                content = "Test comment",
+                user = user,
+                anonymous = false,
+                available = true,
+            )
 
         every { userRepository.findByIdOrNull(userId) } returns user
         every { commentRepository.findByIdOrNull(commentId) } returns comment
@@ -148,29 +166,32 @@ class CommentServiceTest {
         val commentId = 2
         val isLiked = false
 
-        val user = User(
-            id = userId,
-            nickname = "user",
-            type = "test",
-            identity = "test",
-        )
+        val user =
+            User(
+                id = userId,
+                nickname = "user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = commentId,
-            post = Post(user = user, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = user,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = commentId,
+                post = Post(user = user, board = board, title = "title", content = "content", anonymous = false, available = true),
+                content = "Test comment",
+                user = user,
+                anonymous = false,
+                available = true,
+            )
 
-        val commentLike = CommentLike(
-            user = user,
-            comment = comment,
-            isLiked = true,
-        )
+        val commentLike =
+            CommentLike(
+                user = user,
+                comment = comment,
+                isLiked = true,
+            )
 
         every { userRepository.findByIdOrNull(userId) } returns user
         every { commentRepository.findByIdOrNull(commentId) } returns comment
@@ -201,37 +222,41 @@ class CommentServiceTest {
         val commentId = 2
         val reason = "reason"
 
-        val reportingUser = User(
-            id = reportingUid,
-            nickname = "reporting user",
-            type = "test",
-            identity = "test",
-        )
-        val reportedUser = User(
-            id = reportedUid,
-            nickname = "reported user",
-            type = "test",
-            identity = "test",
-        )
+        val reportingUser =
+            User(
+                id = reportingUid,
+                nickname = "reporting user",
+                type = "test",
+                identity = "test",
+            )
+        val reportedUser =
+            User(
+                id = reportedUid,
+                nickname = "reported user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = commentId,
-            post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = reportedUser,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = commentId,
+                post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
+                content = "Test comment",
+                user = reportedUser,
+                anonymous = false,
+                available = true,
+            )
 
-        val commentReport = CommentReport(
-            id = 100,
-            comment = comment,
-            reason = reason,
-            reportingUser = reportingUser,
-            reportedUser = reportedUser
-        )
+        val commentReport =
+            CommentReport(
+                id = 100,
+                comment = comment,
+                reason = reason,
+                reportingUser = reportingUser,
+                reportedUser = reportedUser,
+            )
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { commentRepository.findByIdOrNull(commentId) } returns comment
@@ -259,29 +284,32 @@ class CommentServiceTest {
         val commentId = 2
         val reason = "reason"
 
-        val reportingUser = User(
-            id = reportingUid,
-            nickname = "reporting user",
-            type = "test",
-            identity = "test",
-        )
-        val reportedUser = User(
-            id = reportedUid,
-            nickname = "reported user",
-            type = "test",
-            identity = "test",
-        )
+        val reportingUser =
+            User(
+                id = reportingUid,
+                nickname = "reporting user",
+                type = "test",
+                identity = "test",
+            )
+        val reportedUser =
+            User(
+                id = reportedUid,
+                nickname = "reported user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = commentId,
-            post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = reportedUser,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = commentId,
+                post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
+                content = "Test comment",
+                user = reportedUser,
+                anonymous = false,
+                available = true,
+            )
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { commentRepository.findByIdOrNull(commentId) } returns comment
@@ -301,29 +329,32 @@ class CommentServiceTest {
         val commentId = 2
         val reason = "200자 초과".repeat(100)
 
-        val reportingUser = User(
-            id = reportingUid,
-            nickname = "reporting user",
-            type = "test",
-            identity = "test",
-        )
-        val reportedUser = User(
-            id = reportedUid,
-            nickname = "reported user",
-            type = "test",
-            identity = "test",
-        )
+        val reportingUser =
+            User(
+                id = reportingUid,
+                nickname = "reporting user",
+                type = "test",
+                identity = "test",
+            )
+        val reportedUser =
+            User(
+                id = reportedUid,
+                nickname = "reported user",
+                type = "test",
+                identity = "test",
+            )
 
         val board = Board(name = "test", description = "test")
 
-        val comment = Comment(
-            id = commentId,
-            post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
-            content = "Test comment",
-            user = reportedUser,
-            anonymous = false,
-            available = true,
-        )
+        val comment =
+            Comment(
+                id = commentId,
+                post = Post(user = reportedUser, board = board, title = "title", content = "content", anonymous = false, available = true),
+                content = "Test comment",
+                user = reportedUser,
+                anonymous = false,
+                available = true,
+            )
 
         every { userRepository.findByIdOrNull(reportingUid) } returns reportingUser
         every { commentRepository.findByIdOrNull(commentId) } returns comment

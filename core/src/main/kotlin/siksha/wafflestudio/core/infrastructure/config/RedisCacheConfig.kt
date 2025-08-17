@@ -20,15 +20,15 @@ import java.time.Duration
 @Configuration
 @EnableCaching
 class RedisCacheConfig {
-
     @Bean
     fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
-        val cacheConfigurations = mapOf(
-            "boardCache" to createCacheConfiguration(Duration.ofDays(1)),
-            "popularPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
-            "bestPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
-            "restaurantCache" to createCacheConfiguration(Duration.ofDays(1)),
-        )
+        val cacheConfigurations =
+            mapOf(
+                "boardCache" to createCacheConfiguration(Duration.ofDays(1)),
+                "popularPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
+                "bestPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
+                "restaurantCache" to createCacheConfiguration(Duration.ofDays(1)),
+            )
 
         return RedisCacheManager.builder(redisConnectionFactory)
             .withInitialCacheConfigurations(cacheConfigurations)
@@ -39,14 +39,15 @@ class RedisCacheConfig {
         return RedisCacheConfiguration.defaultCacheConfig(Thread.currentThread().contextClassLoader)
             .entryTtl(ttl)
             .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer())
+                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer()),
             )
     }
 
     private fun jsonSerializer(): RedisSerializer<Any> {
-        val polymorphismResolver = BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType(Any::class.java)
-            .build()
+        val polymorphismResolver =
+            BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Any::class.java)
+                .build()
 
         return GenericJackson2JsonRedisSerializer(
             ObjectMapper().apply {
@@ -57,9 +58,7 @@ class RedisCacheConfig {
                     polymorphismResolver,
                     ObjectMapper.DefaultTyping.EVERYTHING,
                 )
-            }
+            },
         )
-
     }
 }
-

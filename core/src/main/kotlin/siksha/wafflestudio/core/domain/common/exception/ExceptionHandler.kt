@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import java.lang.IllegalArgumentException
 
 @RestControllerAdvice
 class ExceptionHandler {
@@ -32,15 +31,14 @@ class ExceptionHandler {
     @ExceptionHandler(UserNotFoundException::class)
     fun handleAuthUserNotFoundException(
         request: HttpServletRequest,
-        userNotFoundException: UserNotFoundException
+        userNotFoundException: UserNotFoundException,
     ): ResponseEntity<ErrorBody> {
         if (request.requestURI.contains("/auth")) {
             return ResponseEntity(
                 UnauthorizedUserException().message?.let { ErrorBody(it) },
-                HttpStatus.UNAUTHORIZED
+                HttpStatus.UNAUTHORIZED,
             )
-        }
-        else {
+        } else {
             return ResponseEntity(
                 ErrorBody(userNotFoundException.errorMessage),
                 userNotFoundException.httpStatus,

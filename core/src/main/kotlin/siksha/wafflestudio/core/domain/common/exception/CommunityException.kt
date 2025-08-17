@@ -8,21 +8,24 @@ class InvalidBoardFormException(message: String) : CommunityException(HttpStatus
 
 class InvalidPostFormException(message: String) : CommunityException(HttpStatus.BAD_REQUEST, message)
 
-class NotCommentOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 댓글의 작성자가 아닙니다.")
+class NotCommentOwnerException : CommunityException(HttpStatus.FORBIDDEN, "해당 댓글의 작성자가 아닙니다.")
 
-class NotPostOwnerException: CommunityException(HttpStatus.FORBIDDEN, "해당 글의 작성자가 아닙니다.")
+class NotPostOwnerException : CommunityException(HttpStatus.FORBIDDEN, "해당 글의 작성자가 아닙니다.")
 
-class CustomNotFoundException(vararg items: NotFoundItem): CommunityException(HttpStatus.NOT_FOUND, "다음을 찾을 수 없습니다: " + items.joinToString())
+class CustomNotFoundException(vararg items: NotFoundItem) : CommunityException(
+    HttpStatus.NOT_FOUND,
+    "다음을 찾을 수 없습니다: " + items.joinToString(),
+)
 
-class InvalidPageNumberException(): CommunityException(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다.")
+class InvalidPageNumberException() : CommunityException(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다.")
 
 class BoardNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 게시판을 찾을 수 없습니다.")
 
-class BoardSaveFailedException(message: String?): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시판 저장에 실패하였습니다 - $message")
+class BoardSaveFailedException(message: String?) : CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시판 저장에 실패하였습니다 - $message")
 
-class PostNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 글을 찾을 수 없습니다.")
+class PostNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 글을 찾을 수 없습니다.")
 
-class CommentNotFoundException: CommunityException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다.")
+class CommentNotFoundException : CommunityException(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다.")
 
 class BoardNameAlreadyExistException : CommunityException(HttpStatus.CONFLICT, "중복된 게시판 이름이 존재합니다.")
 
@@ -36,12 +39,12 @@ class PostAlreadyReportedException() : CommunityException(HttpStatus.CONFLICT, "
 
 class InvalidPostReportFormException() : CommunityException(HttpStatus.BAD_REQUEST, "이유는 1자에서 200자 사이여야 합니다.")
 
-class CommentReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 신고에 실패하였습니다.")
+class CommentReportSaveFailedException() : CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "댓글 신고에 실패하였습니다.")
 
-class PostReportSaveFailedException(): CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 신고에 실패하였습니다.")
+class PostReportSaveFailedException() : CommunityException(HttpStatus.INTERNAL_SERVER_ERROR, "게시글 신고에 실패하였습니다.")
 
 enum class NotFoundItem(val value: String) {
     USER("유저"),
     POST("게시물"),
-    BOARD("게시판")
+    BOARD("게시판"),
 }

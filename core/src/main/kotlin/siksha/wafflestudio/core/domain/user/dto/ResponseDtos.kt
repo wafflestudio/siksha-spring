@@ -2,10 +2,7 @@ package siksha.wafflestudio.core.domain.user.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.restaurant.data.Restaurant
-import siksha.wafflestudio.core.domain.restaurant.dto.RestaurantResponseDto
 import siksha.wafflestudio.core.domain.user.data.User
-import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
 
 // TODO: remove this and use UserWithProfileUrlResponseDto instead
@@ -28,7 +25,7 @@ data class UserResponseDto(
                 etc = user.etc,
                 nickname = user.nickname,
                 createdAt = user.createdAt,
-                updatedAt = user.updatedAt
+                updatedAt = user.updatedAt,
             )
         }
     }
@@ -55,7 +52,7 @@ data class UserWithProfileUrlResponseDto(
                 nickname = user.nickname,
                 profileUrl = user.profileUrl,
                 createdAt = user.createdAt,
-                updatedAt = user.updatedAt
+                updatedAt = user.updatedAt,
             )
         }
     }

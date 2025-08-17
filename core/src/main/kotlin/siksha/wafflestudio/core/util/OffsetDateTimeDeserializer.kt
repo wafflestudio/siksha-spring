@@ -9,8 +9,10 @@ import java.time.format.DateTimeFormatter
 class OffsetDateTimeDeserializer : JsonDeserializer<OffsetDateTime>() {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
 
-    override fun deserialize(parser: JsonParser, context: DeserializationContext): OffsetDateTime {
+    override fun deserialize(
+        parser: JsonParser,
+        context: DeserializationContext,
+    ): OffsetDateTime {
         return OffsetDateTime.parse(parser.text, formatter)
     }
 }
-
