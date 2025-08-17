@@ -25,7 +25,7 @@ import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
-import siksha.wafflestudio.core.domain.common.exception.InvalidTokenHeaderException
+import siksha.wafflestudio.core.domain.common.exception.TokenParseException
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
@@ -161,10 +161,10 @@ class AuthController(
                 SocialProvider.APPLE  -> request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME)
                 SocialProvider.GOOGLE -> request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME)
                 SocialProvider.KAKAO  -> request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME)
-                SocialProvider.TEST -> throw InvalidTokenHeaderException()
+                SocialProvider.TEST -> throw TokenParseException()
             }
 
-        if (!rawHeader.startsWith("Bearer ", ignoreCase = false)) throw InvalidTokenHeaderException()
+        if (!rawHeader.startsWith("Bearer ", ignoreCase = false)) throw TokenParseException()
         return rawHeader.removePrefix("Bearer ")
     }
 
