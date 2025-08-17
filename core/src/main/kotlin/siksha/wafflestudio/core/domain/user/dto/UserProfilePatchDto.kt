@@ -10,9 +10,3 @@ data class UserProfilePatchDto(
     val image: MultipartFile?,
     val changeToDefaultImage: Boolean,
 )
-
-// dummy class to pass linter
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class UserDummy(
-    val dummy: String,
-)

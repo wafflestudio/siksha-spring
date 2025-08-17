@@ -7,9 +7,3 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 data class AuthResponseDto(
     val accessToken: String,
 )
-
-// dummy class to pass linter
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class AuthDummy(
-    val dummy: String,
-)
