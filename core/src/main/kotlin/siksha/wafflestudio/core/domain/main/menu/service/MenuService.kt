@@ -90,7 +90,7 @@ class MenuService(
                 val list = mutableListOf<RestaurantInListDto>()
                 allRestaurants.forEach { restaurant ->
                     list.add(
-                        RestaurantInListDto.from(restaurant, mutableListOf())
+                        RestaurantInListDto.from(restaurant, mutableListOf()),
                     )
                 }
                 typeMap[type] = list
@@ -151,7 +151,8 @@ class MenuService(
         val menuIdStr = menuId.toString()
 
         // 1) 메뉴 기본 정보 조회 (score, review_cnt 포함)
-        val menu = try {
+        val menu =
+            try {
                 menuRepository.findMenuById(menuIdStr)
             } catch (e: EmptyResultDataAccessException) {
                 throw MenuNotFoundException()

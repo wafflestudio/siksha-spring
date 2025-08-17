@@ -44,7 +44,10 @@ data class MenuInListDto
         val isLiked: Boolean,
     ) {
         companion object {
-            fun from(menu: MenuSummary, likeInfo: MenuLikeSummary?): MenuInListDto {
+            fun from(
+                menu: MenuSummary,
+                likeInfo: MenuLikeSummary?,
+            ): MenuInListDto {
                 return MenuInListDto(
                     createdAt = menu.getCreatedAt(),
                     updatedAt = menu.getUpdatedAt(),
@@ -57,7 +60,7 @@ data class MenuInListDto
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                    isLiked = likeInfo?.getIsLiked() ?: false
+                    isLiked = likeInfo?.getIsLiked() ?: false,
                 )
             }
         }
@@ -94,7 +97,10 @@ data class RestaurantInListDto
         val menus: List<MenuInListDto>,
     ) {
         companion object {
-            fun from(restaurant: Restaurant, menus: List<MenuInListDto>): RestaurantInListDto {
+            fun from(
+                restaurant: Restaurant,
+                menus: List<MenuInListDto>,
+            ): RestaurantInListDto {
                 return RestaurantInListDto(
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
@@ -106,7 +112,7 @@ data class RestaurantInListDto
                     lat = restaurant.lat,
                     lng = restaurant.lng,
                     etc = EtcUtils.convertRestEtc(restaurant.etc),
-                    menus = menus
+                    menus = menus,
                 )
             }
         }
@@ -182,7 +188,10 @@ data class MenuDetailsDto
         val likeCnt: Int,
     ) {
         companion object {
-            fun from(menu: MenuSummary, likeInfo: MenuLikeSummary?): MenuDetailsDto {
+            fun from(
+                menu: MenuSummary,
+                likeInfo: MenuLikeSummary?,
+            ): MenuDetailsDto {
                 return MenuDetailsDto(
                     createdAt = menu.getCreatedAt(),
                     updatedAt = menu.getUpdatedAt(),
@@ -198,7 +207,7 @@ data class MenuDetailsDto
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
                     isLiked = likeInfo?.getIsLiked() ?: false,
-                    likeCnt = likeInfo?.getLikeCnt() ?: 0
+                    likeCnt = likeInfo?.getLikeCnt() ?: 0,
                 )
             }
         }
