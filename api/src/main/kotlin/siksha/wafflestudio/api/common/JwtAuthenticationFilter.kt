@@ -56,3 +56,7 @@ class JwtAuthenticationFilter(
 
 val HttpServletRequest.userId: Int
     get() = (SecurityContextHolder.getContext().authentication?.principal as? UserPrincipal)?.userId as Int
+
+data class UserPrincipal(
+    val userId: Int,
+)
