@@ -26,23 +26,29 @@ class AuthService(
         return AuthResponseDto(accessToken = token)
     }
 
+
     @Transactional
-    fun upsertAndGetUserId(p: SocialProfile): Int {
-        // 1) 이미 매핑되어 있으면 바로 반환 (idempotent)
-        userRepository.findByTypeAndIdentity(p.provider.toString(), p.externalId)?.let { return it.id }
+    fun upsertUserAndGetAccessToken(p: SocialProfile): AuthResponseDto {
+        val existing = userRepository.findByTypeAndIdentity(p.provider.toString(), p.externalId)
+        val userId = if (existing != null) {
+            existing.id
+        } else {
+            val newUser = User(
+                type = p.provider.toString(),
+                identity = p.externalId,
+                nickname = "dummy" // TODO: nickname generator
+            )
 
-        // 2) 없으면 유저 생성 후 매핑 시도
-        // TODO: implement nickname generator
-        val newUser = User(type = p.provider.toString(), identity = p.externalId, nickname = "dummy")
-
-        return try {
-            userRepository.save(newUser)
-            newUser.id
-        } catch (e: DataIntegrityViolationException) {
-            // 3) 동시성(레이스)으로 인해 유니크 충돌 시, 다시 조회해서 반환
-            userRepository.findByTypeAndIdentity(p.provider.toString(), p.externalId)?.id
-                ?: throw e
+            try {
+                userRepository.save(newUser)
+                newUser.id
+            } catch (e: DataIntegrityViolationException) {
+                // race condition
+                userRepository.findByTypeAndIdentity(p.provider.toString(), p.externalId)?.id
+                    ?: throw e // 500; 유저 생성에 실패했지만 조회도 되지 않는 경우
+            }
         }
+        return getAccessTokenByUserId(userId)
     }
 
     companion object {

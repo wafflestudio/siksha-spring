@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -18,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
+import siksha.wafflestudio.core.domain.auth.dto.LoginTypeTestRequestDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.InvalidTokenHeaderException
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
@@ -56,30 +60,44 @@ class AuthController(
 //    fun loginTypeTest(){}
 //
 
-    @PostMapping("/login/apple")
-    fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME))
-        return issue(verifier.verifyAppleIdToken(token))
+    @PostMapping("/login/test")
+    fun loginTypeTest(@RequestBody body: LoginTypeTestRequestDto): AuthResponseDto {
+        return authService.upsertUserAndGetAccessToken(
+            SocialProfile(provider = SocialProvider.TEST, externalId = body.identity)
+        )
+    }
+
+    @PostMapping("/login/{provider}")
+    fun login(@PathVariable("provider") provider: SocialProvider, request: HttpServletRequest): AuthResponseDto {
+        val token = trimTokenHeader(request, provider)
+        val socialProfile = when (provider) {
+            SocialProvider.APPLE -> verifier.verifyAppleIdToken(token)
+            SocialProvider.GOOGLE -> verifier.verifyGoogleIdToken(token)
+            SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
+            SocialProvider.TEST -> error("unreachable")
+        }
+        return authService.upsertUserAndGetAccessToken(socialProfile)
     }
 
 
+    @PostMapping("/login/apple")
+    fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
+        val token = trimTokenHeader(request, SocialProvider.APPLE)
+        return authService.upsertUserAndGetAccessToken(verifier.verifyAppleIdToken(token))
+    }
+
     @PostMapping("/login/kakao")
     fun loginTypeKakao(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME))
-        return issue(verifier.verifyKakaoAccessToken(token))
+        val token = trimTokenHeader(request, SocialProvider.KAKAO)
+        return authService.upsertUserAndGetAccessToken(verifier.verifyKakaoAccessToken(token))
     }
 
     @PostMapping("/login/google")
     fun loginTypeGoogle(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME))
-        return issue(verifier.verifyGoogleIdToken(token))
+        val token = trimTokenHeader(request, SocialProvider.GOOGLE)
+        return authService.upsertUserAndGetAccessToken(verifier.verifyGoogleIdToken(token))
     }
 
-    private fun issue(p: SocialProfile): AuthResponseDto {
-        val userId = authService.upsertAndGetUserId(p)   // (provider, externalId=sub) → userId 매핑
-        val access = authService.getAccessTokenByUserId(userId)
-        return access
-    }
 
     // TODO: deprecate this
     @GetMapping("/me")
@@ -135,10 +153,21 @@ class AuthController(
         userService.validateNickname(nickname)
     }
 
-    private fun trimTokenHeader(header: String): String {
-        if (!header.startsWith("Bearer ", ignoreCase = false)) throw InvalidTokenHeaderException()
-        return header.removePrefix("Bearer ")
+    private fun trimTokenHeader(request: HttpServletRequest, provider: SocialProvider): String {
+        val rawHeader = request.getHeader("Authorization")
+            ?: when (provider) {
+                // legacy headers
+                // TODO: deprecate below
+                SocialProvider.APPLE  -> request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME)
+                SocialProvider.GOOGLE -> request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME)
+                SocialProvider.KAKAO  -> request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME)
+                SocialProvider.TEST -> throw InvalidTokenHeaderException()
+            }
+
+        if (!rawHeader.startsWith("Bearer ", ignoreCase = false)) throw InvalidTokenHeaderException()
+        return rawHeader.removePrefix("Bearer ")
     }
+
     companion object {
         private const val APPLE_AUTHORIZATION_HEADER_NAME = "apple-token"
         private const val GOOGLE_AUTHORIZATION_HEADER_NAME = "google-token"
