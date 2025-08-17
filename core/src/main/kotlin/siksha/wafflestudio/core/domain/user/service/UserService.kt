@@ -38,7 +38,6 @@ class UserService(
         userRepository.deleteById(userId)
     }
 
-
     @Transactional
     fun patchUser(
         userId: Int,

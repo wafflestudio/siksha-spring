@@ -82,7 +82,6 @@ class AuthController(
         return userService.patchUser(request.userId, patchDto)
     }
 
-
     @GetMapping("/nicknames/validate")
     @ResponseStatus(HttpStatus.OK)
     fun validateNickname(
