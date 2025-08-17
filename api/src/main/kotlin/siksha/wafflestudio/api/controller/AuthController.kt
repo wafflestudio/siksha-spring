@@ -37,7 +37,7 @@ class AuthController(
     private val resourceLoader: ResourceLoader,
     // TODO: google client id list로 변경
     @Value("\${siksha.oauth.google.client-id.web}") private val googleClientId: String,
-    @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientId: String,
+    @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientIds: List<String>,
     @Value("\${siksha.oauth.kakao.app-id}")  private val kakaoClientId: String,
     private val verifier: SocialTokenVerifier,
 ) {
@@ -63,7 +63,7 @@ class AuthController(
 //
     data class TokenReq(val token: String)
     @PostMapping("/login/apple")
-    fun loginTypeApple(@RequestBody req: TokenReq) = issue(verifier.verifyAppleIdToken(req.token, appleClientId))
+    fun loginTypeApple(@RequestBody req: TokenReq) = issue(verifier.verifyAppleIdToken(req.token, appleClientIds))
 
 
     @PostMapping("/login/kakao")
@@ -74,8 +74,9 @@ class AuthController(
         return issue(profile)
     }
 
+    // TODO: google client id list로 변경
     @PostMapping("/login/google")
-    fun loginTypeGoogle(@RequestBody req: TokenReq) = issue(verifier.verifyGoogleIdToken(req.token, googleClientId))
+    fun loginTypeGoogle(@RequestBody req: TokenReq) = issue(verifier.verifyGoogleIdToken(req.token, listOf(googleClientId)))
 
     private fun issue(p: SocialProfile): AuthResponseDto {
         val userId = authService.upsertAndGetUserId(p)   // (provider, externalId=sub) → userId 매핑

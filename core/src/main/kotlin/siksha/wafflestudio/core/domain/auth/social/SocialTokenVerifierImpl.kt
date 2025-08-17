@@ -16,20 +16,20 @@ class SocialTokenVerifierImpl(
     private val rest: RestTemplate
 ) : SocialTokenVerifier {
 
-    override fun verifyGoogleIdToken(idToken: String, clientId: String): SocialProfile {
+    override fun verifyGoogleIdToken(idToken: String, clientIds: List<String>): SocialProfile {
         val c = verifyOidc(idToken,
             issuer = "https://accounts.google.com",
             jwksUri = "https://www.googleapis.com/oauth2/v3/certs",
-            requiredAud = clientId
+            requiredAudiences = clientIds
         )
         return SocialProfile("google", c.subject)
     }
 
-    override fun verifyAppleIdToken(idToken: String, clientId: String): SocialProfile {
+    override fun verifyAppleIdToken(idToken: String, clientIds: List<String>): SocialProfile {
         val c = verifyOidc(idToken,
             issuer = "https://appleid.apple.com",
             jwksUri = "https://appleid.apple.com/auth/keys",
-            requiredAud = clientId
+            requiredAudiences = clientIds
         )
         return SocialProfile("apple", c.subject)
     }
@@ -39,7 +39,7 @@ class SocialTokenVerifierImpl(
         val c = verifyOidc(idToken,
             issuer = "https://kauth.kakao.com",
             jwksUri = jwksUri,
-            requiredAud = clientId
+            requiredAudiences = listOf(clientId)
         )
         return SocialProfile("kakao", c.subject)
     }
@@ -58,7 +58,7 @@ class SocialTokenVerifierImpl(
     }
 
     // ---- OIDC 공통 ----
-    private fun verifyOidc(idToken: String, issuer: String, jwksUri: String, requiredAud: String): JWTClaimsSet {
+    private fun verifyOidc(idToken: String, issuer: String, jwksUri: String, requiredAudiences: List<String>): JWTClaimsSet {
         val jwt = com.nimbusds.jwt.SignedJWT.parse(idToken)
         val jwkSource = com.nimbusds.jose.jwk.source.RemoteJWKSet<com.nimbusds.jose.proc.SecurityContext>(java.net.URL(jwksUri))
         val selector = com.nimbusds.jose.proc.JWSVerificationKeySelector<com.nimbusds.jose.proc.SecurityContext>(
@@ -72,7 +72,14 @@ class SocialTokenVerifierImpl(
             )
         }
         val claims = processor.process(jwt, null)
-        require(claims.audience.contains(requiredAud)) { "aud mismatch" }
+        val audList = claims.audience.orEmpty()
+        val azp = claims.getStringClaim("azp")
+        val allowed = requiredAudiences.filter { !it.isNullOrBlank() }.toSet()
+
+        val match = audList.any { it in allowed } || (azp != null && azp in allowed)
+        require(match) {
+            "aud mismatch: aud=$audList, azp=$azp, allowed=$allowed"
+        }
         return claims
     }
 
