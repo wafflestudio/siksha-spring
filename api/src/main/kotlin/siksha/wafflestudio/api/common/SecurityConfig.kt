@@ -1,6 +1,7 @@
 package siksha.wafflestudio.api.common
 
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -10,11 +11,15 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.web.servlet.HandlerExceptionResolver
+import siksha.wafflestudio.core.domain.common.exception.MainException
+import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -39,16 +44,15 @@ class SecurityConfig(
                         "/auth/nicknames/validate",
                         "/docs",
                     ).permitAll()
-                    .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
+                    .anyRequest().authenticated()
             }
-            // 우리가 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 이전에 실행
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling { handler ->
-                handler.authenticationEntryPoint { _, response, _ -> // 인증 실패 시
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "인증되지 않은 사용자입니다.")
+                handler.authenticationEntryPoint { request, response, _ ->
+                    resolver.resolveException(request, response, null, UnauthorizedUserException())
                 }
-                handler.accessDeniedHandler { _, response, _ -> // 인가 실패 시
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "접근이 거부되었습니다.")
+                handler.accessDeniedHandler { request, response, _ ->
+                    resolver.resolveException(request, response, null, UnauthorizedUserException())
                 }
             }
             .build()
