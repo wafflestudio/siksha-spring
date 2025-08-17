@@ -21,6 +21,10 @@ import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * User 객체의 CRUD를 다루는 서비스입니다.
+ * 인증, 회원가입 등은 AuthService의 책임입니다.
+ */
 @Service
 class UserService(
     private val userRepository: UserRepository,

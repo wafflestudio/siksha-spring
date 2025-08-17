@@ -1,6 +1,7 @@
 package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpStatus
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -17,8 +19,11 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
+import siksha.wafflestudio.core.domain.auth.social.SocialProfile
+import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
@@ -30,6 +35,10 @@ class AuthController(
     private val authService: AuthService,
     private val userService: UserService,
     private val resourceLoader: ResourceLoader,
+    @Value("\${siksha.oauth.google.client-id.web}") private val googleClientId: String,
+    @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientId: String,
+    @Value("\${siksha.oauth.kakao.app-id}")  private val kakaoClientId: String,
+    private val verifier: SocialTokenVerifier,
 ) {
     @PostMapping("/refresh")
     fun refreshAccessToken(request: HttpServletRequest): AuthResponseDto {
@@ -51,15 +60,27 @@ class AuthController(
 //    @PostMapping("/login/test")
 //    fun loginTypeTest(){}
 //
-//    @PostMapping("/login/apple")
-//    fun loginTypeApple(){}
-//
-//    @PostMapping("/login/kakao")
-//    fun loginTypeKakao(){}
-//
-//    @PostMapping("/login/google")
-//    fun loginTypeGoogle(){}
+    data class TokenReq(val token: String)
+    @PostMapping("/login/apple")
+    fun loginTypeApple(@RequestBody req: TokenReq) = issue(verifier.verifyAppleIdToken(req.token, appleClientId))
 
+
+    @PostMapping("/login/kakao")
+    fun loginTypeKakao(@RequestBody req: TokenReq): AuthResponseDto {
+        val isJwt = req.token.count { it == '.' } == 2
+        val profile = if (isJwt) verifier.verifyKakaoIdToken(req.token, kakaoClientId)
+        else      verifier.verifyKakaoAccessToken(req.token)
+        return issue(profile)
+    }
+
+    @PostMapping("/login/google")
+    fun loginTypeGoogle(@RequestBody req: TokenReq) = issue(verifier.verifyGoogleIdToken(req.token, googleClientId))
+
+    private fun issue(p: SocialProfile): AuthResponseDto {
+        val userId = authService.upsertAndGetUserId(p)   // (provider, externalId=sub) → userId 매핑
+        val access = authService.getAccessTokenByUserId(userId)
+        return access
+    }
     // TODO: deprecate this
     @GetMapping("/me")
     fun getMyInfo(request: HttpServletRequest): UserResponseDto {

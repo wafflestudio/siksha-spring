@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.domain.auth.social
 
+import com.nimbusds.jwt.JWTClaimsSet
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -10,8 +11,8 @@ import java.net.URI
 
 @Component
 class SocialTokenVerifierImpl(
-    @Value("\${spring.cloud.aws.s3.bucket}")
-    private val kakaoAppId: String,
+    @Value("\${siksha.oauth.kakao.app-id}")
+    private val kakaoAppId: Long,
     private val rest: RestTemplate
 ) : SocialTokenVerifier {
 
@@ -52,7 +53,7 @@ class SocialTokenVerifierImpl(
             HttpMethod.GET, entity, KakaoTokenInfo::class.java
         ).body ?: error("kakao token info null")
 
-        require(info.app_id == appId) { "app_id mismatch" } // 우리 앱 토큰인지 확인
+        require(info.app_id == kakaoAppId) { "app_id mismatch" } // 우리 앱 토큰인지 확인
         return SocialProfile("kakao", info.id.toString())
     }
 
