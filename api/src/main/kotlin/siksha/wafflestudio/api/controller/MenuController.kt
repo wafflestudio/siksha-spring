@@ -21,10 +21,6 @@ import java.time.LocalDate
 class MenuController(
     private val menuService: MenuService,
 ) {
-    // GET /menus
-    // score, review_cnt, like_cnt, is_liked (if logged in)
-    // token 유무를 authInterceptor 내부에서 자동으로 처리
-    // except_empty = true, except restaurants with no menus
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getMenusWhereDate(
@@ -41,9 +37,6 @@ class MenuController(
         )
     }
 
-    // GET /menus/{menu_id}
-    // 특정 menu의 상세 정보 조회
-    // token 유무를 authInterceptor 내부에서 자동으로 처리
     @GetMapping("/{menu_id}")
     @ResponseStatus(HttpStatus.OK)
     fun getMenuById(
@@ -56,9 +49,6 @@ class MenuController(
         )
     }
 
-    // authInterceptor에서 token 유효성 검사 후, userId를 request attribute에 설정
-    // 경로를 예외로 설정 안함 -> token 검사 실패 시, exception 발생
-    // POST /menus/{menu_id}/like
     @PostMapping("/{menu_id}/like")
     @ResponseStatus(HttpStatus.CREATED)
     fun likeMenu(
@@ -69,7 +59,6 @@ class MenuController(
         userId = request.userId,
     )
 
-    // POST /menus/{menu_id}/unlike
     @PostMapping("/{menu_id}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun unlikeMenu(
