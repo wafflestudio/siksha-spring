@@ -8,7 +8,6 @@ import com.nimbusds.jose.proc.SecurityContext
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.proc.DefaultJWTProcessor
-import io.micrometer.core.instrument.config.validate.Validated.Invalid
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -30,7 +29,6 @@ import java.net.URI
 import java.net.URL
 import java.text.ParseException
 import kotlin.IllegalArgumentException
-import kotlin.IllegalArgumentException as IllegalArgumentException
 
 @Component
 class SocialTokenVerifierImpl(
