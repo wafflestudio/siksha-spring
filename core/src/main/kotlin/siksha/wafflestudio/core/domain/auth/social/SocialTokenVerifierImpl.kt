@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import siksha.wafflestudio.core.domain.auth.social.data.GoogleOauthProperties
@@ -82,10 +83,14 @@ class SocialTokenVerifierImpl(
                 throw InvalidSSOTokenException()
             }
             return SocialProfile(SocialProvider.KAKAO, info.id.toString())
-        }
-        catch (e: RestClientException) {
-            logger.error("[KAKAO] $e")
-            throw SSOProviderException()
+        } catch (e: RestClientException) {
+            if (e is HttpStatusCodeException && e.statusCode.value() == 401) {
+                logger.warn("[KAKAO] invalid token: $e")
+                throw InvalidSSOTokenException()
+            } else {
+                logger.error("[KAKAO] $e")
+                throw SSOProviderException()
+            }
         } catch (e: IllegalArgumentException) {
             throw InvalidSSOTokenException()
         }
