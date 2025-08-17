@@ -4,10 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.server.ResponseStatusException
+import siksha.wafflestudio.core.domain.common.exception.MenuLikeException
+import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
@@ -16,7 +16,6 @@ import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
-import siksha.wafflestudio.core.util.EtcUtils
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -91,19 +90,7 @@ class MenuService(
                 val list = mutableListOf<RestaurantInListDto>()
                 allRestaurants.forEach { restaurant ->
                     list.add(
-                        RestaurantInListDto(
-                            createdAt = restaurant.createdAt,
-                            updatedAt = restaurant.updatedAt,
-                            id = restaurant.id,
-                            code = restaurant.code,
-                            nameKr = restaurant.nameKr,
-                            nameEn = restaurant.nameEn,
-                            addr = restaurant.addr,
-                            lat = restaurant.lat,
-                            lng = restaurant.lng,
-                            etc = EtcUtils.convertRestEtc(restaurant.etc),
-                            menus = mutableListOf(),
-                        ),
+                        RestaurantInListDto.from(restaurant, mutableListOf())
                     )
                 }
                 typeMap[type] = list
@@ -118,20 +105,7 @@ class MenuService(
             val menuDtos =
                 summaries.map { menu ->
                     val likeInfo = likeInfoMap[menu.getId()]
-                    MenuInListDto(
-                        createdAt = menu.getCreatedAt(),
-                        updatedAt = menu.getUpdatedAt(),
-                        id = menu.getId(),
-                        code = menu.getCode(),
-                        nameKr = menu.getNameKr(),
-                        nameEn = menu.getNameEn(),
-                        price = menu.getPrice(),
-                        etc = EtcUtils.convertMenuEtc(menu.getEtc()),
-                        score = menu.getScore(),
-                        reviewCnt = menu.getReviewCnt(),
-                        likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                        isLiked = likeInfo?.getIsLiked() ?: false,
-                    )
+                    MenuInListDto.from(menu, likeInfo)
                 }
             val restaurantList = dateGroupMap[date]?.get(type) ?: return@forEach
             restaurantList.find { it.id == restaurantId }?.let {
@@ -177,36 +151,16 @@ class MenuService(
         val menuIdStr = menuId.toString()
 
         // 1) 메뉴 기본 정보 조회 (score, review_cnt 포함)
-        val menu =
-            try {
+        val menu = try {
                 menuRepository.findMenuById(menuIdStr)
             } catch (e: EmptyResultDataAccessException) {
-                throw ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "해당 메뉴를 찾을 수 없습니다.",
-                )
+                throw MenuNotFoundException()
             }
 
         // 메뉴 좋아요 정보 조회 (like_cnt, is_liked 포함)
         val menuLikeInfo = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, targetUserId)
 
-        return MenuDetailsDto(
-            createdAt = menu.getCreatedAt(),
-            updatedAt = menu.getUpdatedAt(),
-            id = menu.getId(),
-            restaurantId = menu.getRestaurantId(),
-            code = menu.getCode(),
-            date = menu.getDate(),
-            type = menu.getType(),
-            nameKr = menu.getNameKr(),
-            nameEn = menu.getNameEn(),
-            price = menu.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menu.getEtc()),
-            score = menu.getScore(),
-            reviewCnt = menu.getReviewCnt(),
-            isLiked = menuLikeInfo.getIsLiked(),
-            likeCnt = menuLikeInfo.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menu, menuLikeInfo)
     }
 
     @Transactional
@@ -218,16 +172,9 @@ class MenuService(
         try {
             menuLikeRepository.postMenuLike(userId = userId, menuId = menuId)
         } catch (e: DataIntegrityViolationException) {
-            // menu가 존재하지 않는 경우
-            throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "해당 메뉴를 찾을 수 없습니다.",
-            )
+            throw MenuNotFoundException()
         } catch (e: Exception) {
-            throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "좋아요 처리 중에 오류가 발생했습니다.",
-            )
+            throw MenuLikeException()
         }
 
         // 삽입 후 변경된 좋아요 수와 상태를 포함한 상세 정보 반환
@@ -245,10 +192,7 @@ class MenuService(
             try {
                 menuRepository.findPlainMenuById(menuIdStr)
             } catch (e: EmptyResultDataAccessException) {
-                throw ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "해당 메뉴를 찾을 수 없습니다.",
-                )
+                throw MenuNotFoundException()
             }
 
         // 메뉴 좋아요 취소 처리
@@ -259,10 +203,7 @@ class MenuService(
                 code = menu.getCode(),
             )
         } catch (e: Exception) {
-            throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "좋아요 취소 처리 중에 오류가 발생했습니다.",
-            )
+            throw MenuLikeException()
         }
         // like 없는 경우에 대해 별도 exception 처리 안함
 
