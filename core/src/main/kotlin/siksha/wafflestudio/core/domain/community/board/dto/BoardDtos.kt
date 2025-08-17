@@ -3,6 +3,8 @@ package siksha.wafflestudio.core.domain.community.board.dto
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.community.board.data.Board
 import java.time.OffsetDateTime
 
@@ -20,6 +22,7 @@ data class BoardCreateDto(
     }
 }
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class BoardDto
     @JsonCreator
     constructor(
