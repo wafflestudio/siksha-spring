@@ -21,7 +21,6 @@ import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
-import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.service.UserService
 
 @RestController
@@ -60,7 +59,6 @@ class AuthController(
 //    @PostMapping("/login/google")
 //    fun loginTypeGoogle(){}
 
-    // TODO: deprecate this
     @GetMapping("/me")
     fun getMyInfo(request: HttpServletRequest): UserResponseDto {
         return userService.getUser(request.userId)
@@ -84,27 +82,6 @@ class AuthController(
         return userService.patchUser(request.userId, patchDto)
     }
 
-    @GetMapping("/me/image")
-    fun getMyInfoWithProfileUrl(request: HttpServletRequest): UserWithProfileUrlResponseDto {
-        return userService.getUserWithProfileUrl(request.userId)
-    }
-
-    @PatchMapping("/me/image/profile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun updateUserProfileWithProfileUrl(
-        request: HttpServletRequest,
-        @RequestPart("nickname") nickname: String?,
-        @RequestPart("image") image: MultipartFile?,
-        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false,
-    ): UserWithProfileUrlResponseDto {
-        val patchDto =
-            UserProfilePatchDto(
-                nickname = nickname,
-                image = image,
-                changeToDefaultImage = changeToDefaultImage ?: false,
-            )
-
-        return userService.patchUserWithProfileUrl(request.userId, patchDto)
-    }
 
     @GetMapping("/nicknames/validate")
     @ResponseStatus(HttpStatus.OK)

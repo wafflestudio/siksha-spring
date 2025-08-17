@@ -14,7 +14,6 @@ import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
-import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
@@ -33,39 +32,18 @@ class UserService(
         return UserResponseDto.from(user)
     }
 
-    fun getUserWithProfileUrl(userId: Int): UserWithProfileUrlResponseDto {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
-        return UserWithProfileUrlResponseDto.from(user)
-    }
-
     @Transactional
     fun deleteUser(userId: Int) {
         if (!userRepository.existsById(userId)) throw UserNotFoundException()
         userRepository.deleteById(userId)
     }
 
-    // TODO deprecate this
+
+    @Transactional
     fun patchUser(
         userId: Int,
         patchDto: UserProfilePatchDto,
     ): UserResponseDto {
-        val dto = this.patchUserWithProfileUrl(userId, patchDto)
-        return UserResponseDto(
-            id = dto.id,
-            type = dto.type,
-            identity = dto.identity,
-            etc = dto.etc,
-            nickname = dto.nickname,
-            createdAt = dto.createdAt,
-            updatedAt = dto.updatedAt,
-        )
-    }
-
-    @Transactional
-    fun patchUserWithProfileUrl(
-        userId: Int,
-        patchDto: UserProfilePatchDto,
-    ): UserWithProfileUrlResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
         patchDto.let {
@@ -84,7 +62,7 @@ class UserService(
         }
 
         userRepository.save(user)
-        return UserWithProfileUrlResponseDto.from(user)
+        return UserResponseDto.from(user)
     }
 
     /**
