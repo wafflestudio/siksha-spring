@@ -31,12 +31,10 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-        SELECT * FROM review r
-        WHERE r.menu_id = :menuId
-        AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-        AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
-        ORDER BY r.created_at DESC
-        LIMIT :limit OFFSET :offset
+    SELECT * FROM review r
+    WHERE r.menu_id = :menuId
+    AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
+    AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
@@ -44,8 +42,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         @Param("menuId") menuId: Int,
         @Param("comment") comment: Boolean?,
         @Param("etc") etc: Boolean?,
-        @Param("limit") limit: Int,
-        @Param("offset") offset: Int,
+        pageable: Pageable,
     ): List<Review>
 
     @Query(
@@ -76,17 +73,14 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-        SELECT * FROM review
-        WHERE user_id = :userId
-        ORDER BY created_at DESC
-        LIMIT :limit OFFSET :offset
+    SELECT * FROM review
+    WHERE user_id = :userId
     """,
         nativeQuery = true,
     )
     fun findByUserId(
         @Param("userId") userId: Int,
-        @Param("limit") limit: Int,
-        @Param("offset") offset: Int,
+        pageable: Pageable,
     ): List<Review>
 
     @Query(

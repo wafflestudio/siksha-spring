@@ -222,8 +222,8 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val offset = (page - 1) * size
-        val reviews = reviewRepository.findFilteredReviews(menuId, comment, etc, size, offset)
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val reviews = reviewRepository.findFilteredReviews(menuId, comment, etc, pageable)
         val totalCount = reviewRepository.countFilteredReviews(menuId, comment, etc)
         val hasNext = page * size < totalCount
 
@@ -253,8 +253,8 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val offset = (page - 1) * size
-        val reviews = reviewRepository.findByUserId(userId, size, offset)
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val reviews = reviewRepository.findByUserId(userId, pageable)
         val totalCount = reviewRepository.countByUserId(userId)
         val hasNext = page * size < totalCount
 
