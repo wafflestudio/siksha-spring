@@ -1,47 +1,55 @@
 package siksha.wafflestudio.core.domain.auth.social
 
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.jwk.source.RemoteJWKSet
+import com.nimbusds.jose.proc.JWSVerificationKeySelector
+import com.nimbusds.jose.proc.SecurityContext
 import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
+import com.nimbusds.jwt.proc.DefaultJWTProcessor
+import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
+import siksha.wafflestudio.core.domain.common.exception.SSOProviderException
 import java.net.URI
+import java.net.URL
 
 @Component
 class SocialTokenVerifierImpl(
+    private val googleProps: GoogleOauthProperties,
+    @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientIds: List<String>,
     @Value("\${siksha.oauth.kakao.app-id}")
     private val kakaoAppId: Long,
     private val rest: RestTemplate
 ) : SocialTokenVerifier {
+    private lateinit var googleClientIds: List<String>
+    @PostConstruct
+    fun init() {
+        googleClientIds = googleProps.clientId.values.filter { it.isNotBlank() }
+    }
 
-    override fun verifyGoogleIdToken(idToken: String, clientIds: List<String>): SocialProfile {
-        val c = verifyOidc(idToken,
+    override fun verifyGoogleIdToken(idToken: String): SocialProfile {
+        val c = verifyOidc(
+            idToken,
             issuer = "https://accounts.google.com",
             jwksUri = "https://www.googleapis.com/oauth2/v3/certs",
-            requiredAudiences = clientIds
+            requiredAudiences = googleClientIds
         )
-        return SocialProfile("google", c.subject)
+        return SocialProfile(SocialProvider.GOOGLE, c.subject)
     }
 
-    override fun verifyAppleIdToken(idToken: String, clientIds: List<String>): SocialProfile {
-        val c = verifyOidc(idToken,
+    override fun verifyAppleIdToken(idToken: String): SocialProfile {
+        val c = verifyOidc(
+            idToken,
             issuer = "https://appleid.apple.com",
             jwksUri = "https://appleid.apple.com/auth/keys",
-            requiredAudiences = clientIds
+            requiredAudiences = appleClientIds
         )
-        return SocialProfile("apple", c.subject)
-    }
-
-    override fun verifyKakaoIdToken(idToken: String, clientId: String): SocialProfile {
-        val jwksUri = discoverJwks("https://kauth.kakao.com/.well-known/openid-configuration")
-        val c = verifyOidc(idToken,
-            issuer = "https://kauth.kakao.com",
-            jwksUri = jwksUri,
-            requiredAudiences = listOf(clientId)
-        )
-        return SocialProfile("kakao", c.subject)
+        return SocialProfile(SocialProvider.APPLE, c.subject)
     }
 
     override fun verifyKakaoAccessToken(accessToken: String): SocialProfile {
@@ -51,20 +59,19 @@ class SocialTokenVerifierImpl(
         val info = rest.exchange(
             URI("https://kapi.kakao.com/v1/user/access_token_info"),
             HttpMethod.GET, entity, KakaoTokenInfo::class.java
-        ).body ?: error("kakao token info null")
+        ).body ?: throw SSOProviderException()
 
         require(info.app_id == kakaoAppId) { "app_id mismatch" } // 우리 앱 토큰인지 확인
-        return SocialProfile("kakao", info.id.toString())
+        return SocialProfile(SocialProvider.KAKAO, info.id.toString())
     }
 
-    // ---- OIDC 공통 ----
     private fun verifyOidc(idToken: String, issuer: String, jwksUri: String, requiredAudiences: List<String>): JWTClaimsSet {
-        val jwt = com.nimbusds.jwt.SignedJWT.parse(idToken)
-        val jwkSource = com.nimbusds.jose.jwk.source.RemoteJWKSet<com.nimbusds.jose.proc.SecurityContext>(java.net.URL(jwksUri))
-        val selector = com.nimbusds.jose.proc.JWSVerificationKeySelector<com.nimbusds.jose.proc.SecurityContext>(
-            jwt.header.algorithm as com.nimbusds.jose.JWSAlgorithm, jwkSource
+        val jwt = SignedJWT.parse(idToken)
+        val jwkSource = RemoteJWKSet<SecurityContext>(URL(jwksUri))
+        val selector = JWSVerificationKeySelector(
+            jwt.header.algorithm as JWSAlgorithm, jwkSource
         )
-        val processor = com.nimbusds.jwt.proc.DefaultJWTProcessor<com.nimbusds.jose.proc.SecurityContext>().apply {
+        val processor = DefaultJWTProcessor<SecurityContext>().apply {
             jwsKeySelector = selector
             jwtClaimsSetVerifier = com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier(
                 JWTClaimsSet.Builder().issuer(issuer).build(),
@@ -81,10 +88,5 @@ class SocialTokenVerifierImpl(
             "aud mismatch: aud=$audList, azp=$azp, allowed=$allowed"
         }
         return claims
-    }
-
-    private fun discoverJwks(oidcConfigUrl: String): String {
-        val doc = rest.getForObject(oidcConfigUrl, Map::class.java) ?: error("OIDC discovery failed")
-        return doc["jwks_uri"] as String
     }
 }

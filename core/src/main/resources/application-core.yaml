@@ -49,8 +49,10 @@ siksha:
     google:
       client-id:
         android:
-        ios:
-        web:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
     kakao:
       app-id:
     apple:
@@ -88,8 +90,10 @@ siksha:
     google:
       client-id:
         android:
-        ios:
-        web:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
     kakao:
       app-id:
     apple:
@@ -127,8 +131,10 @@ siksha:
     google:
       client-id:
         android:
-        ios:
-        web:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
     kakao:
       app-id:
     apple:

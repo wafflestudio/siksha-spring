@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.auth.social.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
+import siksha.wafflestudio.core.domain.common.exception.InvalidTokenHeaderException
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
@@ -35,10 +35,6 @@ class AuthController(
     private val authService: AuthService,
     private val userService: UserService,
     private val resourceLoader: ResourceLoader,
-    // TODO: google client id list로 변경
-    @Value("\${siksha.oauth.google.client-id.web}") private val googleClientId: String,
-    @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientIds: List<String>,
-    @Value("\${siksha.oauth.kakao.app-id}")  private val kakaoClientId: String,
     private val verifier: SocialTokenVerifier,
 ) {
     @PostMapping("/refresh")
@@ -61,28 +57,32 @@ class AuthController(
 //    @PostMapping("/login/test")
 //    fun loginTypeTest(){}
 //
-    data class TokenReq(val token: String)
+
     @PostMapping("/login/apple")
-    fun loginTypeApple(@RequestBody req: TokenReq) = issue(verifier.verifyAppleIdToken(req.token, appleClientIds))
+    fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
+        val token = trimTokenHeader(request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME))
+        return issue(verifier.verifyAppleIdToken(token))
+    }
 
 
     @PostMapping("/login/kakao")
-    fun loginTypeKakao(@RequestBody req: TokenReq): AuthResponseDto {
-        val isJwt = req.token.count { it == '.' } == 2
-        val profile = if (isJwt) verifier.verifyKakaoIdToken(req.token, kakaoClientId)
-        else      verifier.verifyKakaoAccessToken(req.token)
-        return issue(profile)
+    fun loginTypeKakao(request: HttpServletRequest): AuthResponseDto {
+        val token = trimTokenHeader(request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME))
+        return issue(verifier.verifyKakaoAccessToken(token))
     }
 
-    // TODO: google client id list로 변경
     @PostMapping("/login/google")
-    fun loginTypeGoogle(@RequestBody req: TokenReq) = issue(verifier.verifyGoogleIdToken(req.token, listOf(googleClientId)))
+    fun loginTypeGoogle(request: HttpServletRequest): AuthResponseDto {
+        val token = trimTokenHeader(request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME))
+        return issue(verifier.verifyGoogleIdToken(token))
+    }
 
     private fun issue(p: SocialProfile): AuthResponseDto {
         val userId = authService.upsertAndGetUserId(p)   // (provider, externalId=sub) → userId 매핑
         val access = authService.getAccessTokenByUserId(userId)
         return access
     }
+
     // TODO: deprecate this
     @GetMapping("/me")
     fun getMyInfo(request: HttpServletRequest): UserResponseDto {
@@ -135,5 +135,15 @@ class AuthController(
         @RequestParam("nickname") nickname: String,
     ) {
         userService.validateNickname(nickname)
+    }
+
+    private fun trimTokenHeader(header: String): String {
+        if (!header.startsWith("Bearer ", ignoreCase = false)) throw InvalidTokenHeaderException()
+        return header.removePrefix("Bearer ")
+    }
+    companion object {
+        private const val APPLE_AUTHORIZATION_HEADER_NAME = "apple-token"
+        private const val GOOGLE_AUTHORIZATION_HEADER_NAME = "google-token"
+        private const val KAKAO_AUTHORIZATION_HEADER_NAME = "kakao-token"
     }
 }
