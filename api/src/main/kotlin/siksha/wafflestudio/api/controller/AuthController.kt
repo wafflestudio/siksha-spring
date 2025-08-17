@@ -35,6 +35,7 @@ class AuthController(
     private val authService: AuthService,
     private val userService: UserService,
     private val resourceLoader: ResourceLoader,
+    // TODO: google client id list로 변경
     @Value("\${siksha.oauth.google.client-id.web}") private val googleClientId: String,
     @Value("\${siksha.oauth.apple.approved-audience}")  private val appleClientId: String,
     @Value("\${siksha.oauth.kakao.app-id}")  private val kakaoClientId: String,
