@@ -14,6 +14,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
+import siksha.wafflestudio.core.domain.auth.social.data.GoogleOauthProperties
+import siksha.wafflestudio.core.domain.auth.social.data.KakaoTokenInfo
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.SSOProviderException
 import java.net.URI
 import java.net.URL

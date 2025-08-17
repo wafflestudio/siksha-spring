@@ -1,6 +1,6 @@
 package siksha.wafflestudio.core.domain.auth.social
 
-import siksha.wafflestudio.core.domain.auth.social.SocialProfile
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 
 interface SocialTokenVerifier {
     fun verifyGoogleIdToken(idToken: String): SocialProfile

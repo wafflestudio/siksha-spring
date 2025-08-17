@@ -1,4 +1,4 @@
-package siksha.wafflestudio.core.domain.auth.social
+package siksha.wafflestudio.core.domain.auth.social.data
 
 enum class SocialProvider {
     KAKAO,
