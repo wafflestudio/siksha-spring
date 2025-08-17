@@ -22,8 +22,8 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.dto.LoginTypeTestRequestDto
 import siksha.wafflestudio.core.domain.auth.service.AuthService
-import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.TokenParseException
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
@@ -61,24 +61,29 @@ class AuthController(
 //
 
     @PostMapping("/login/test")
-    fun loginTypeTest(@RequestBody body: LoginTypeTestRequestDto): AuthResponseDto {
+    fun loginTypeTest(
+        @RequestBody body: LoginTypeTestRequestDto,
+    ): AuthResponseDto {
         return authService.upsertUserAndGetAccessToken(
-            SocialProfile(provider = SocialProvider.TEST, externalId = body.identity)
+            SocialProfile(provider = SocialProvider.TEST, externalId = body.identity),
         )
     }
 
     @PostMapping("/login/{provider}")
-    fun login(@PathVariable("provider") provider: SocialProvider, request: HttpServletRequest): AuthResponseDto {
+    fun login(
+        @PathVariable("provider") provider: SocialProvider,
+        request: HttpServletRequest,
+    ): AuthResponseDto {
         val token = trimTokenHeader(request, provider)
-        val socialProfile = when (provider) {
-            SocialProvider.APPLE -> verifier.verifyAppleIdToken(token)
-            SocialProvider.GOOGLE -> verifier.verifyGoogleIdToken(token)
-            SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
-            SocialProvider.TEST -> error("unreachable")
-        }
+        val socialProfile =
+            when (provider) {
+                SocialProvider.APPLE -> verifier.verifyAppleIdToken(token)
+                SocialProvider.GOOGLE -> verifier.verifyGoogleIdToken(token)
+                SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
+                SocialProvider.TEST -> error("unreachable")
+            }
         return authService.upsertUserAndGetAccessToken(socialProfile)
     }
-
 
     @PostMapping("/login/apple")
     fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
@@ -97,7 +102,6 @@ class AuthController(
         val token = trimTokenHeader(request, SocialProvider.GOOGLE)
         return authService.upsertUserAndGetAccessToken(verifier.verifyGoogleIdToken(token))
     }
-
 
     // TODO: deprecate this
     @GetMapping("/me")
@@ -153,16 +157,20 @@ class AuthController(
         userService.validateNickname(nickname)
     }
 
-    private fun trimTokenHeader(request: HttpServletRequest, provider: SocialProvider): String {
-        val rawHeader = request.getHeader("Authorization")
-            ?: when (provider) {
-                // legacy headers
-                // TODO: deprecate below
-                SocialProvider.APPLE  -> request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME)
-                SocialProvider.GOOGLE -> request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME)
-                SocialProvider.KAKAO  -> request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME)
-                SocialProvider.TEST -> throw TokenParseException()
-            }
+    private fun trimTokenHeader(
+        request: HttpServletRequest,
+        provider: SocialProvider,
+    ): String {
+        val rawHeader =
+            request.getHeader("Authorization")
+                ?: when (provider) {
+                    // legacy headers
+                    // TODO: deprecate below
+                    SocialProvider.APPLE -> request.getHeader(APPLE_AUTHORIZATION_HEADER_NAME)
+                    SocialProvider.GOOGLE -> request.getHeader(GOOGLE_AUTHORIZATION_HEADER_NAME)
+                    SocialProvider.KAKAO -> request.getHeader(KAKAO_AUTHORIZATION_HEADER_NAME)
+                    SocialProvider.TEST -> throw TokenParseException()
+                }
 
         if (!rawHeader.startsWith("Bearer ", ignoreCase = false)) throw TokenParseException()
         return rawHeader.removePrefix("Bearer ")

@@ -4,8 +4,9 @@ enum class SocialProvider {
     KAKAO,
     GOOGLE,
     APPLE,
-    TEST;
+    TEST,
 }
+
 data class SocialProfile(
     val provider: SocialProvider,
     val externalId: String,

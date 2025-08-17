@@ -16,7 +16,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
@@ -27,20 +26,20 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 // set whitelist here
                 it.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                  .requestMatchers(HttpMethod.GET, "/community/boards").permitAll()
-                  .requestMatchers(AntPathRequestMatcher.antMatcher("/community/**/web")).permitAll()
-                  .requestMatchers(
-                      "/error",
-                      "/swagger-ui/**",
-                      "/v3/api-docs/**",
-                      "/actuator/health",
-                      "/restaurants",
-                      "/auth/privacy-policy",
-                      "/auth/login/**",
-                      "/auth/nicknames/validate",
-                      "/docs",
-                  ).permitAll()
-                  .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
+                    .requestMatchers(HttpMethod.GET, "/community/boards").permitAll()
+                    .requestMatchers(AntPathRequestMatcher.antMatcher("/community/**/web")).permitAll()
+                    .requestMatchers(
+                        "/error",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/actuator/health",
+                        "/restaurants",
+                        "/auth/privacy-policy",
+                        "/auth/login/**",
+                        "/auth/nicknames/validate",
+                        "/docs",
+                    ).permitAll()
+                    .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
             }
             // 우리가 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 이전에 실행
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)

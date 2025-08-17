@@ -25,8 +25,8 @@ class DuplicatedNicknameException : MainException(HttpStatus.CONFLICT, "중복�
 
 class BannedWordException : MainException(HttpStatus.BAD_REQUEST, "사용이 불가능한 단어가 포함되어 있습니다.")
 
-class TokenParseException: MainException(HttpStatus.UNAUTHORIZED, "인증 토큰 형식이 잘못되었습니다.")
+class TokenParseException : MainException(HttpStatus.UNAUTHORIZED, "인증 토큰 형식이 잘못되었습니다.")
 
-class InvalidSSOTokenException: MainException(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다.")
+class InvalidSSOTokenException : MainException(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다.")
 
-class SSOProviderException: MainException(HttpStatus.SERVICE_UNAVAILABLE, "소셜 로그인에 실패했습니다.")
+class SSOProviderException : MainException(HttpStatus.SERVICE_UNAVAILABLE, "소셜 로그인에 실패했습니다.")

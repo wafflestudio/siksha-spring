@@ -54,19 +54,21 @@ class UserService(
             ?.let { return UserWithProfileUrlResponseDto.from(it) }
 
         // insert if not exists
-        val toSave = User(
-            type = type,
-            identity = identity,
-            nickname = NicknameGenerator.generate(),
-        )
+        val toSave =
+            User(
+                type = type,
+                identity = identity,
+                nickname = NicknameGenerator.generate(),
+            )
 
-        val created = try {
-            userRepository.save(toSave)
-        } catch (e: DataIntegrityViolationException) {
-            // race condition
-            userRepository.findByTypeAndIdentity(type, identity)
-                ?: throw e
-        }
+        val created =
+            try {
+                userRepository.save(toSave)
+            } catch (e: DataIntegrityViolationException) {
+                // race condition
+                userRepository.findByTypeAndIdentity(type, identity)
+                    ?: throw e
+            }
 
         return UserWithProfileUrlResponseDto.from(created)
     }

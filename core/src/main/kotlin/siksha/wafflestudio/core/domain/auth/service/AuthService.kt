@@ -1,13 +1,10 @@
 package siksha.wafflestudio.core.domain.auth.service
 
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.auth.dto.AuthResponseDto
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
-import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.user.service.UserService
 

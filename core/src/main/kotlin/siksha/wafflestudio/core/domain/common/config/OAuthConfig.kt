@@ -6,5 +6,4 @@ import siksha.wafflestudio.core.domain.auth.social.data.GoogleOauthProperties
 
 @EnableConfigurationProperties(GoogleOauthProperties::class)
 @Configuration
-class OAuthConfig {
-}
+class OAuthConfig
