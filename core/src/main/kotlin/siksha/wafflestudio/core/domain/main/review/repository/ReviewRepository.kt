@@ -6,20 +6,24 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.main.review.data.Review
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewSummary
 
 @Repository
 interface ReviewRepository : JpaRepository<Review, Int> {
     @Query(
-        """
-        SELECT r FROM review r
-        WHERE r.menu.id = :menuId
+        value = """
+        SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        WHERE r.menu_id = :menuId
         ORDER BY r.createdAt DESC
     """,
+        nativeQuery = true
     )
     fun findByMenuIdOrderByCreatedAtDesc(
         menuId: Int,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         """
@@ -31,7 +35,9 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-    SELECT * FROM review r
+    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+    FROM review r
+    LEFT JOIN keyword_review kr ON r.id = kr.review_id
     WHERE r.menu_id = :menuId
     AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
     AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
@@ -43,7 +49,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         @Param("comment") comment: Boolean?,
         @Param("etc") etc: Boolean?,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         value = """
@@ -62,18 +68,23 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         """
-    SELECT r FROM review r
+    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+    FROM review r
+    Left JOIN keyword_review kr ON r.id = kr.review_id
     WHERE r.menu.id = :menuId AND r.user.id = :userId
 """,
+        nativeQuery = true,
     )
     fun findByMenuIdAndUserId(
         @Param("menuId") menuId: Int,
         @Param("userId") userId: Int,
-    ): Review?
+    ): ReviewSummary?
 
     @Query(
         value = """
-    SELECT * FROM review
+    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+    FROM review r
+    LEFT JOIN keyword_review kr ON r.id = kr.review_id
     WHERE user_id = :userId
     """,
         nativeQuery = true,
@@ -81,7 +92,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
     fun findByUserId(
         @Param("userId") userId: Int,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         value = """

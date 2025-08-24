@@ -15,6 +15,7 @@ import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
+import siksha.wafflestudio.core.domain.main.review.data.KeywordReview
 import siksha.wafflestudio.core.domain.main.review.data.Review
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
@@ -22,11 +23,13 @@ import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewWithImagesRequest
+import siksha.wafflestudio.core.domain.main.review.repository.KeywordReviewRepository
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.util.EtcUtils
+import siksha.wafflestudio.core.util.KeywordReviewUtil
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -36,6 +39,7 @@ class ReviewService(
     private val userRepository: UserRepository,
     private val menuRepository: MenuRepository,
     private val imageRepository: ImageRepository,
+    private val keywordReviewRepository: KeywordReviewRepository,
     private val s3Service: S3Service,
 ) {
     @Autowired
@@ -50,6 +54,9 @@ class ReviewService(
         val menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException()
         val score = reviewWithImagesRequest.score
         val comment = reviewWithImagesRequest.comment
+        val flavorKeyword = reviewWithImagesRequest.flavor
+        val priceKeyword = reviewWithImagesRequest.price
+        val foodCompositionKeyword = reviewWithImagesRequest.foodComposition
         val images = reviewWithImagesRequest.images
 
         val uploadedFiles =
@@ -85,6 +92,15 @@ class ReviewService(
                     // 이미지 URL 들을 JSON array로 저장
                 ),
             )
+
+        keywordReviewRepository.save(
+            KeywordReview(
+                flavor = KeywordReviewUtil.getFlavorLevel(flavorKeyword),
+                price = KeywordReviewUtil.getPriceLevel(priceKeyword),
+                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(foodCompositionKeyword),
+                review = review,
+            )
+        )
 
         val menuSummary = menuRepository.findMenuById(menu.id.toString())
         val menuLikeSummary =
@@ -135,6 +151,15 @@ class ReviewService(
                 ),
             )
 
+        keywordReviewRepository.save(
+            KeywordReview(
+                flavor = KeywordReviewUtil.getFlavorLevel(request.flavor),
+                price = KeywordReviewUtil.getPriceLevel(request.price),
+                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(request.foodComposition),
+                review = review,
+            )
+        )
+
         val menuSummary = menuRepository.findMenuById(menu.id.toString())
         val menuLikeSummary =
             menuRepository.findMenuLikeByMenuIdAndUserId(
@@ -173,16 +198,7 @@ class ReviewService(
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = menuId,
-                    userId = it.user.id,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
@@ -229,16 +245,7 @@ class ReviewService(
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = menuId,
-                    userId = it.user.id,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
@@ -260,16 +267,7 @@ class ReviewService(
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = it.menu.id,
-                    userId = userId,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
