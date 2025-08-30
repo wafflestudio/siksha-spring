@@ -14,6 +14,13 @@ spring:
       port: 6379
   cloud:
     aws:
+      credentials:
+          access-key: test-access-key
+          secret-key: test-secret-key
+      region:
+        static: ap-northeast-2
       s3:
         bucket: test-bucket
         region: ap-northeast-2
+jwt:
+  secret-key: "this-is-a-very-long-and-secure-secret-key-for-testing-purpose-only"

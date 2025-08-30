@@ -16,12 +16,13 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.io.IOException
 
 @Service
-class S3Service (
+class S3Service(
     @Value("\${spring.cloud.aws.s3.bucket}")
     private val bucketName: String,
     private val s3Client: S3Client,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
     /**
      * AWS S3 bucket에 하나의 파일을 업로드합니다.
      * @param file 업로드할 파일
@@ -29,15 +30,20 @@ class S3Service (
      * @param nameKey S3 key에 사용할 파일명
      * @return UploadFileDto
      */
-    fun uploadOneFile(file: MultipartFile, prefix: S3ImagePrefix, nameKey: String): UploadFileDto {
+    fun uploadFile(
+        file: MultipartFile,
+        prefix: S3ImagePrefix,
+        nameKey: String,
+    ): UploadFileDto {
         val key = "${prefix.prefix}/$nameKey.jpeg"
 
         return runCatching {
-            val putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .acl(ObjectCannedACL.PUBLIC_READ)
-                .build()
+            val putObjectRequest =
+                PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .build()
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
             UploadFileDto(key = key, url = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
@@ -59,21 +65,26 @@ class S3Service (
      * @param nameKey S3 key에 공통으로 사용할 파일명
      * @return List<UploadFileDto>
      */
-    fun uploadFiles(files: List<MultipartFile>, prefix: S3ImagePrefix, nameKey: String): List<UploadFileDto> {
+    fun uploadFiles(
+        files: List<MultipartFile>,
+        prefix: S3ImagePrefix,
+        nameKey: String,
+    ): List<UploadFileDto> {
         val uploadFiles = mutableListOf<UploadFileDto>()
 
         files.forEachIndexed { idx, file ->
             val key = "${prefix.prefix}/$nameKey/$idx.jpeg"
             runCatching {
-                val putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .acl(ObjectCannedACL.PUBLIC_READ)
-                    .build()
+                val putObjectRequest =
+                    PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .acl(ObjectCannedACL.PUBLIC_READ)
+                        .build()
 
                 s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
                 uploadFiles.add(
-                    UploadFileDto(key = key, url = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key")
+                    UploadFileDto(key = key, url = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$key"),
                 )
             }.onFailure { e ->
                 when (e) {
@@ -87,6 +98,13 @@ class S3Service (
         }
         return uploadFiles
     }
+
+    fun getKeyFromUrl(url: String): String? {
+        val pattern = Regex("https://.*\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(.*)")
+        val match = pattern.matchEntire(url)
+
+        return match?.groupValues?.get(1)
+    }
 }
 
 data class UploadFileDto(
@@ -97,5 +115,5 @@ data class UploadFileDto(
 enum class S3ImagePrefix(val prefix: String) {
     POST("post-images"),
     PROFILE("profile-images"),
-    REVIEW("review-images")
+    REVIEW("review-images"),
 }

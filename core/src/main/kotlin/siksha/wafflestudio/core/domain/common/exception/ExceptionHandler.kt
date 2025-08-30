@@ -1,11 +1,11 @@
 package siksha.wafflestudio.core.domain.common.exception
 
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import java.lang.IllegalArgumentException
 
 @RestControllerAdvice
 class ExceptionHandler {
@@ -24,5 +24,25 @@ class ExceptionHandler {
             constraintViolationException.message?.let { ErrorBody(it) },
             HttpStatus.UNPROCESSABLE_ENTITY,
         )
+    }
+
+    // auth 관련 api에서, JWT payload로부터 얻은 userId를 사용하는 경우
+    // 보안성 및 일관성을 위해 일괄 401로 응답
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleAuthUserNotFoundException(
+        request: HttpServletRequest,
+        userNotFoundException: UserNotFoundException,
+    ): ResponseEntity<ErrorBody> {
+        if (request.requestURI.contains("/auth")) {
+            return ResponseEntity(
+                UnauthorizedUserException().message?.let { ErrorBody(it) },
+                HttpStatus.UNAUTHORIZED,
+            )
+        } else {
+            return ResponseEntity(
+                ErrorBody(userNotFoundException.errorMessage),
+                userNotFoundException.httpStatus,
+            )
+        }
     }
 }

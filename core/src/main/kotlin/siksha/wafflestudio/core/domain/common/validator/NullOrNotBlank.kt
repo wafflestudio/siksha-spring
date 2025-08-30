@@ -12,11 +12,14 @@ import kotlin.reflect.KClass
 annotation class NullOrNotBlank(
     val message: String,
     val groups: Array<KClass<*>> = [],
-    val payload: Array<KClass<out Payload>> = []
+    val payload: Array<KClass<out Payload>> = [],
 )
 
 class NullOrNotBlankValidator : ConstraintValidator<NullOrNotBlank, String?> {
-    override fun isValid(value: String?, context: ConstraintValidatorContext?): Boolean {
+    override fun isValid(
+        value: String?,
+        context: ConstraintValidatorContext?,
+    ): Boolean {
         return value == null || value.isNotBlank()
     }
 }

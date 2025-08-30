@@ -25,16 +25,17 @@ class RestaurantServiceTest {
     @Test
     fun `get restaurants`() {
         // given
-        val board = Restaurant(
-            id = 1,
-            code = "test",
-            nameKr = "test",
-            nameEn = "test",
-            addr = "test",
-            lat = 0.0,
-            lng = 0.0,
-            etc = null,
-        )
+        val board =
+            Restaurant(
+                id = 1,
+                code = "test",
+                nameKr = "test",
+                nameEn = "test",
+                addr = "test",
+                lat = 0.0,
+                lng = 0.0,
+                etc = null,
+            )
         every { restaurantRepository.findAll() } returns listOf(board)
 
         // when

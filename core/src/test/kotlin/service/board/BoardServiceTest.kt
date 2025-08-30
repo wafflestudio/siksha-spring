@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.community.board.data.Board
-import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.community.board.service.BoardService
 import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
+import siksha.wafflestudio.core.domain.community.board.data.Board
+import siksha.wafflestudio.core.domain.community.board.dto.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.repository.BoardRepository
+import siksha.wafflestudio.core.domain.community.board.service.BoardService
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import kotlin.test.assertNotNull
@@ -59,9 +59,10 @@ class BoardServiceTest {
 
         // when
         val boardCreateDTO = BoardCreateDto(name = null, description = "테스트")
-        val exception = assertThrows<InvalidBoardFormException> {
-            service.addBoard(1, boardCreateDTO)
-        }
+        val exception =
+            assertThrows<InvalidBoardFormException> {
+                service.addBoard(1, boardCreateDTO)
+            }
 
         // then
         assertEquals("[Name must be between 1 and 200 characters]", exception.message)
@@ -74,9 +75,10 @@ class BoardServiceTest {
 
         // when
         val boardCreateDTO = BoardCreateDto("existing", "이미 존재하는 게시판")
-        val exception = assertThrows<BoardNameAlreadyExistException> {
-            service.addBoard(1, boardCreateDTO)
-        }
+        val exception =
+            assertThrows<BoardNameAlreadyExistException> {
+                service.addBoard(1, boardCreateDTO)
+            }
 
         // then
         assertEquals("중복된 게시판 이름이 존재합니다.", exception.message)
@@ -120,9 +122,10 @@ class BoardServiceTest {
         every { boardRepository.findByIdOrNull(3) } returns null
 
         // when
-        val exception = assertThrows<BoardNotFoundException> {
-            service.getBoardById(3)
-        }
+        val exception =
+            assertThrows<BoardNotFoundException> {
+                service.getBoardById(3)
+            }
 
         assertEquals("해당 게시판을 찾을 수 없습니다.", exception.message)
     }

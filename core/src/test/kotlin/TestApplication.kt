@@ -32,14 +32,14 @@ class TestApplication(
         val mysql = MySQLContainer("mysql:8")
 
         @JvmStatic
-        val redis = GenericContainer("redis:6.2")
-            .withExposedPorts(6379)
+        val redis =
+            GenericContainer("redis:6.2")
+                .withExposedPorts(6379)
     }
 
     @EventListener(BeforeTestMethodEvent::class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     fun beforeTest() {
-
         val dmlDir = resourceLoader.getResource("classpath:/data/")
 
         if (dmlDir.uri.scheme == "jar") {

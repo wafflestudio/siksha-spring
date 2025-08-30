@@ -10,19 +10,19 @@ data class ReviewResponse(
     val comment: String?,
     val etc: String?,
     val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime
+    val updatedAt: OffsetDateTime,
 )
 
 data class ReviewListResponse(
     val totalCount: Int,
     val hasNext: Boolean,
-    val result: List<ReviewResponse>
+    val result: List<ReviewResponse>,
 )
 
 data class CommentRecommendationResponse(
-    val comment: String
+    val comment: String,
 )
 
 data class ReviewScoreDistributionResponse(
-    val dist: List<Int>
+    val dist: List<Int>,
 )

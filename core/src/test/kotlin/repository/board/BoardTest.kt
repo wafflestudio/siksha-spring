@@ -1,7 +1,7 @@
 package siksha.wafflestudio.core.repository.board
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -40,5 +40,18 @@ class BoardTest {
         assertNotNull(retrievedBoard)
         assertEquals(savedBoard.name, retrievedBoard.name)
         assertEquals(savedBoard.description, retrievedBoard.description)
+    }
+
+    @Test
+    fun `delete board`() {
+        // given
+        val savedBoard = repository.save(Board(name = "Test", description = "테스트 게시판"))
+
+        // when
+        repository.deleteById(savedBoard.id)
+        val deletedBoard = repository.findByIdOrNull(savedBoard.id)
+
+        // then
+        assertNull(deletedBoard)
     }
 }

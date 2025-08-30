@@ -2,12 +2,18 @@ package siksha.wafflestudio.api.controller
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.community.board.BoardCreateDto
-import siksha.wafflestudio.core.domain.community.board.BoardDto
+import siksha.wafflestudio.core.domain.community.board.dto.BoardCreateDto
+import siksha.wafflestudio.core.domain.community.board.dto.BoardDto
 import siksha.wafflestudio.core.domain.community.board.service.BoardService
-import java.util.*
+import java.util.Optional
 
 @RestController
 @RequestMapping("/community/boards")
