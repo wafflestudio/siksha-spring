@@ -62,10 +62,12 @@ class ReviewController(
     @ResponseStatus(HttpStatus.OK)
     fun getReviews(
         @RequestParam("menu_id") menuId: Int,
+        @RequestParam("is_private", required = false) isPrivate: Boolean = false,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        request: HttpServletRequest
     ): ReviewListResponse {
-        return reviewService.getReviews(menuId, page, size)
+        return reviewService.getReviews(request.userId, menuId, page, size)
     }
 
     @GetMapping("/comments/recommendation")
@@ -92,16 +94,19 @@ class ReviewController(
         @RequestParam("etc", required = false) etc: Boolean?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam("is_private", required = false) isPrivate: Boolean,
+        request: HttpServletRequest,
     ): ReviewListResponse {
-        return reviewService.getFilteredReviews(menuId, comment, etc, page, size)
+        return reviewService.getFilteredReviews(request.userId, menuId, comment, etc, page, size)
     }
 
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     fun getMyReviews(
-        request: HttpServletRequest,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") perPage: Int,
+        @RequestParam("is_private", required = false) isPrivate: Boolean = true,
+        request: HttpServletRequest,
     ): ReviewListResponse {
         val userId = request.userId
         return reviewService.getMyReviews(userId, page, perPage)

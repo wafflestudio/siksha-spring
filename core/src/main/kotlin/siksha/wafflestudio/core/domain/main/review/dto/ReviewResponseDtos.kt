@@ -11,6 +11,8 @@ data class ReviewResponse(
     val comment: String?,
     val etc: String?,
     val keywordReviews: List<String?>,
+    val likeCount: Int,
+    val isLiked: Boolean,
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
 ) {
@@ -30,6 +32,8 @@ data class ReviewResponse(
                     KeywordReviewUtil.getPriceKeyword(review.getPrice()),
                     KeywordReviewUtil.getFoodCompositionKeyword(review.getFoodComposition()),
                 ),
+                likeCount = review.getLikeCount(),
+                isLiked = review.getIsLiked(),
                 createdAt = review.getCreatedAt(),
                 updatedAt = review.getUpdatedAt(),
             )

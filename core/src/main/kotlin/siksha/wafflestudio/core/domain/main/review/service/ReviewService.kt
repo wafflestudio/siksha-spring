@@ -190,12 +190,13 @@ class ReviewService(
     }
 
     fun getReviews(
+        userId: Int,
         menuId: Int,
         page: Int,
         size: Int,
     ): ReviewListResponse {
         val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val reviews = reviewRepository.findByMenuIdOrderByCreatedAtDesc(menuId, pageable)
+        val reviews = reviewRepository.findByMenuIdOrderByCreatedAtDesc(userId, menuId, pageable)
         val totalCount = reviewRepository.countByMenuId(menuId)
         val hasNext = page * size < totalCount
 
@@ -235,6 +236,7 @@ class ReviewService(
     }
 
     fun getFilteredReviews(
+        userId: Int,
         menuId: Int,
         comment: Boolean?,
         etc: Boolean?,
@@ -242,7 +244,7 @@ class ReviewService(
         size: Int,
     ): ReviewListResponse {
         val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val reviews = reviewRepository.findFilteredReviews(menuId, comment, etc, pageable)
+        val reviews = reviewRepository.findFilteredReviews(userId, menuId, comment, etc, pageable)
         val totalCount = reviewRepository.countFilteredReviews(menuId, comment, etc)
         val hasNext = page * size < totalCount
 

@@ -12,16 +12,31 @@ import siksha.wafflestudio.core.domain.main.review.dto.ReviewSummary
 interface ReviewRepository : JpaRepository<Review, Int> {
     @Query(
         value = """
-        SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.flavor, kr.price, kr.foodComposition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            EXISTS (
+                SELECT 1
+                FROM review_likes rl2
+                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+            ) AS is_liked,
+            r.createdAt, r.updatedAt 
         FROM review r
         LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
         WHERE r.menu_id = :menuId
         ORDER BY r.createdAt DESC
     """,
         nativeQuery = true
     )
     fun findByMenuIdOrderByCreatedAtDesc(
-        menuId: Int,
+        @Param("userId") userId: Int,
+        @Param("menuId") menuId: Int,
         pageable: Pageable,
     ): List<ReviewSummary>
 
@@ -35,16 +50,31 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
-    FROM review r
-    LEFT JOIN keyword_review kr ON r.id = kr.review_id
-    WHERE r.menu_id = :menuId
-    AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-    AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.flavor, kr.price, kr.foodComposition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            EXISTS (
+                SELECT 1
+                FROM review_likes rl2
+                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+            ) AS is_liked,
+            r.createdAt, r.updatedAt 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
+        WHERE r.menu_id = :menuId
+        AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
+        AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
     fun findFilteredReviews(
+        @Param("userId") userId: Int,
         @Param("menuId") menuId: Int,
         @Param("comment") comment: Boolean?,
         @Param("etc") etc: Boolean?,
@@ -82,10 +112,24 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
-    FROM review r
-    LEFT JOIN keyword_review kr ON r.id = kr.review_id
-    WHERE user_id = :userId
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.flavor, kr.price, kr.foodComposition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            EXISTS (
+                SELECT 1
+                FROM review_likes rl2
+                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+            ) AS is_liked,
+            r.createdAt, r.updatedAt 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
+        WHERE user_id = :userId
     """,
         nativeQuery = true,
     )

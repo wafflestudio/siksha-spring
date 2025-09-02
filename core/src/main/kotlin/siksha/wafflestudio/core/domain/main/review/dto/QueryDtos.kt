@@ -21,6 +21,10 @@ interface ReviewSummary {
 
     fun getFoodComposition(): Int?
 
+    fun getLikeCount(): Int
+
+    fun getIsLiked(): Boolean
+
     fun getCreatedAt(): OffsetDateTime
 
     fun getUpdatedAt(): OffsetDateTime

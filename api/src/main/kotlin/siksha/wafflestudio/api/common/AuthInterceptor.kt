@@ -21,8 +21,19 @@ class AuthInterceptor(
         response: HttpServletResponse,
         handler: Any,
     ): Boolean {
-        if (request.method == HttpMethod.GET.name() && request.requestURI == "/community/boards") return true
         if (request.method == HttpMethod.OPTIONS.name()) return true
+
+        if (request.method == HttpMethod.GET.name()) {
+            if (request.requestURI == "/community/boards") return true
+
+            val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
+            val isReviewsUri = request.requestURI.startsWith("/reviews")
+
+            if (!isPrivate && isReviewsUri) {
+                request.setAttribute("userId", 0)
+                return true
+            }
+        }
 
         // /menus/와 /menus/lo api를 /menus로 통합하기 위한 처리
         val authHeader = request.getHeader(AUTHORIZATION_HEADER_NAME)
