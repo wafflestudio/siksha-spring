@@ -17,6 +17,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.review.data.KeywordReview
 import siksha.wafflestudio.core.domain.main.review.data.Review
+import siksha.wafflestudio.core.domain.main.review.data.ReviewLike
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
@@ -24,6 +25,7 @@ import siksha.wafflestudio.core.domain.main.review.dto.ReviewResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewWithImagesRequest
 import siksha.wafflestudio.core.domain.main.review.repository.KeywordReviewRepository
+import siksha.wafflestudio.core.domain.main.review.repository.ReviewLikeRepository
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
@@ -40,6 +42,7 @@ class ReviewService(
     private val menuRepository: MenuRepository,
     private val imageRepository: ImageRepository,
     private val keywordReviewRepository: KeywordReviewRepository,
+    private val reviewLikeRepository: ReviewLikeRepository,
     private val s3Service: S3Service,
 ) {
     @Autowired
@@ -275,5 +278,27 @@ class ReviewService(
             hasNext = hasNext,
             result = result,
         )
+    }
+
+    fun likeReview(
+        reviewId: Int,
+        userId: Int,
+    ) {
+        val user = userRepository.getReferenceById(userId)
+        val review = reviewRepository.getReferenceById(reviewId)
+        val reviewLike = ReviewLike(
+            id = 0,
+            user = user,
+            review = review,
+        )
+        reviewLikeRepository.save(reviewLike)
+    }
+
+    fun unlikeReview(
+        reviewId: Int,
+        userId: Int,
+    ): Boolean {
+        val deleteCount = reviewLikeRepository.deleteByUserIdAndReviewId(userId, reviewId)
+        return deleteCount > 0
     }
 }
