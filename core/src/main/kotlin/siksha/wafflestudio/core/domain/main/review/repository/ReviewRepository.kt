@@ -14,14 +14,18 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         value = """
         SELECT 
             r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
-            kr.flavor, kr.price, kr.foodComposition, 
+            kr.flavor, kr.price, kr.food_composition, 
             IFNULL(rl.like_count, 0) AS like_count,
-            EXISTS (
-                SELECT 1
-                FROM review_likes rl2
-                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
-            ) AS is_liked,
-            r.createdAt, r.updatedAt 
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM review_like rl2 
+                    WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+                ) 
+                THEN 1 
+                ELSE 0 
+            END AS is_liked,
+            r.created_at, r.updated_at 
         FROM review r
         LEFT JOIN keyword_review kr ON r.id = kr.review_id
         LEFT JOIN (
@@ -30,7 +34,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
             GROUP BY review_id
         ) rl ON r.id = rl.review_id
         WHERE r.menu_id = :menuId
-        ORDER BY r.createdAt DESC
+        ORDER BY r.created_at DESC
     """,
         nativeQuery = true
     )
@@ -52,14 +56,18 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         value = """
         SELECT 
             r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
-            kr.flavor, kr.price, kr.foodComposition, 
+            kr.flavor, kr.price, kr.food_composition, 
             IFNULL(rl.like_count, 0) AS like_count,
-            EXISTS (
-                SELECT 1
-                FROM review_likes rl2
-                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
-            ) AS is_liked,
-            r.createdAt, r.updatedAt 
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM review_like rl2 
+                    WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+                ) 
+                THEN 1 
+                ELSE 0 
+            END AS is_liked,
+            r.created_at, r.updated_at 
         FROM review r
         LEFT JOIN keyword_review kr ON r.id = kr.review_id
         LEFT JOIN (
@@ -98,7 +106,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         """
-    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.foodComposition, r.createdAt, r.updatedAt 
+    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.flavor, kr.price, kr.food_composition, r.created_at, r.updated_at 
     FROM review r
     Left JOIN keyword_review kr ON r.id = kr.review_id
     WHERE r.menu.id = :menuId AND r.user.id = :userId
@@ -114,14 +122,18 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         value = """
         SELECT 
             r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
-            kr.flavor, kr.price, kr.foodComposition, 
+            kr.flavor, kr.price, kr.food_composition, 
             IFNULL(rl.like_count, 0) AS like_count,
-            EXISTS (
-                SELECT 1
-                FROM review_likes rl2
-                WHERE rl2.review_id = r.id AND rl2.user_id = :userId
-            ) AS is_liked,
-            r.createdAt, r.updatedAt 
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM review_like rl2 
+                    WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+                ) 
+                THEN 1 
+                ELSE 0 
+            END AS is_liked,
+            r.created_at, r.updated_at 
         FROM review r
         LEFT JOIN keyword_review kr ON r.id = kr.review_id
         LEFT JOIN (

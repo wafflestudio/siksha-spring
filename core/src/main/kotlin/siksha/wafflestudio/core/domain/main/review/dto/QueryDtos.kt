@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.domain.main.review.dto
 
+import java.sql.Timestamp
 import java.time.OffsetDateTime
 
 interface ReviewSummary {
@@ -23,9 +24,9 @@ interface ReviewSummary {
 
     fun getLikeCount(): Int
 
-    fun getIsLiked(): Boolean
+    fun getIsLiked(): Int
 
-    fun getCreatedAt(): OffsetDateTime
+    fun getCreatedAt(): Timestamp
 
-    fun getUpdatedAt(): OffsetDateTime
+    fun getUpdatedAt(): Timestamp
 }

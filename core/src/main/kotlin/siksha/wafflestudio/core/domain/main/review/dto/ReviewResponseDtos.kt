@@ -2,6 +2,7 @@ package siksha.wafflestudio.core.domain.main.review.dto
 
 import siksha.wafflestudio.core.util.KeywordReviewUtil
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 data class ReviewResponse(
     val id: Int,
@@ -33,9 +34,9 @@ data class ReviewResponse(
                     KeywordReviewUtil.getFoodCompositionKeyword(review.getFoodComposition()),
                 ),
                 likeCount = review.getLikeCount(),
-                isLiked = review.getIsLiked(),
-                createdAt = review.getCreatedAt(),
-                updatedAt = review.getUpdatedAt(),
+                isLiked = review.getIsLiked() == 1,
+                createdAt = review.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                updatedAt = review.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
             )
         }
     }

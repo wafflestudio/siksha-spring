@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
@@ -112,23 +113,7 @@ class ReviewService(
                 user.id.toString(),
             )
 
-        return MenuDetailsDto(
-            createdAt = menuSummary.getCreatedAt(),
-            updatedAt = menuSummary.getUpdatedAt(),
-            id = menuSummary.getId(),
-            restaurantId = menuSummary.getRestaurantId(),
-            code = menuSummary.getCode(),
-            date = menuSummary.getDate(),
-            type = menuSummary.getType(),
-            nameKr = menuSummary.getNameKr(),
-            nameEn = menuSummary.getNameEn(),
-            price = menuSummary.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
-            score = menuSummary.getScore(),
-            reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked(),
-            likeCnt = menuLikeSummary.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
     fun postReview(
@@ -170,23 +155,7 @@ class ReviewService(
                 user.id.toString(),
             )
 
-        return MenuDetailsDto(
-            createdAt = review.createdAt,
-            updatedAt = review.updatedAt,
-            id = menuSummary.getId(),
-            restaurantId = menuSummary.getRestaurantId(),
-            code = menuSummary.getCode(),
-            date = menuSummary.getDate(),
-            type = menuSummary.getType(),
-            nameKr = menuSummary.getNameKr(),
-            nameEn = menuSummary.getNameEn(),
-            price = menuSummary.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
-            score = menuSummary.getScore(),
-            reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked(),
-            likeCnt = menuLikeSummary.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
     fun getReviews(
@@ -195,7 +164,7 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
         val reviews = reviewRepository.findByMenuIdOrderByCreatedAtDesc(userId, menuId, pageable)
         val totalCount = reviewRepository.countByMenuId(menuId)
         val hasNext = page * size < totalCount
@@ -243,7 +212,7 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
         val reviews = reviewRepository.findFilteredReviews(userId, menuId, comment, etc, pageable)
         val totalCount = reviewRepository.countFilteredReviews(menuId, comment, etc)
         val hasNext = page * size < totalCount
@@ -265,7 +234,7 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
         val reviews = reviewRepository.findByUserId(userId, pageable)
         val totalCount = reviewRepository.countByUserId(userId)
         val hasNext = page * size < totalCount
@@ -296,6 +265,7 @@ class ReviewService(
         reviewLikeRepository.save(reviewLike)
     }
 
+    @Transactional
     fun unlikeReview(
         reviewId: Int,
         userId: Int,

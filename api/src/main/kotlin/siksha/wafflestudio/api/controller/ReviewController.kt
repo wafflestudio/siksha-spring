@@ -65,7 +65,7 @@ class ReviewController(
         @RequestParam("is_private", required = false) isPrivate: Boolean = false,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): ReviewListResponse {
         return reviewService.getReviews(request.userId, menuId, page, size)
     }
@@ -85,6 +85,9 @@ class ReviewController(
     ): ReviewScoreDistributionResponse {
         return reviewService.getScoreDistribution(menuId)
     }
+
+    // TODO: /keyword/dist
+    // 각 키워드별 dist 만들기
 
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
