@@ -28,7 +28,9 @@ data class KeywordReview(
     @ManyToOne
     @JoinColumns(
         JoinColumn(name = "restaurant_id", referencedColumnName = "restaurant_id"),
-        JoinColumn(name = "menu_code", referencedColumnName = "code")
+        JoinColumn(name = "menu_code", referencedColumnName = "code"),
+        JoinColumn(name = "menu_date", referencedColumnName = "date"),
+        JoinColumn(name = "menu_type", referencedColumnName = "type")
     )
     val menu: Menu,
 )
