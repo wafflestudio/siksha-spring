@@ -29,7 +29,7 @@ data class ReviewResponse(
                 comment = review.getComment(),
                 etc = review.getEtc(),
                 keywordReviews = listOf(
-                    KeywordReviewUtil.getFlavorKeyword(review.getFlavor()),
+                    KeywordReviewUtil.getTasteKeyword(review.getTaste()),
                     KeywordReviewUtil.getPriceKeyword(review.getPrice()),
                     KeywordReviewUtil.getFoodCompositionKeyword(review.getFoodComposition()),
                 ),
@@ -55,3 +55,33 @@ data class CommentRecommendationResponse(
 data class ReviewScoreDistributionResponse(
     val dist: List<Int>,
 )
+
+data class KeywordScoreDistributionResponse(
+    val tasteKeyword: String = "맛",
+    val tasteCnt: Int = 0,
+    val priceKeyword: String = "가격",
+    val priceCnt: Int = 0,
+    val foodCompositionKeyword: String = "음식구성",
+    val foodCompositionCnt: Int = 0,
+) {
+    companion object {
+        fun from(
+            keywordReviewSummary: KeywordReviewSummary
+        ): KeywordScoreDistributionResponse {
+            return KeywordScoreDistributionResponse(
+                tasteKeyword = KeywordReviewUtil.getTasteKeyword(
+                    keywordReviewSummary.getTasteKeyword()
+                ),
+                tasteCnt = keywordReviewSummary.getTasteCnt(),
+                priceKeyword = KeywordReviewUtil.getPriceKeyword(
+                    keywordReviewSummary.getPriceKeyword()
+                ),
+                priceCnt = keywordReviewSummary.getPriceCnt(),
+                foodCompositionKeyword = KeywordReviewUtil.getFoodCompositionKeyword(
+                    keywordReviewSummary.getFoodCompositionKeyword()
+                ),
+                foodCompositionCnt = keywordReviewSummary.getFoodCompositionCnt(),
+            )
+        }
+    }
+}

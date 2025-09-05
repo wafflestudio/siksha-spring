@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
+import siksha.wafflestudio.core.domain.main.review.dto.KeywordScoreDistributionResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
@@ -62,7 +63,7 @@ class ReviewController(
     @ResponseStatus(HttpStatus.OK)
     fun getReviews(
         @RequestParam("menu_id") menuId: Int,
-        @RequestParam("is_private", required = false) isPrivate: Boolean = false,
+        @RequestParam("is_private", required = false) isPrivate: Boolean,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
         request: HttpServletRequest,
@@ -86,8 +87,13 @@ class ReviewController(
         return reviewService.getScoreDistribution(menuId)
     }
 
-    // TODO: /keyword/dist
-    // 각 키워드별 dist 만들기
+    @GetMapping("/keyword/dist")
+    @ResponseStatus(HttpStatus.OK)
+    fun getKeywordScoreDistribution(
+        @RequestParam("menu_id") menuId: Int,
+    ): KeywordScoreDistributionResponse {
+        return reviewService.getKeywordScoreDistribution(menuId)
+    }
 
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
@@ -108,7 +114,6 @@ class ReviewController(
     fun getMyReviews(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") perPage: Int,
-        @RequestParam("is_private", required = false) isPrivate: Boolean = true,
         request: HttpServletRequest,
     ): ReviewListResponse {
         val userId = request.userId

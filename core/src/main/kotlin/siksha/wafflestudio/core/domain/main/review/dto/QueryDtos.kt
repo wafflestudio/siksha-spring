@@ -1,7 +1,6 @@
 package siksha.wafflestudio.core.domain.main.review.dto
 
 import java.sql.Timestamp
-import java.time.OffsetDateTime
 
 interface ReviewSummary {
     fun getId(): Int
@@ -16,7 +15,7 @@ interface ReviewSummary {
 
     fun getEtc(): String?
 
-    fun getFlavor(): Int?
+    fun getTaste(): Int?
 
     fun getPrice(): Int?
 
@@ -29,4 +28,19 @@ interface ReviewSummary {
     fun getCreatedAt(): Timestamp
 
     fun getUpdatedAt(): Timestamp
+}
+
+interface KeywordReviewSummary {
+
+    fun getTasteKeyword(): Int
+
+    fun getTasteCnt(): Int
+
+    fun getPriceKeyword(): Int
+
+    fun getPriceCnt(): Int
+
+    fun getFoodCompositionKeyword(): Int
+
+    fun getFoodCompositionCnt(): Int
 }

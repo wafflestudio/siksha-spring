@@ -28,8 +28,9 @@ class AuthInterceptor(
 
             val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
             val isReviewsUri = request.requestURI.startsWith("/reviews")
+            val isMyReviewUri = request.requestURI == "/reviews/me"
 
-            if (!isPrivate && isReviewsUri) {
+            if (!isPrivate && isReviewsUri && !isMyReviewUri) {
                 request.setAttribute("userId", 0)
                 return true
             }
