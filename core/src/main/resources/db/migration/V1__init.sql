@@ -307,3 +307,43 @@ create table if not exists review
 create index review_user_id_index
     on review (user_id);
 
+create table if not exists keyword_review (
+    review_id           int
+        primary key,
+    taste               int                          not null comment '맛 평가 점수',
+    price               int                          not null comment '가격 평가 점수',
+    food_composition    int                          not null comment '음식 구성 평가 점수',
+    restaurant_id       int                          not null comment '리뷰한 메뉴의 레스토랑 id',
+    menu_code           varchar(200)                 not null comment '리뷰한 메뉴의 식별자',
+    menu_date           date                         not null comment '리뷰한 메뉴의 날짜',
+    menu_type           varchar(10)                  not null comment '리뷰한 메뉴의 타입',
+    constraint keyword_review_ibfk_1
+        foreign key (review_id) references review (id)
+        on delete cascade,
+    constraint keyword_review_ibfk_2
+        foreign key (restaurant_id, menu_code, menu_date, menu_type) references menu (restaurant_id, code, date, type)
+        on delete cascade
+);
+
+create index keyword_review_menu_key_index
+    on keyword_review (restaurant_id, menu_code);
+
+create table if not exists review_like (
+    id         int auto_increment
+        primary key,
+    user_id    int                                 not null comment '리뷰를 좋아한 사용자의 id',
+    review_id  int                                 not null comment '사용자가 좋아한 리뷰 id',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment '생성 시간',
+    updated_at timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '변경 시간',
+    constraint review_id
+        unique (review_id, user_id),
+    constraint review_like_ibfk_1
+        foreign key (user_id) references user (id)
+        on delete cascade,
+    constraint review_like_ibfk_2
+        foreign key (review_id) references review (id)
+        on delete cascade
+);
+
+create index review_like_review_id_index
+    on review_like (review_id);

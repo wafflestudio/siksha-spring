@@ -1,7 +1,7 @@
 package siksha.wafflestudio.core.domain.main.menu.dto
 
+import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 interface MenuSummary {
     fun getId(): Int
@@ -22,9 +22,9 @@ interface MenuSummary {
 
     fun getEtc(): String?
 
-    fun getCreatedAt(): OffsetDateTime
+    fun getCreatedAt(): Timestamp
 
-    fun getUpdatedAt(): OffsetDateTime
+    fun getUpdatedAt(): Timestamp
 
     fun getScore(): Double?
 
@@ -44,7 +44,7 @@ interface MenuLikeSummary {
 
     fun getLikeCnt(): Int
 
-    fun getIsLiked(): Boolean
+    fun getIsLiked(): Int
 }
 
 interface MenuLikeCount {

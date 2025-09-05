@@ -12,6 +12,9 @@ data class ReviewRequest(
     @field:Max(5)
     val score: Int,
     val comment: String? = null,
+    val taste: String = "",
+    val price: String = "",
+    val foodComposition: String = "",
 )
 
 data class ReviewWithImagesRequest(
@@ -21,5 +24,8 @@ data class ReviewWithImagesRequest(
     @field:Max(5)
     val score: Int,
     val comment: String? = null,
+    val taste: String = "",
+    val price: String = "",
+    val foodComposition: String = "",
     val images: List<MultipartFile>? = null,
 )
