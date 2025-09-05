@@ -15,22 +15,19 @@ import siksha.wafflestudio.core.domain.main.menu.data.Menu
 data class KeywordReview(
     @Id
     val id: Int = 0,
-
     val taste: Int,
     val price: Int,
     val foodComposition: Int,
-
     @OneToOne
     @MapsId
     @JoinColumn(name = "review_id")
     val review: Review,
-
     @ManyToOne
     @JoinColumns(
         JoinColumn(name = "restaurant_id", referencedColumnName = "restaurant_id"),
         JoinColumn(name = "menu_code", referencedColumnName = "code"),
         JoinColumn(name = "menu_date", referencedColumnName = "date"),
-        JoinColumn(name = "menu_type", referencedColumnName = "type")
+        JoinColumn(name = "menu_type", referencedColumnName = "type"),
     )
     val menu: Menu,
 )

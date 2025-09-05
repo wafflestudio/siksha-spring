@@ -61,13 +61,14 @@ class KeywordReviewTest {
                 ),
             )
 
-        val keywordReview = KeywordReview(
-            review = review,
-            menu = menu,
-            taste = 4,
-            price = 3,
-            foodComposition = 3
-        )
+        val keywordReview =
+            KeywordReview(
+                review = review,
+                menu = menu,
+                taste = 4,
+                price = 3,
+                foodComposition = 3,
+            )
 
         // when
         val savedKeywordReview = keywordReviewRepository.save(keywordReview)
@@ -119,24 +120,26 @@ class KeywordReviewTest {
                 ),
             )
 
-        val keywordReview = KeywordReview(
-            review = review,
-            menu = menu,
-            taste = 2,
-            price = 2,
-            foodComposition = 2
-        )
+        val keywordReview =
+            KeywordReview(
+                review = review,
+                menu = menu,
+                taste = 2,
+                price = 2,
+                foodComposition = 2,
+            )
 
         val savedKeywordReview = keywordReviewRepository.save(keywordReview)
         entityManager.flush()
         entityManager.clear()
 
         // when
-        val updatedKeywordReview = savedKeywordReview.copy(
-            taste = 5,
-            price = 4,
-            foodComposition = 4
-        )
+        val updatedKeywordReview =
+            savedKeywordReview.copy(
+                taste = 5,
+                price = 4,
+                foodComposition = 4,
+            )
         val result = keywordReviewRepository.save(updatedKeywordReview)
         entityManager.flush()
         entityManager.clear()
@@ -185,13 +188,14 @@ class KeywordReviewTest {
                 ),
             )
 
-        val keywordReview = KeywordReview(
-            review = review,
-            menu = menu,
-            taste = 3,
-            price = 3,
-            foodComposition = 3
-        )
+        val keywordReview =
+            KeywordReview(
+                review = review,
+                menu = menu,
+                taste = 3,
+                price = 3,
+                foodComposition = 3,
+            )
 
         val savedKeywordReview = keywordReviewRepository.save(keywordReview)
         entityManager.flush()

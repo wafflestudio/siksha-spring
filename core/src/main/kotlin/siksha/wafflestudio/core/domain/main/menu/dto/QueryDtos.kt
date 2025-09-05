@@ -2,7 +2,6 @@ package siksha.wafflestudio.core.domain.main.menu.dto
 
 import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.OffsetDateTime
 
 interface MenuSummary {
     fun getId(): Int

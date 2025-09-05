@@ -40,7 +40,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         )
         ORDER BY r.created_at DESC
     """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findByMenuIdOrderByCreatedAtDesc(
         @Param("userId") userId: Int,
@@ -58,7 +58,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
                 WHERE restaurant_id = :restaurantId AND code = :code
             )
         """,
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun countByMenuId(
         @Param("restaurantId") restaurantId: Int,

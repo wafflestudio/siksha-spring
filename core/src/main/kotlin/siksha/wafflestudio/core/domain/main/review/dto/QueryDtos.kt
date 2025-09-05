@@ -31,7 +31,6 @@ interface ReviewSummary {
 }
 
 interface KeywordReviewSummary {
-
     fun getTasteKeyword(): Int
 
     fun getTasteCnt(): Int

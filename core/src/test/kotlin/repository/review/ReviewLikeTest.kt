@@ -73,16 +73,17 @@ class ReviewLikeTest {
                     updatedAt = OffsetDateTime.now(),
                     nickname = "자반고등어구이",
                     profileUrl = null,
-                )
+                ),
             )
 
-        val reviewLike = ReviewLike(
-            id = 0,
-            user = user2,
-            review = review,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-        )
+        val reviewLike =
+            ReviewLike(
+                id = 0,
+                user = user2,
+                review = review,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         // when
         val savedReviewLike = reviewLikeRepository.save(reviewLike)
@@ -140,16 +141,17 @@ class ReviewLikeTest {
                     updatedAt = OffsetDateTime.now(),
                     nickname = "삭제테스트유저",
                     profileUrl = null,
-                )
+                ),
             )
 
-        val reviewLike = ReviewLike(
-            id = 0,
-            user = user2,
-            review = review,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-        )
+        val reviewLike =
+            ReviewLike(
+                id = 0,
+                user = user2,
+                review = review,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         val savedReviewLike = reviewLikeRepository.save(reviewLike)
         entityManager.flush()

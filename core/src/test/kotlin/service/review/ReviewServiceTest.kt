@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
@@ -24,7 +24,6 @@ import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
 import siksha.wafflestudio.core.domain.common.exception.SelfReviewLikeNotAllowedException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
-import java.util.Optional
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeSummary
@@ -47,10 +46,10 @@ import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
 class ReviewServiceTest {
-
     @Mock
     private lateinit var reviewRepository: ReviewRepository
 
@@ -78,15 +77,16 @@ class ReviewServiceTest {
     @BeforeEach
     fun setUp() {
         objectMapper = ObjectMapper()
-        reviewService = ReviewService(
-            reviewRepository = reviewRepository,
-            userRepository = userRepository,
-            menuRepository = menuRepository,
-            imageRepository = imageRepository,
-            keywordReviewRepository = keywordReviewRepository,
-            reviewLikeRepository = reviewLikeRepository,
-            s3Service = s3Service
-        )
+        reviewService =
+            ReviewService(
+                reviewRepository = reviewRepository,
+                userRepository = userRepository,
+                menuRepository = menuRepository,
+                imageRepository = imageRepository,
+                keywordReviewRepository = keywordReviewRepository,
+                reviewLikeRepository = reviewLikeRepository,
+                s3Service = s3Service,
+            )
         // objectMapper는 private이므로 리플렉션을 사용하거나 다른 방법으로 설정
         val field = ReviewService::class.java.getDeclaredField("objectMapper")
         field.isAccessible = true
@@ -98,63 +98,68 @@ class ReviewServiceTest {
         // given
         val userId = 1
         val menuId = 1
-        val request = ReviewRequest(
-            menuId = menuId,
-            score = 5,
-            comment = "생각보다 맛있어요",
-            taste = "맛있음",
-            price = "혜자스러워요",
-            foodComposition = "알찬 편이에요"
-        )
+        val request =
+            ReviewRequest(
+                menuId = menuId,
+                score = 5,
+                comment = "생각보다 맛있어요",
+                taste = "맛있음",
+                price = "혜자스러워요",
+                foodComposition = "알찬 편이에요",
+            )
 
-        val user = User(
-            id = userId,
-            type = "KAKAO",
-            identity = "test123",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "테스트유저",
-            profileUrl = null
-        )
+        val user =
+            User(
+                id = userId,
+                type = "KAKAO",
+                identity = "test123",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "테스트유저",
+                profileUrl = null,
+            )
 
-        val restaurant = Restaurant(
-            id = 1,
-            code = "REST001",
-            nameKr = "테스트식당",
-            nameEn = "Test Restaurant",
-            addr = "서울시",
-            lat = 37.5,
-            lng = 127.0,
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val restaurant =
+            Restaurant(
+                id = 1,
+                code = "REST001",
+                nameKr = "테스트식당",
+                nameEn = "Test Restaurant",
+                addr = "서울시",
+                lat = 37.5,
+                lng = 127.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val menu = Menu(
-            id = menuId,
-            restaurant = restaurant,
-            code = "MENU001",
-            date = LocalDate.now(),
-            type = "LU",
-            nameKr = "테스트메뉴",
-            nameEn = "Test Menu",
-            price = 10000,
-            etc = "[]",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val menu =
+            Menu(
+                id = menuId,
+                restaurant = restaurant,
+                code = "MENU001",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "테스트메뉴",
+                nameEn = "Test Menu",
+                price = 10000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val savedReview = Review(
-            id = 1,
-            user = user,
-            menu = menu,
-            score = 5,
-            comment = "맛있어요!",
-            etc = "",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val savedReview =
+            Review(
+                id = 1,
+                user = user,
+                menu = menu,
+                score = 5,
+                comment = "맛있어요!",
+                etc = "",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         val menuSummary = mock<MenuSummary>()
         `when`(menuSummary.getId()).thenReturn(menuId)
@@ -193,14 +198,15 @@ class ReviewServiceTest {
     fun `postReview - 사용자를 찾을 수 없는 경우 예외 발생`() {
         // given
         val userId = 999
-        val request = ReviewRequest(
-            menuId = 1,
-            score = 5,
-            comment = "맛있어요!",
-            taste = "맛있음",
-            price = "적당함",
-            foodComposition = "균형잡힘"
-        )
+        val request =
+            ReviewRequest(
+                menuId = 1,
+                score = 5,
+                comment = "맛있어요!",
+                taste = "맛있음",
+                price = "적당함",
+                foodComposition = "균형잡힘",
+            )
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.empty())
 
@@ -215,25 +221,27 @@ class ReviewServiceTest {
         // given
         val userId = 1
         val menuId = 999
-        val request = ReviewRequest(
-            menuId = menuId,
-            score = 5,
-            comment = "맛있어요!",
-            taste = "맛있음",
-            price = "적당함",
-            foodComposition = "균형잡힘"
-        )
+        val request =
+            ReviewRequest(
+                menuId = menuId,
+                score = 5,
+                comment = "맛있어요!",
+                taste = "맛있음",
+                price = "적당함",
+                foodComposition = "균형잡힘",
+            )
 
-        val user = User(
-            id = userId,
-            type = "KAKAO",
-            identity = "test123",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "테스트유저",
-            profileUrl = null
-        )
+        val user =
+            User(
+                id = userId,
+                type = "KAKAO",
+                identity = "test123",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "테스트유저",
+                profileUrl = null,
+            )
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(menuRepository.findById(menuId)).thenReturn(Optional.empty())
@@ -248,14 +256,15 @@ class ReviewServiceTest {
     fun `postReview - 키워드가 부족한 경우 예외 발생`() {
         // given
         val userId = 1
-        val request = ReviewRequest(
-            menuId = 1,
-            score = 5,
-            comment = "맛있어요!",
-            taste = "맛있음",
-            price = "", // 빈 값
-            foodComposition = "" // 빈 값
-        )
+        val request =
+            ReviewRequest(
+                menuId = 1,
+                score = 5,
+                comment = "맛있어요!",
+                taste = "맛있음",
+                price = "",
+                foodComposition = "",
+            )
 
         // when & then
         assertThrows(KeywordMissingException::class.java) {
@@ -268,52 +277,56 @@ class ReviewServiceTest {
         // given
         val userId = 1
         val menuId = 1
-        val request = ReviewRequest(
-            menuId = menuId,
-            score = 5,
-            comment = "맛있어요!",
-            taste = "맛있음",
-            price = "적당함",
-            foodComposition = "균형잡힘"
-        )
+        val request =
+            ReviewRequest(
+                menuId = menuId,
+                score = 5,
+                comment = "맛있어요!",
+                taste = "맛있음",
+                price = "적당함",
+                foodComposition = "균형잡힘",
+            )
 
-        val user = User(
-            id = userId,
-            type = "KAKAO",
-            identity = "test123",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "테스트유저",
-            profileUrl = null
-        )
+        val user =
+            User(
+                id = userId,
+                type = "KAKAO",
+                identity = "test123",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "테스트유저",
+                profileUrl = null,
+            )
 
-        val restaurant = Restaurant(
-            id = 1,
-            code = "REST001",
-            nameKr = "테스트식당",
-            nameEn = "Test Restaurant",
-            addr = "서울시",
-            lat = 37.5,
-            lng = 127.0,
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val restaurant =
+            Restaurant(
+                id = 1,
+                code = "REST001",
+                nameKr = "테스트식당",
+                nameEn = "Test Restaurant",
+                addr = "서울시",
+                lat = 37.5,
+                lng = 127.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val menu = Menu(
-            id = menuId,
-            restaurant = restaurant,
-            code = "MENU001",
-            date = LocalDate.now(),
-            type = "LU",
-            nameKr = "테스트메뉴",
-            nameEn = "Test Menu",
-            price = 10000,
-            etc = "[]",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val menu =
+            Menu(
+                id = menuId,
+                restaurant = restaurant,
+                code = "MENU001",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "테스트메뉴",
+                nameEn = "Test Menu",
+                price = 10000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(menuRepository.findById(menuId)).thenReturn(Optional.of(menu))
@@ -331,65 +344,70 @@ class ReviewServiceTest {
         val reviewId = 1
         val userId = 1
 
-        val user = User(
-            id = userId,
-            type = "KAKAO",
-            identity = "test123",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "테스트유저",
-            profileUrl = null
-        )
+        val user =
+            User(
+                id = userId,
+                type = "KAKAO",
+                identity = "test123",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "테스트유저",
+                profileUrl = null,
+            )
 
-        val otherUser = User(
-            id = 2,
-            type = "GOOGLE",
-            identity = "test456",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "다른유저",
-            profileUrl = null
-        )
+        val otherUser =
+            User(
+                id = 2,
+                type = "GOOGLE",
+                identity = "test456",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "다른유저",
+                profileUrl = null,
+            )
 
-        val restaurant = Restaurant(
-            id = 1,
-            code = "REST001",
-            nameKr = "테스트식당",
-            nameEn = "Test Restaurant",
-            addr = "서울시",
-            lat = 37.5,
-            lng = 127.0,
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val restaurant =
+            Restaurant(
+                id = 1,
+                code = "REST001",
+                nameKr = "테스트식당",
+                nameEn = "Test Restaurant",
+                addr = "서울시",
+                lat = 37.5,
+                lng = 127.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val menu = Menu(
-            id = 1,
-            restaurant = restaurant,
-            code = "MENU001",
-            date = LocalDate.now(),
-            type = "LU",
-            nameKr = "테스트메뉴",
-            nameEn = "Test Menu",
-            price = 10000,
-            etc = "[]",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val menu =
+            Menu(
+                id = 1,
+                restaurant = restaurant,
+                code = "MENU001",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "테스트메뉴",
+                nameEn = "Test Menu",
+                price = 10000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val review = Review(
-            id = reviewId,
-            user = otherUser, // 다른 사용자의 리뷰
-            menu = menu,
-            score = 5,
-            comment = "맛있어요!",
-            etc = "",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val review =
+            Review(
+                id = reviewId,
+                user = otherUser,
+                menu = menu,
+                score = 5,
+                comment = "맛있어요!",
+                etc = "",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         `when`(userRepository.getReferenceById(userId)).thenReturn(user)
         `when`(reviewRepository.getReferenceById(reviewId)).thenReturn(review)
@@ -407,54 +425,58 @@ class ReviewServiceTest {
         val reviewId = 1
         val userId = 1
 
-        val user = User(
-            id = userId,
-            type = "KAKAO",
-            identity = "test123",
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now(),
-            nickname = "테스트유저",
-            profileUrl = null
-        )
+        val user =
+            User(
+                id = userId,
+                type = "KAKAO",
+                identity = "test123",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "테스트유저",
+                profileUrl = null,
+            )
 
-        val restaurant = Restaurant(
-            id = 1,
-            code = "REST001",
-            nameKr = "테스트식당",
-            nameEn = "Test Restaurant",
-            addr = "서울시",
-            lat = 37.5,
-            lng = 127.0,
-            etc = null,
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val restaurant =
+            Restaurant(
+                id = 1,
+                code = "REST001",
+                nameKr = "테스트식당",
+                nameEn = "Test Restaurant",
+                addr = "서울시",
+                lat = 37.5,
+                lng = 127.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val menu = Menu(
-            id = 1,
-            restaurant = restaurant,
-            code = "MENU001",
-            date = LocalDate.now(),
-            type = "LU",
-            nameKr = "테스트메뉴",
-            nameEn = "Test Menu",
-            price = 10000,
-            etc = "[]",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val menu =
+            Menu(
+                id = 1,
+                restaurant = restaurant,
+                code = "MENU001",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "테스트메뉴",
+                nameEn = "Test Menu",
+                price = 10000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
-        val review = Review(
-            id = reviewId,
-            user = user, // 같은 사용자의 리뷰
-            menu = menu,
-            score = 5,
-            comment = "맛있어요!",
-            etc = "",
-            createdAt = OffsetDateTime.now(),
-            updatedAt = OffsetDateTime.now()
-        )
+        val review =
+            Review(
+                id = reviewId,
+                user = user,
+                menu = menu,
+                score = 5,
+                comment = "맛있어요!",
+                etc = "",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
 
         `when`(userRepository.getReferenceById(userId)).thenReturn(user)
         `when`(reviewRepository.getReferenceById(reviewId)).thenReturn(review)
@@ -547,13 +569,14 @@ class ReviewServiceTest {
         `when`(menuPlainSummary.getRestaurantId()).thenReturn(1)
         `when`(menuPlainSummary.getCode()).thenReturn("MENU001")
 
-        val scoreCounts = listOf(
-            arrayOf<Any>(5, 10), // 점수 5: 10개
-            arrayOf<Any>(4, 5),  // 점수 4: 5개
-            arrayOf<Any>(3, 2),  // 점수 3: 2개
-            arrayOf<Any>(2, 1),  // 점수 2: 1개
-            arrayOf<Any>(1, 0)   // 점수 1: 0개
-        )
+        val scoreCounts =
+            listOf(
+                arrayOf<Any>(5, 10),
+                arrayOf<Any>(4, 5),
+                arrayOf<Any>(3, 2),
+                arrayOf<Any>(2, 1),
+                arrayOf<Any>(1, 0),
+            )
 
         `when`(menuRepository.findPlainMenuById(menuId.toString())).thenReturn(menuPlainSummary)
         `when`(reviewRepository.findScoreCountsByMenuId(1, "MENU001")).thenReturn(scoreCounts)

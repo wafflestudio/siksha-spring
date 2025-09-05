@@ -18,9 +18,7 @@ data class ReviewResponse(
     val updatedAt: OffsetDateTime,
 ) {
     companion object {
-        fun from(
-            review: ReviewSummary,
-        ): ReviewResponse {
+        fun from(review: ReviewSummary): ReviewResponse {
             return ReviewResponse(
                 id = review.getId(),
                 menuId = review.getMenuId(),
@@ -28,11 +26,12 @@ data class ReviewResponse(
                 score = review.getScore(),
                 comment = review.getComment(),
                 etc = review.getEtc(),
-                keywordReviews = listOf(
-                    KeywordReviewUtil.getTasteKeyword(review.getTaste()),
-                    KeywordReviewUtil.getPriceKeyword(review.getPrice()),
-                    KeywordReviewUtil.getFoodCompositionKeyword(review.getFoodComposition()),
-                ),
+                keywordReviews =
+                    listOf(
+                        KeywordReviewUtil.getTasteKeyword(review.getTaste()),
+                        KeywordReviewUtil.getPriceKeyword(review.getPrice()),
+                        KeywordReviewUtil.getFoodCompositionKeyword(review.getFoodComposition()),
+                    ),
                 likeCount = review.getLikeCount(),
                 isLiked = review.getIsLiked() == 1,
                 createdAt = review.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
@@ -65,21 +64,22 @@ data class KeywordScoreDistributionResponse(
     val foodCompositionCnt: Int = 0,
 ) {
     companion object {
-        fun from(
-            keywordReviewSummary: KeywordReviewSummary
-        ): KeywordScoreDistributionResponse {
+        fun from(keywordReviewSummary: KeywordReviewSummary): KeywordScoreDistributionResponse {
             return KeywordScoreDistributionResponse(
-                tasteKeyword = KeywordReviewUtil.getTasteKeyword(
-                    keywordReviewSummary.getTasteKeyword()
-                ),
+                tasteKeyword =
+                    KeywordReviewUtil.getTasteKeyword(
+                        keywordReviewSummary.getTasteKeyword(),
+                    ),
                 tasteCnt = keywordReviewSummary.getTasteCnt(),
-                priceKeyword = KeywordReviewUtil.getPriceKeyword(
-                    keywordReviewSummary.getPriceKeyword()
-                ),
+                priceKeyword =
+                    KeywordReviewUtil.getPriceKeyword(
+                        keywordReviewSummary.getPriceKeyword(),
+                    ),
                 priceCnt = keywordReviewSummary.getPriceCnt(),
-                foodCompositionKeyword = KeywordReviewUtil.getFoodCompositionKeyword(
-                    keywordReviewSummary.getFoodCompositionKeyword()
-                ),
+                foodCompositionKeyword =
+                    KeywordReviewUtil.getFoodCompositionKeyword(
+                        keywordReviewSummary.getFoodCompositionKeyword(),
+                    ),
                 foodCompositionCnt = keywordReviewSummary.getFoodCompositionCnt(),
             )
         }
