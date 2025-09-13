@@ -16,4 +16,4 @@ ENV SPRING_PROFILES_ACTIVE=${PROFILE:-dev}
 ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=60.0 -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -Xss256k"
 
 EXPOSE 8080
-ENTRYPOINT ["sh","-c","exec java -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE -jar app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "app.jar"]
