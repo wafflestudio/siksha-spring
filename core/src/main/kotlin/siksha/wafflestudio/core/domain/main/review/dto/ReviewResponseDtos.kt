@@ -24,7 +24,7 @@ data class ReviewListResponse(
 data class MyReviewsResponse(
     val totalCount: Int,
     val hasNext: Boolean,
-    val result: List<RestaurantWithReviewListResponse>
+    val result: List<RestaurantWithReviewListResponse>,
 )
 
 data class RestaurantWithReviewListResponse(

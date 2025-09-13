@@ -1,7 +1,6 @@
 package siksha.wafflestudio.core.domain.main.review.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -9,12 +8,10 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.CustomNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
-import siksha.wafflestudio.core.domain.common.exception.ReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.NotReviewOwnerException
+import siksha.wafflestudio.core.domain.common.exception.ReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
@@ -271,9 +268,7 @@ class ReviewService(
         reviewRepository.deleteById(reviewId)
     }
 
-    fun getReview(
-        reviewId: Int,
-    ): ReviewResponse{
+    fun getReview(reviewId: Int): ReviewResponse {
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
         return ReviewResponse(
             id = review.id,
@@ -288,7 +283,6 @@ class ReviewService(
             updatedAt = review.updatedAt,
         )
     }
-
 
     fun getReviews(
         menuId: Int,
@@ -416,29 +410,31 @@ class ReviewService(
             bucket[rid]?.add(r)
         }
 
-        val grouped = bucket.entries.mapNotNull { (rid, list) ->
-            if (list.isEmpty()) return@mapNotNull null
-            val rest = list.first().menu.restaurant
-            RestaurantWithReviewListResponse(
-                restaurantId = rid,
-                nameKr = rest.nameKr,
-                nameEn = rest.nameEn,
-                reviews = list.map { it ->
-                    ReviewResponse(
-                        id = it.id,
-                        menuId = it.menu.id,
-                        nameKr = it.menu.nameKr,
-                        nameEn = it.menu.nameEn,
-                        userId = userId,
-                        score = it.score,
-                        comment = it.comment,
-                        etc = it.etc,
-                        createdAt = it.createdAt,
-                        updatedAt = it.updatedAt,
-                    )
-                }
-            )
-        }
+        val grouped =
+            bucket.entries.mapNotNull { (rid, list) ->
+                if (list.isEmpty()) return@mapNotNull null
+                val rest = list.first().menu.restaurant
+                RestaurantWithReviewListResponse(
+                    restaurantId = rid,
+                    nameKr = rest.nameKr,
+                    nameEn = rest.nameEn,
+                    reviews =
+                        list.map { it ->
+                            ReviewResponse(
+                                id = it.id,
+                                menuId = it.menu.id,
+                                nameKr = it.menu.nameKr,
+                                nameEn = it.menu.nameEn,
+                                userId = userId,
+                                score = it.score,
+                                comment = it.comment,
+                                etc = it.etc,
+                                createdAt = it.createdAt,
+                                updatedAt = it.updatedAt,
+                            )
+                        },
+                )
+            }
 
         val total = totalRestaurant.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
         val hasNext = page * size < total
@@ -446,7 +442,7 @@ class ReviewService(
         return MyReviewsResponse(
             totalCount = total,
             hasNext = hasNext,
-            result = grouped
+            result = grouped,
         )
     }
 }

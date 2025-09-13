@@ -121,30 +121,37 @@ interface ReviewRepository : JpaRepository<Review, Int> {
     ): List<Array<Any>>
 
     // 유저가 리뷰한 서로 다른 레스토랑의 총 개수
-    @Query("""
+    @Query(
+        value = """
         SELECT count(DISTINCT m.restaurant.id)
         FROM review r
         JOIN r.menu m
         WHERE r.user.id = :userId
-    """)
-    fun countDistinctRestaurantsByUserId(@Param("userId") userId: Int): Long
+    """,
+    )
+    fun countDistinctRestaurantsByUserId(
+        @Param("userId") userId: Int,
+    ): Long
 
     // 유저가 리뷰한 레스토랑 ID들을, 해당 레스토랑에서의 최신 리뷰시각 내림차순으로 정렬하여 페이징
-    @Query("""
+    @Query(
+        value = """
         SELECT m.restaurant.id
         FROM review r
         JOIN r.menu m
         WHERE r.user.id = :userId
         GROUP BY m.restaurant.id
         ORDER BY max(r.createdAt) DESC, m.restaurant.id ASC
-    """)
+    """,
+    )
     fun findRestaurantIdsByUserIdPaged(
         @Param("userId") userId: Int,
-        pageable: Pageable
+        pageable: Pageable,
     ): List<Int>
 
     // 선택된 레스토랑들에 대해, 해당 유저의 리뷰를 모두 조회
-    @Query("""
+    @Query(
+        value = """
         SELECT r
         FROM review r
         JOIN FETCH r.menu m
@@ -152,7 +159,8 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         WHERE r.user.id = :userId
           AND rest.id IN :restaurantIds
         ORDER BY rest.id ASC, r.createdAt DESC
-    """)
+    """,
+    )
     fun findAllByUserIdAndRestaurantIds(
         @Param("userId") userId: Int,
         @Param("restaurantIds") restaurantIds: List<Int>,
