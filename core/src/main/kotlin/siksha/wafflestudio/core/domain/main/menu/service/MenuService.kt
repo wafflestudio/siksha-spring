@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.domain.main.menu.service
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
@@ -12,6 +13,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
@@ -210,5 +212,14 @@ class MenuService(
 
         // 삭제 후 변경된 좋아요 수와 상태를 포함한 상세 정보 반환
         return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    fun getMyMenus(
+        userId: Int,
+    ): MyMenuListResponseDto {
+        return MyMenuListResponseDto(
+            count = 0,
+            result = emptyList(),
+        )
     }
 }

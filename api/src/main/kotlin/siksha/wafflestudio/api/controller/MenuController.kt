@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.service.MenuService
 import java.time.LocalDate
 
@@ -68,4 +69,14 @@ class MenuController(
         menuId = menuId,
         userId = request.userId,
     )
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    fun getMyMenus(
+        request: HttpServletRequest,
+    ): MyMenuListResponseDto {
+        return menuService.getMyMenus(
+            userId = request.userId,
+        )
+    }
 }
