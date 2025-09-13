@@ -5,6 +5,8 @@ import java.time.OffsetDateTime
 data class ReviewResponse(
     val id: Int,
     val menuId: Int,
+    val nameKr: String?,
+    val nameEn: String?,
     val userId: Int,
     val score: Int,
     val comment: String?,
@@ -17,6 +19,19 @@ data class ReviewListResponse(
     val totalCount: Int,
     val hasNext: Boolean,
     val result: List<ReviewResponse>,
+)
+
+data class MyReviewsResponse(
+    val totalCount: Int,
+    val hasNext: Boolean,
+    val result: List<RestaurantWithReviewListResponse>
+)
+
+data class RestaurantWithReviewListResponse(
+    val restaurantId: Int,
+    val nameKr: String?,
+    val nameEn: String?,
+    val reviews: List<ReviewResponse>,
 )
 
 data class CommentRecommendationResponse(

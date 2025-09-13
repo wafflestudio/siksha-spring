@@ -3,7 +3,10 @@ package siksha.wafflestudio.api.controller
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
+import siksha.wafflestudio.core.domain.main.review.dto.MyReviewsResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
@@ -54,6 +58,44 @@ class ReviewController(
     ): MenuDetailsDto {
         val userId = request.userId
         return reviewService.postReview(userId, reviewRequest)
+    }
+
+    @GetMapping("/{review_id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getReview(
+        @PathVariable("review_id") reviewId: Int,
+    ) {
+        reviewService.getReview(reviewId = reviewId)
+    }
+
+    @PatchMapping("/{review_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @ResponseStatus(HttpStatus.OK)
+    fun updateReviewWithImages(
+        request: HttpServletRequest,
+        @PathVariable("review_id") reviewId: Int,
+        @RequestPart("menu_id") menuId: Int,
+        @RequestPart("score") score: Int,
+        @RequestPart("comment", required = false) comment: String?,
+        @RequestPart("images", required = false) images: List<MultipartFile>?,
+    ): MenuDetailsDto {
+        val userId = request.userId
+        val createDto =
+            ReviewWithImagesRequest(
+                menuId = menuId,
+                score = score,
+                comment = comment,
+                images = images,
+            )
+        return reviewService.updateReviewWithImages(userId, reviewId, createDto)
+    }
+
+    @DeleteMapping("/{review_id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteReview(
+        request: HttpServletRequest,
+        @PathVariable("review_id") reviewId: Int,
+    ) {
+        reviewService.deleteReview(userId = request.userId, reviewId = reviewId)
     }
 
     @GetMapping
@@ -100,7 +142,7 @@ class ReviewController(
         request: HttpServletRequest,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") perPage: Int,
-    ): ReviewListResponse {
+    ): MyReviewsResponse {
         val userId = request.userId
         return reviewService.getMyReviews(userId, page, perPage)
     }
