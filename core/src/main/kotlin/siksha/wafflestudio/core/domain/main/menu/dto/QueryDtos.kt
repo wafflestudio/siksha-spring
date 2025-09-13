@@ -39,12 +39,6 @@ interface MenuPlainSummary {
     fun getCode(): String
 }
 
-interface MenuPlainSummary {
-    fun getId(): Int;
-    fun getRestaurantId(): Int;
-    fun getCode(): String;
-}
-
 interface MenuLikeSummary {
     fun getId(): Int
 
