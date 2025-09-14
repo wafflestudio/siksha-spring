@@ -10,6 +10,9 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.web.servlet.HandlerExceptionResolver
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 
@@ -22,6 +25,7 @@ class SecurityConfig(
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
+            .cors { }
             .csrf { it.disable() }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
@@ -54,5 +58,16 @@ class SecurityConfig(
                 }
             }
             .build()
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+        configuration.allowedOriginPatterns = listOf("*")
+        configuration.allowedMethods = listOf("*")
+        configuration.allowedHeaders = listOf("*")
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
     }
 }
