@@ -224,3 +224,39 @@ data class MenuDetailsDto
             }
         }
     }
+
+// menus/{menu_id}/alarm/on, off 요청에 대한 Dto
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuAlarmDto
+    @JsonCreator
+    constructor(
+        @JsonProperty("created_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val createdAt: OffsetDateTime,
+        @JsonProperty("updated_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val updatedAt: OffsetDateTime,
+        @JsonProperty("id")
+        val id: Int,
+        @JsonProperty("restaurant_id")
+        val restaurantId: Int,
+        @JsonProperty("code")
+        val code: String,
+        @JsonProperty("date")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        val date: LocalDate,
+        @JsonProperty("type")
+        val type: String,
+        @JsonProperty("name_kr")
+        val nameKr: String?,
+        @JsonProperty("name_en")
+        val nameEn: String?,
+        @JsonProperty("price")
+        val price: Int?,
+        @JsonProperty("etc")
+        val etc: List<String>,
+        @JsonProperty("is_liked")
+        val isLiked: Boolean,
+        @JsonProperty("alarm")
+        val alarm: Boolean,
+    )
