@@ -28,7 +28,9 @@ import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Service
 class ReviewService(
@@ -94,8 +96,8 @@ class ReviewService(
             )
 
         return MenuDetailsDto(
-            createdAt = menuSummary.getCreatedAt(),
-            updatedAt = menuSummary.getUpdatedAt(),
+            createdAt = menuSummary.getCreatedAt().atOffset(ZoneOffset.UTC),
+            updatedAt = menuSummary.getUpdatedAt().atOffset(ZoneOffset.UTC),
             id = menuSummary.getId(),
             restaurantId = menuSummary.getRestaurantId(),
             code = menuSummary.getCode(),
@@ -107,7 +109,7 @@ class ReviewService(
             etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
             score = menuSummary.getScore(),
             reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked(),
+            isLiked = menuLikeSummary.getIsLiked() == 1,
             likeCnt = menuLikeSummary.getLikeCnt(),
         )
     }
@@ -156,7 +158,7 @@ class ReviewService(
             etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
             score = menuSummary.getScore(),
             reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked(),
+            isLiked = menuLikeSummary.getIsLiked() == 1,
             likeCnt = menuLikeSummary.getLikeCnt(),
         )
     }

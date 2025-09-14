@@ -1,6 +1,5 @@
 package siksha.wafflestudio.core.domain.main.menu.service
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
@@ -217,9 +216,46 @@ class MenuService(
     fun getMyMenus(
         userId: Int,
     ): MyMenuListResponseDto {
+        val userIdStr = userId.toString()
+        val menuIds = menuRepository.findMyMenuByUserId(userIdStr)
+        if (menuIds.isEmpty()) {
+            return MyMenuListResponseDto(
+                count = 0,
+                result = emptyList(),
+            )
+        }
+
+        val menuSummaries = menuRepository.findMenusByMenuIds(menuIds)
+        val menuLikeSummaries = menuRepository.findMenuLikesByMenuIds(menuIds)
+        val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
+
+        val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
+
+        val list = mutableListOf<RestaurantInListDto>()
+        allRestaurants.forEach { restaurant ->
+            list.add(
+                RestaurantInListDto.from(restaurant, mutableListOf()),
+            )
+        }
+
+        val menusByKey = menuSummaries.groupBy { it.getRestaurantId() }
+        menusByKey.forEach { (restaurantId, summaries) ->
+            val menuDtos =
+                summaries.map { menu ->
+                    val likeInfo = likeInfoMap[menu.getId()]
+                    MenuInListDto.from(menu, likeInfo)
+                }
+
+            list.find { it.id == restaurantId }?.let {
+                (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
+            }
+        }
+
+        val result = list.filter { it.menus.isNotEmpty() }.toMutableList()
+
         return MyMenuListResponseDto(
-            count = 0,
-            result = emptyList(),
+            count = result.size,
+            result = result,
         )
     }
 }

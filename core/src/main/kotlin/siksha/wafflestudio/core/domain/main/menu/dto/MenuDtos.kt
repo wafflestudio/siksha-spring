@@ -10,6 +10,7 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
 import siksha.wafflestudio.core.util.EtcUtils
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 // /menus 요청에 대한 Menu 단위 Dto
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -49,8 +50,8 @@ data class MenuInListDto
                 likeInfo: MenuLikeSummary?,
             ): MenuInListDto {
                 return MenuInListDto(
-                    createdAt = menu.getCreatedAt(),
-                    updatedAt = menu.getUpdatedAt(),
+                    createdAt = menu.getCreatedAt().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     code = menu.getCode(),
                     nameKr = menu.getNameKr(),
@@ -60,7 +61,7 @@ data class MenuInListDto
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                    isLiked = likeInfo?.getIsLiked() ?: false,
+                    isLiked = likeInfo?.getIsLiked() == 1,
                 )
             }
         }
@@ -204,8 +205,8 @@ data class MenuDetailsDto
                 likeInfo: MenuLikeSummary?,
             ): MenuDetailsDto {
                 return MenuDetailsDto(
-                    createdAt = menu.getCreatedAt(),
-                    updatedAt = menu.getUpdatedAt(),
+                    createdAt = menu.getCreatedAt().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     restaurantId = menu.getRestaurantId(),
                     code = menu.getCode(),
@@ -217,7 +218,7 @@ data class MenuDetailsDto
                     etc = EtcUtils.convertMenuEtc(menu.getEtc()),
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
-                    isLiked = likeInfo?.getIsLiked() ?: false,
+                    isLiked = likeInfo?.getIsLiked() == 1,
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
                 )
             }
