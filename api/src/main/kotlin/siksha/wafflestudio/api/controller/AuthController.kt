@@ -55,10 +55,6 @@ class AuthController(
     fun deleteUser(request: HttpServletRequest) {
         userService.deleteUser(request.userId)
     }
-//
-//    @PostMapping("/login/test")
-//    fun loginTypeTest(){}
-//
 
     @PostMapping("/login/test")
     fun loginTypeTest(
@@ -80,27 +76,9 @@ class AuthController(
                 SocialProvider.APPLE -> verifier.verifyAppleIdToken(token)
                 SocialProvider.GOOGLE -> verifier.verifyGoogleIdToken(token)
                 SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
-                SocialProvider.TEST -> error("unreachable")
+                SocialProvider.TEST -> error("unreachable") // loginTypeTest() will handle this
             }
         return authService.upsertUserAndGetAccessToken(socialProfile)
-    }
-
-    @PostMapping("/login/apple")
-    fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request, SocialProvider.APPLE)
-        return authService.upsertUserAndGetAccessToken(verifier.verifyAppleIdToken(token))
-    }
-
-    @PostMapping("/login/kakao")
-    fun loginTypeKakao(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request, SocialProvider.KAKAO)
-        return authService.upsertUserAndGetAccessToken(verifier.verifyKakaoAccessToken(token))
-    }
-
-    @PostMapping("/login/google")
-    fun loginTypeGoogle(request: HttpServletRequest): AuthResponseDto {
-        val token = trimTokenHeader(request, SocialProvider.GOOGLE)
-        return authService.upsertUserAndGetAccessToken(verifier.verifyGoogleIdToken(token))
     }
 
     // TODO: deprecate this
