@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
-FROM openjdk:17-jdk-alpine AS build
+FROM bellsoft/liberica-openjdk-alpine:17 AS build
 WORKDIR /app
 COPY . .
 RUN --mount=type=secret,id=codeartifact \
     TOKEN="$(cat /run/secrets/codeartifact)" && \
     ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken="$TOKEN"
 
-FROM openjdk:17-jdk-alpine
+FROM bellsoft/liberica-openjdk-alpine:17-jre
 WORKDIR /app
 COPY --from=build /app/api/build/libs/*.jar app.jar
 
