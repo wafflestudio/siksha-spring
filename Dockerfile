@@ -7,7 +7,7 @@ RUN --mount=type=secret,id=codeartifact \
     TOKEN="$(cat /run/secrets/codeartifact)" && \
     ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken="$TOKEN"
 
-FROM bellsoft/liberica-openjdk-alpine:17-jre
+FROM bellsoft/liberica-openjdk-alpine:17-jdk
 WORKDIR /app
 COPY --from=build /app/api/build/libs/*.jar app.jar
 
