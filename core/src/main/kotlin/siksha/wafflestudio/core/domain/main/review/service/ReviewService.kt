@@ -87,8 +87,6 @@ class ReviewService(
                     score = score,
                     comment = comment ?: "",
                     etc = objectMapper.writeValueAsString(imageUrls),
-                    createdAt = OffsetDateTime.now(),
-                    updatedAt = OffsetDateTime.now(),
                     // 이미지 URL 들을 JSON array로 저장
                 ),
             )
@@ -139,8 +137,6 @@ class ReviewService(
                     score = request.score,
                     comment = request.comment,
                     etc = "",
-                    createdAt = OffsetDateTime.now(),
-                    updatedAt = OffsetDateTime.now(),
                 ),
             )
 
