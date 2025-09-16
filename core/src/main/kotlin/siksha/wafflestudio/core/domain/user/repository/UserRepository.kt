@@ -7,4 +7,9 @@ import siksha.wafflestudio.core.domain.user.data.User
 @Repository
 interface UserRepository : JpaRepository<User, Int> {
     fun existsByNickname(nickname: String): Boolean
+
+    fun findByTypeAndIdentity(
+        type: String,
+        identity: String,
+    ): User?
 }

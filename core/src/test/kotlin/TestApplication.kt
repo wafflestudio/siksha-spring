@@ -2,6 +2,7 @@ package siksha.wafflestudio.core
 
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.testcontainers.context.ImportTestcontainers
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.boot.testcontainers.service.connection.ServiceConnectionAutoConfiguration
@@ -21,7 +22,7 @@ import kotlin.io.path.toPath
 
 @AutoConfiguration(before = [ServiceConnectionAutoConfiguration::class])
 @ImportTestcontainers
-@SpringBootApplication
+@SpringBootApplication(exclude = [SecurityAutoConfiguration::class])
 class TestApplication(
     private val jdbcTemplate: JdbcTemplate,
     private val resourceLoader: ResourceLoader,

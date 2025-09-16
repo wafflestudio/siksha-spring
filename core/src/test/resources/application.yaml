@@ -24,3 +24,10 @@ spring:
         region: ap-northeast-2
 jwt:
   secret-key: "this-is-a-very-long-and-secure-secret-key-for-testing-purpose-only"
+
+siksha:
+  oauth:
+    apple:
+      approved-audience: "com.dummy.apple.audience"
+    kakao:
+      app-id: 123456789
