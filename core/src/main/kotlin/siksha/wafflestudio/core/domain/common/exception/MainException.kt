@@ -23,3 +23,7 @@ class MenuLikeException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메�
 class DuplicatedNicknameException : MainException(HttpStatus.CONFLICT, "중복된 닉네임이 존재합니다.")
 
 class BannedWordException : MainException(HttpStatus.BAD_REQUEST, "사용이 불가능한 단어가 포함되어 있습니다.")
+
+class ReviewNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰가 존재하지 않습니다.")
+
+class NotReviewOwnerException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰를 작성한 사용자가 아닙니다.")

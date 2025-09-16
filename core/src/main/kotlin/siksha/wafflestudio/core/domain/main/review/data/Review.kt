@@ -29,14 +29,14 @@ data class Review(
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
     @Column(nullable = false)
-    val score: Int,
+    var score: Int,
     @Column(nullable = true)
-    val comment: String?,
-    val etc: String?,
+    var comment: String?,
+    var etc: String?,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
+    var updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )
