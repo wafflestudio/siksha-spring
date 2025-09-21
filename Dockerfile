@@ -1,21 +1,18 @@
-# gradle build
-FROM --platform=linux/x86_64 openjdk:17-jdk-alpine AS build
+# syntax=docker/dockerfile:1.7
 
+FROM bellsoft/liberica-openjdk-alpine:17 AS build
 WORKDIR /app
-ARG CODEARTIFACT_AUTH_TOKEN
-
 COPY . .
-RUN ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken=$CODEARTIFACT_AUTH_TOKEN
+RUN --mount=type=secret,id=codeartifact \
+    TOKEN="$(cat /run/secrets/codeartifact)" && \
+    ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken="$TOKEN"
 
-# launch jar
-FROM --platform=linux/x86_64 openjdk:17-jdk-alpine
-
+FROM bellsoft/liberica-openjdk-alpine:17
 WORKDIR /app
 COPY --from=build /app/api/build/libs/*.jar app.jar
 
 ARG PROFILE
 ENV SPRING_PROFILES_ACTIVE=${PROFILE:-dev}
-
 ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=60.0 -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -Xss256k"
 
 EXPOSE 8080

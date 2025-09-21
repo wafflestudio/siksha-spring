@@ -13,6 +13,7 @@ class InvalidScoreException : MainException(HttpStatus.BAD_REQUEST, "평점은 1
 /**
  * Auth 시 토큰이 무효한 경우 사용
  * 토큰은 유효하지만 DB에 userId에 해당하는 User가 없는 경우에도 사용
+ * 단, Header가 Bearer로 시작하지 않는 경우에는 TokenParseException 사용
  */
 class UnauthorizedUserException : MainException(HttpStatus.UNAUTHORIZED, "인증 정보가 유효하지 않습니다.")
 
@@ -23,3 +24,9 @@ class MenuLikeException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메�
 class DuplicatedNicknameException : MainException(HttpStatus.CONFLICT, "중복된 닉네임이 존재합니다.")
 
 class BannedWordException : MainException(HttpStatus.BAD_REQUEST, "사용이 불가능한 단어가 포함되어 있습니다.")
+
+class TokenParseException : MainException(HttpStatus.UNAUTHORIZED, "인증 토큰 형식이 잘못되었습니다.")
+
+class InvalidSSOTokenException : MainException(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다.")
+
+class SSOProviderException : MainException(HttpStatus.SERVICE_UNAVAILABLE, "소셜 로그인에 실패했습니다.")

@@ -2,9 +2,11 @@ package siksha.wafflestudio.core.domain.user.service
 
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.common.exception.BannedWordException
 import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
@@ -14,13 +16,16 @@ import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
-import siksha.wafflestudio.core.domain.user.dto.UserWithProfileUrlResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * User 객체의 CRUD를 다루는 서비스입니다.
+ * 인증, 회원가입 등은 AuthService의 책임입니다.
+ */
 @Service
 class UserService(
     private val userRepository: UserRepository,
@@ -33,9 +38,33 @@ class UserService(
         return UserResponseDto.from(user)
     }
 
-    fun getUserWithProfileUrl(userId: Int): UserWithProfileUrlResponseDto {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
-        return UserWithProfileUrlResponseDto.from(user)
+    @Transactional
+    fun upsertUser(socialProfile: SocialProfile): UserWithProfileUrlResponseDto {
+        val type = socialProfile.provider.toString()
+        val identity = socialProfile.externalId
+
+        // update if exists
+        userRepository.findByTypeAndIdentity(type, identity)
+            ?.let { return UserWithProfileUrlResponseDto.from(it) }
+
+        // insert if not exists
+        val toSave =
+            User(
+                type = type,
+                identity = identity,
+                nickname = NicknameGenerator.generate(),
+            )
+
+        val created =
+            try {
+                userRepository.save(toSave)
+            } catch (e: DataIntegrityViolationException) {
+                // race condition
+                userRepository.findByTypeAndIdentity(type, identity)
+                    ?: throw e
+            }
+
+        return UserWithProfileUrlResponseDto.from(created)
     }
 
     @Transactional
@@ -44,28 +73,11 @@ class UserService(
         userRepository.deleteById(userId)
     }
 
-    // TODO deprecate this
+    @Transactional
     fun patchUser(
         userId: Int,
         patchDto: UserProfilePatchDto,
     ): UserResponseDto {
-        val dto = this.patchUserWithProfileUrl(userId, patchDto)
-        return UserResponseDto(
-            id = dto.id,
-            type = dto.type,
-            identity = dto.identity,
-            etc = dto.etc,
-            nickname = dto.nickname,
-            createdAt = dto.createdAt,
-            updatedAt = dto.updatedAt,
-        )
-    }
-
-    @Transactional
-    fun patchUserWithProfileUrl(
-        userId: Int,
-        patchDto: UserProfilePatchDto,
-    ): UserWithProfileUrlResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
         patchDto.let {
@@ -84,7 +96,7 @@ class UserService(
         }
 
         userRepository.save(user)
-        return UserWithProfileUrlResponseDto.from(user)
+        return UserResponseDto.from(user)
     }
 
     /**
