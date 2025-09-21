@@ -7,13 +7,17 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
+import org.mockito.kotlin.whenever
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -31,9 +35,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
-import siksha.wafflestudio.core.domain.main.review.data.KeywordReview
 import siksha.wafflestudio.core.domain.main.review.data.Review
-import siksha.wafflestudio.core.domain.main.review.data.ReviewLike
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewSummary
 import siksha.wafflestudio.core.domain.main.review.repository.KeywordReviewRepository
@@ -182,7 +184,7 @@ class ReviewServiceTest {
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(menuRepository.findById(menuId)).thenReturn(Optional.of(menu))
-        `when`(reviewRepository.save(any(Review::class.java))).thenReturn(savedReview)
+        `when`(reviewRepository.save(any())).thenReturn(savedReview)
         `when`(menuRepository.findMenuById(menuId.toString())).thenReturn(menuSummary)
         `when`(menuRepository.findMenuLikeByMenuIdAndUserId(menuId.toString(), userId.toString())).thenReturn(menuLikeSummary)
 
@@ -191,7 +193,8 @@ class ReviewServiceTest {
 
         // then
         assertNotNull(result)
-        verify(keywordReviewRepository).save(any(KeywordReview::class.java))
+        verify(reviewRepository, times(1)).save(any())
+        verify(keywordReviewRepository, times(1)).save(any())
     }
 
     @Test
@@ -330,12 +333,13 @@ class ReviewServiceTest {
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
         `when`(menuRepository.findById(menuId)).thenReturn(Optional.of(menu))
-        `when`(reviewRepository.save(any(Review::class.java))).thenThrow(DataIntegrityViolationException("Duplicate entry"))
-
-        // when & then
+        whenever(reviewRepository.save(any<Review>()))
+            .thenThrow(DataIntegrityViolationException("Duplicate entry"))
         assertThrows(ReviewAlreadyExistsException::class.java) {
             reviewService.postReview(userId, request)
         }
+        verify(reviewRepository, times(1)).save(any())
+        verify(keywordReviewRepository, never()).save(any())
     }
 
     @Test
@@ -416,7 +420,7 @@ class ReviewServiceTest {
         reviewService.likeReview(reviewId, userId)
 
         // then
-        verify(reviewLikeRepository).save(any(ReviewLike::class.java))
+        verify(reviewLikeRepository, times(1)).save(any())
     }
 
     @Test
@@ -486,7 +490,7 @@ class ReviewServiceTest {
             reviewService.likeReview(reviewId, userId)
         }
 
-        verify(reviewLikeRepository, never()).save(any(ReviewLike::class.java))
+        verify(reviewLikeRepository, never()).save(any())
     }
 
     @Test
@@ -587,6 +591,11 @@ class ReviewServiceTest {
         // then
         assertNotNull(result)
         assertEquals(listOf(0, 1, 2, 5, 10), result.dist)
+
+        val dist = result.dist
+        assertEquals(10, dist[4]) // score 5
+        assertEquals(5, dist[3]) // score 4
+        assertEquals(0, dist[0]) // score 1
     }
 
     @Test
@@ -596,35 +605,116 @@ class ReviewServiceTest {
         val page = 1
         val size = 10
 
-        val reviewSummary = mock<ReviewSummary>()
-        `when`(reviewSummary.getId()).thenReturn(1)
-        `when`(reviewSummary.getMenuId()).thenReturn(1)
-        `when`(reviewSummary.getUserId()).thenReturn(userId)
-        `when`(reviewSummary.getScore()).thenReturn(5)
-        `when`(reviewSummary.getComment()).thenReturn("맛있어요!")
-        `when`(reviewSummary.getEtc()).thenReturn("")
-        `when`(reviewSummary.getTaste()).thenReturn(5)
-        `when`(reviewSummary.getPrice()).thenReturn(4)
-        `when`(reviewSummary.getFoodComposition()).thenReturn(4)
-        `when`(reviewSummary.getLikeCount()).thenReturn(3)
-        `when`(reviewSummary.getIsLiked()).thenReturn(0)
-        `when`(reviewSummary.getCreatedAt()).thenReturn(Timestamp.valueOf(OffsetDateTime.now().toLocalDateTime()))
-        `when`(reviewSummary.getUpdatedAt()).thenReturn(Timestamp.valueOf(OffsetDateTime.now().toLocalDateTime()))
+        // 레스토랑 2곳에 대한 리뷰가 있다고 가정
+        val rest1 =
+            Restaurant(
+                id = 100,
+                code = "R100",
+                nameKr = "식당1",
+                nameEn = "R1",
+                addr = "서울",
+                lat = 0.0, lng = 0.0, etc = null,
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
+        val rest2 =
+            Restaurant(
+                id = 200,
+                code = "R200",
+                nameKr = "식당2",
+                nameEn = "R2",
+                addr = "서울",
+                lat = 0.0, lng = 0.0, etc = null,
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
 
-        val reviews = listOf(reviewSummary)
-        val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created_at"))
+        val menu1 =
+            Menu(
+                id = 11,
+                restaurant = rest1,
+                code = "M11",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "메뉴1",
+                nameEn = "Menu1",
+                price = 5000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
+        val menu2 =
+            Menu(
+                id = 22,
+                restaurant = rest2,
+                code = "M22",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "메뉴2",
+                nameEn = "Menu2",
+                price = 6000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
 
-        `when`(reviewRepository.findByUserId(userId, pageable)).thenReturn(reviews)
-        `when`(reviewRepository.countByUserId(userId)).thenReturn(1L)
+        val r1 =
+            Review(
+                id = 1,
+                user =
+                    User(
+                        id = userId,
+                        type = "KAKAO",
+                        identity = "u",
+                        etc = null,
+                        createdAt = OffsetDateTime.now(),
+                        updatedAt = OffsetDateTime.now(),
+                        nickname = "u",
+                        profileUrl = null,
+                    ),
+                menu = menu1,
+                score = 5,
+                comment = "굿",
+                etc = "",
+                createdAt = OffsetDateTime.now().minusDays(1),
+                updatedAt = OffsetDateTime.now().minusDays(1),
+            )
+        val r2 =
+            Review(
+                id = 2,
+                user = r1.user,
+                menu = menu2,
+                score = 3,
+                comment = "쏘쏘",
+                etc = "",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
+
+        // 스텁: 총 서로 다른 레스토랑 2곳
+        `when`(reviewRepository.countDistinctRestaurantsByUserId(userId)).thenReturn(2L)
+
+        // 스텁: 이번 페이지에 포함될 레스토랑 id들(정렬 규칙에 따라 반환)
+        whenever(reviewRepository.findRestaurantIdsByUserIdPaged(eq(userId), any()))
+            .thenReturn(listOf(100, 200))
+
+        // 스텁: 해당 레스토랑들의 리뷰 전체 (정렬은 쿼리에서 수행)
+        `when`(reviewRepository.findAllByUserIdAndRestaurantIds(userId, listOf(100, 200)))
+            .thenReturn(listOf(r1, r2))
 
         // when
         val result = reviewService.getMyReviews(userId, page, size)
 
         // then
         assertNotNull(result)
-        assertEquals(1, result.totalCount)
+        assertEquals(2, result.totalCount) // 서로 다른 레스토랑 수
         assertEquals(false, result.hasNext)
-        assertEquals(1, result.result.size)
+        assertEquals(2, result.result.size) // 식당 그룹 2개
+        // 첫 그룹이 식당1(100), 두 번째가 식당2(200)인지 확인
+        assertEquals(100, result.result[0].restaurantId)
+        assertEquals(200, result.result[1].restaurantId)
+        assertEquals(1, result.result[0].reviews.size)
+        assertEquals(1, result.result[1].reviews.size)
+        val pageCaptor = argumentCaptor<PageRequest>()
+        verify(reviewRepository).findRestaurantIdsByUserIdPaged(eq(userId), pageCaptor.capture())
+        assertEquals(size, pageCaptor.firstValue.pageSize)
+        assertEquals(page - 1, pageCaptor.firstValue.pageNumber)
     }
 
     @Test
@@ -660,7 +750,9 @@ class ReviewServiceTest {
         val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created_at"))
 
         `when`(menuRepository.findPlainMenuById(menuId.toString())).thenReturn(menuPlainSummary)
-        `when`(reviewRepository.findFilteredReviews(userId, 1, "MENU001", comment, etc, pageable)).thenReturn(reviews)
+        whenever(
+            reviewRepository.findFilteredReviews(eq(userId), eq(1), eq("MENU001"), eq(comment), eq(etc), any()),
+        ).thenReturn(reviews)
         `when`(reviewRepository.countFilteredReviews(1, "MENU001", comment, etc)).thenReturn(1L)
 
         // when
@@ -671,5 +763,14 @@ class ReviewServiceTest {
         assertEquals(1, result.totalCount)
         assertEquals(false, result.hasNext)
         assertEquals(1, result.result.size)
+
+        val pageableCaptor = argumentCaptor<PageRequest>()
+        verify(reviewRepository).findFilteredReviews(eq(userId), eq(1), eq("MENU001"), eq(comment), eq(etc), pageableCaptor.capture())
+        val order = pageableCaptor.firstValue.sort.getOrderFor("created_at")
+        assertEquals(Sort.Direction.DESC, order?.direction)
+        assertEquals(0, pageableCaptor.firstValue.pageNumber)
+        assertEquals(10, pageableCaptor.firstValue.pageSize)
+
+        verify(reviewRepository, times(1)).countFilteredReviews(1, "MENU001", comment, etc)
     }
 }
