@@ -33,7 +33,7 @@ class JwtAuthenticationFilter(
             // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
             AntPathRequestMatcher("/community/boards", "GET"),
         )
-        
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -140,7 +140,6 @@ class JwtAuthenticationFilter(
     }
 
     private fun setAuthenticatedPrincipal(userId: Int) {
-
         // authenticated=true
         val auth = UsernamePasswordAuthenticationToken(UserPrincipal(userId), null, emptyList())
         SecurityContextHolder.getContext().authentication = auth
