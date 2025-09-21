@@ -39,13 +39,13 @@ class UserService(
     }
 
     @Transactional
-    fun upsertUser(socialProfile: SocialProfile): UserWithProfileUrlResponseDto {
+    fun upsertUser(socialProfile: SocialProfile): UserResponseDto {
         val type = socialProfile.provider.toString()
         val identity = socialProfile.externalId
 
         // update if exists
         userRepository.findByTypeAndIdentity(type, identity)
-            ?.let { return UserWithProfileUrlResponseDto.from(it) }
+            ?.let { return UserResponseDto.from(it) }
 
         // insert if not exists
         val toSave =
@@ -64,7 +64,7 @@ class UserService(
                     ?: throw e
             }
 
-        return UserWithProfileUrlResponseDto.from(created)
+        return UserResponseDto.from(created)
     }
 
     @Transactional
