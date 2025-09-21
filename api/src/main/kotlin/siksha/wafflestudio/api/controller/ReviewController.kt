@@ -19,6 +19,7 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.review.dto.KeywordScoreDistributionResponse
+import siksha.wafflestudio.core.domain.main.review.dto.MyReviewResponse
 import siksha.wafflestudio.core.domain.main.review.dto.MyReviewsResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
@@ -65,8 +66,8 @@ class ReviewController(
     @ResponseStatus(HttpStatus.OK)
     fun getReview(
         @PathVariable("review_id") reviewId: Int,
-    ) {
-        reviewService.getReview(reviewId = reviewId)
+    ): MyReviewResponse {
+        return reviewService.getReview(reviewId = reviewId)
     }
 
     @PatchMapping("/{review_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
