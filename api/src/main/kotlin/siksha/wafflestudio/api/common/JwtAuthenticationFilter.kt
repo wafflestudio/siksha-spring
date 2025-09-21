@@ -15,7 +15,6 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
 ) : OncePerRequestFilter() {
-
     private val menuGetPattern = Regex("^/menus(?:/\\d+)?$") // /menus, /menus/{id}
 
     override fun doFilterInternal(
@@ -28,8 +27,8 @@ class JwtAuthenticationFilter(
             filterChain.doFilter(request, response)
             return
         }
-        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true)
-            && request.requestURI == "/community/boards"
+        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
+            request.requestURI == "/community/boards"
         ) {
             filterChain.doFilter(request, response)
             return
@@ -52,8 +51,8 @@ class JwtAuthenticationFilter(
         }
 
         // 3) 메뉴 API 특례
-        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true)
-            && menuGetPattern.matches(request.requestURI)
+        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
+            menuGetPattern.matches(request.requestURI)
         ) {
             if (token.isNullOrBlank()) {
                 // 토큰 없이 익명 접근 허용
@@ -93,8 +92,9 @@ class JwtAuthenticationFilter(
 
     private fun verifyAndExtractUserId(token: String): Int {
         val claims = jwtProvider.verifyJwtGetClaims(token)
-        val value = claims[USER_ID_KEY_IN_JWT]
-            ?: throw UnauthorizedUserException()
+        val value =
+            claims[USER_ID_KEY_IN_JWT]
+                ?: throw UnauthorizedUserException()
         // JWT 라이브러리/직렬화 설정에 따라 Int가 Long/Double로 넘어올 수 있어 안전 변환 처리
         return when (value) {
             is Int -> value
@@ -106,28 +106,31 @@ class JwtAuthenticationFilter(
     }
 
     private fun setAuthenticatedPrincipal(userId: Int) {
-        val authentication = UsernamePasswordAuthenticationToken(
-            UserPrincipal(userId),
-            null,
-            emptyList(),
-        )
+        val authentication =
+            UsernamePasswordAuthenticationToken(
+                UserPrincipal(userId),
+                null,
+                emptyList(),
+            )
         SecurityContextHolder.getContext().authentication = authentication
     }
 
     private fun setAnonymousPrincipal() {
-        val authentication = UsernamePasswordAuthenticationToken(
-            UserPrincipal(ANONYMOUS_USER_ID),
-            null,
-            emptyList(),
-        )
+        val authentication =
+            UsernamePasswordAuthenticationToken(
+                UserPrincipal(ANONYMOUS_USER_ID),
+                null,
+                emptyList(),
+            )
         SecurityContextHolder.getContext().authentication = authentication
     }
 
     private fun extractToken(request: HttpServletRequest): String? {
         // 우선순위: Authorization → Authorization-Token
-        val raw = request.getHeader("Authorization")
-            ?.takeIf { it.isNotBlank() }
-            ?: request.getHeader(AUTHORIZATION_HEADER_NAME)?.takeIf { it.isNotBlank() }
+        val raw =
+            request.getHeader("Authorization")
+                ?.takeIf { it.isNotBlank() }
+                ?: request.getHeader(AUTHORIZATION_HEADER_NAME)?.takeIf { it.isNotBlank() }
         return raw?.removePrefix("Bearer ")?.trim()
     }
 
