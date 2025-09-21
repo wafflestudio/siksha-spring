@@ -85,3 +85,30 @@ data class KeywordScoreDistributionResponse(
         }
     }
 }
+
+data class MyReviewResponse(
+    val id: Int,
+    val menuId: Int,
+    val nameKr: String?,
+    val nameEn: String?,
+    val userId: Int,
+    val score: Int,
+    val comment: String?,
+    val etc: String?,
+    val createdAt: OffsetDateTime,
+    val updatedAt: OffsetDateTime,
+    val keywordReviews: List<String?>,
+)
+
+data class RestaurantWithReviewListResponse(
+    val restaurantId: Int,
+    val nameKr: String?,
+    val nameEn: String?,
+    val reviews: List<MyReviewResponse>,
+)
+
+data class MyReviewsResponse(
+    val totalCount: Int,
+    val hasNext: Boolean,
+    val result: List<RestaurantWithReviewListResponse>,
+)

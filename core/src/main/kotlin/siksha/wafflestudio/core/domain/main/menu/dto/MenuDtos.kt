@@ -61,7 +61,7 @@ data class MenuInListDto
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                    isLiked = likeInfo?.getIsLiked() == 1,
+                    isLiked = likeInfo?.getIsLiked() == true,
                 )
             }
         }
@@ -218,7 +218,7 @@ data class MenuDetailsDto
                     etc = EtcUtils.convertMenuEtc(menu.getEtc()),
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
-                    isLiked = likeInfo?.getIsLiked() == 1,
+                    isLiked = likeInfo?.getIsLiked() == true,
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
                 )
             }
