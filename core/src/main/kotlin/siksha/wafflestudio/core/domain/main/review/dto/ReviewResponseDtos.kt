@@ -97,6 +97,7 @@ data class MyReviewResponse(
     val etc: String?,
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
+    val keywordReviews: List<String?>,
 )
 
 data class RestaurantWithReviewListResponse(

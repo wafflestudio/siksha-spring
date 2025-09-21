@@ -26,6 +26,7 @@ import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.ReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.SelfReviewLikeNotAllowedException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
@@ -35,6 +36,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
+import siksha.wafflestudio.core.domain.main.review.data.KeywordReview
 import siksha.wafflestudio.core.domain.main.review.data.Review
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewSummary
@@ -687,34 +689,122 @@ class ReviewServiceTest {
                 updatedAt = OffsetDateTime.now(),
             )
 
-        // 스텁: 총 서로 다른 레스토랑 2곳
-        `when`(reviewRepository.countDistinctRestaurantsByUserId(userId)).thenReturn(2L)
+        val kr1 =
+            KeywordReview(
+                id = r1.id,
+                taste = 5,
+                price = 4,
+                foodComposition = 3,
+                review = r1,
+                menu = menu1,
+            )
+        val kr2 =
+            KeywordReview(
+                id = r2.id,
+                taste = 3,
+                price = 2,
+                foodComposition = 1,
+                review = r2,
+                menu = menu2,
+            )
 
-        // 스텁: 이번 페이지에 포함될 레스토랑 id들(정렬 규칙에 따라 반환)
-        whenever(reviewRepository.findRestaurantIdsByUserIdPaged(eq(userId), any()))
-            .thenReturn(listOf(100, 200))
-
-        // 스텁: 해당 레스토랑들의 리뷰 전체 (정렬은 쿼리에서 수행)
-        `when`(reviewRepository.findAllByUserIdAndRestaurantIds(userId, listOf(100, 200)))
-            .thenReturn(listOf(r1, r2))
+        whenever(keywordReviewRepository.findAllById(any())).thenReturn(listOf(kr1, kr2))
+        whenever(reviewRepository.countDistinctRestaurantsByUserId(userId)).thenReturn(2L)
+        whenever(reviewRepository.findRestaurantIdsByUserIdPaged(eq(userId), any())).thenReturn(listOf(100, 200))
+        whenever(reviewRepository.findAllByUserIdAndRestaurantIds(eq(userId), any())).thenReturn(listOf(r1, r2))
 
         // when
         val result = reviewService.getMyReviews(userId, page, size)
 
         // then
+        // 1) 널 체크 먼저
         assertNotNull(result)
-        assertEquals(2, result.totalCount) // 서로 다른 레스토랑 수
-        assertEquals(false, result.hasNext)
+
+        // 2) 크기 체크 후 인덱싱
         assertEquals(2, result.result.size) // 식당 그룹 2개
-        // 첫 그룹이 식당1(100), 두 번째가 식당2(200)인지 확인
-        assertEquals(100, result.result[0].restaurantId)
-        assertEquals(200, result.result[1].restaurantId)
         assertEquals(1, result.result[0].reviews.size)
         assertEquals(1, result.result[1].reviews.size)
+
+        // 3) 값 검증
+        assertEquals(2, result.totalCount) // 서로 다른 레스토랑 수
+        assertEquals(false, result.hasNext)
+        assertEquals(100, result.result[0].restaurantId) // 첫 그룹이 식당1(100), 두 번째가 식당2(200)인지 확인
+        assertEquals(200, result.result[1].restaurantId)
+        assertEquals(3, result.result[0].reviews[0].keywordReviews.size)
+        assertEquals(3, result.result[1].reviews[0].keywordReviews.size)
+
+        // 4) 호출 검증
         val pageCaptor = argumentCaptor<PageRequest>()
         verify(reviewRepository).findRestaurantIdsByUserIdPaged(eq(userId), pageCaptor.capture())
         assertEquals(size, pageCaptor.firstValue.pageSize)
         assertEquals(page - 1, pageCaptor.firstValue.pageNumber)
+        verify(keywordReviewRepository).findAllById(listOf(r1.id, r2.id))
+    }
+
+    @Test
+    fun `getReview - 리뷰가 없는 경우 예외`() {
+        // given
+        val reviewId = 999
+        whenever(reviewRepository.findById(reviewId)).thenReturn(Optional.empty())
+
+        // when & then
+        assertThrows(ReviewNotFoundException::class.java) {
+            reviewService.getReview(reviewId)
+        }
+        verify(reviewRepository).findById(reviewId)
+        // 키워드 조회는 호출되지 않아야 함
+        verify(keywordReviewRepository, never()).findById(any())
+    }
+
+    @Test
+    fun `getReview - 키워드가 없는 경우 예외`() {
+        // given
+        val reviewId = 10
+        val user =
+            User(
+                id = 1,
+                type = "KAKAO",
+                identity = "u",
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+                nickname = "u",
+                profileUrl = null,
+            )
+        val restaurant =
+            Restaurant(
+                id = 100, code = "R100", nameKr = "식당", nameEn = "R",
+                addr = "서울", lat = .0, lng = .0, etc = null,
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
+        val menu =
+            Menu(
+                id = 11, restaurant = restaurant, code = "M11",
+                date = LocalDate.now(), type = "LU",
+                nameKr = "메뉴", nameEn = "Menu", price = 5000, etc = "[]",
+                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+            )
+        val review =
+            Review(
+                id = reviewId,
+                user = user,
+                menu = menu,
+                score = 5,
+                comment = "굿",
+                etc = "",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
+
+        whenever(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review))
+        whenever(keywordReviewRepository.findById(reviewId)).thenReturn(Optional.empty())
+
+        // when & then
+        assertThrows(KeywordMissingException::class.java) {
+            reviewService.getReview(reviewId)
+        }
+        verify(reviewRepository).findById(reviewId)
+        verify(keywordReviewRepository).findById(reviewId)
     }
 
     @Test

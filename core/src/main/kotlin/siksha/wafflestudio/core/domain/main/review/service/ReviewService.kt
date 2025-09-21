@@ -46,6 +46,9 @@ import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.util.EtcUtils
 import siksha.wafflestudio.core.util.KeywordReviewUtil
+import siksha.wafflestudio.core.util.KeywordReviewUtil.getFoodCompositionKeyword
+import siksha.wafflestudio.core.util.KeywordReviewUtil.getPriceKeyword
+import siksha.wafflestudio.core.util.KeywordReviewUtil.getTasteKeyword
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -292,6 +295,13 @@ class ReviewService(
 
     fun getReview(reviewId: Int): MyReviewResponse {
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
+        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordMissingException()
+        val keywordReviews =
+            listOf(
+                getTasteKeyword(keywordReview.taste),
+                getPriceKeyword(keywordReview.price),
+                getFoodCompositionKeyword(keywordReview.foodComposition),
+            )
         return MyReviewResponse(
             id = review.id,
             menuId = review.menu.id,
@@ -303,6 +313,7 @@ class ReviewService(
             etc = review.etc,
             createdAt = review.updatedAt,
             updatedAt = review.updatedAt,
+            keywordReviews = keywordReviews,
         )
     }
 
@@ -444,6 +455,12 @@ class ReviewService(
 
         val reviews = reviewRepository.findAllByUserIdAndRestaurantIds(userId, restaurantIds)
 
+        val reviewIds = reviews.map { it.id }
+        val keywordByReviewId =
+            keywordReviewRepository
+                .findAllById(reviewIds)
+                .associateBy { it.id }
+
         val bucket = linkedMapOf<Int, MutableList<Review>>()
         restaurantIds.forEach { bucket[it] = mutableListOf() }
         for (r in reviews) {
@@ -461,6 +478,14 @@ class ReviewService(
                     nameEn = rest.nameEn,
                     reviews =
                         list.map { it ->
+                            val keywordReview = keywordByReviewId[it.id] ?: throw KeywordMissingException()
+                            val keywordReviews =
+                                listOf(
+                                    getTasteKeyword(keywordReview.taste),
+                                    getPriceKeyword(keywordReview.price),
+                                    getFoodCompositionKeyword(keywordReview.foodComposition),
+                                )
+
                             MyReviewResponse(
                                 id = it.id,
                                 menuId = it.menu.id,
@@ -472,6 +497,7 @@ class ReviewService(
                                 etc = it.etc,
                                 createdAt = it.createdAt,
                                 updatedAt = it.updatedAt,
+                                keywordReviews = keywordReviews,
                             )
                         },
                 )
