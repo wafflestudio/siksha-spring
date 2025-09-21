@@ -33,7 +33,7 @@ class JwtAuthenticationFilter(
             // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
             AntPathRequestMatcher("/community/boards", "GET"),
         )
-
+        
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -44,7 +44,6 @@ class JwtAuthenticationFilter(
             filterChain.doFilter(request, response)
             return
         }
-
         // 1) SecurityConfig에서 permitAll로 둔 경로라면:
         //    - 토큰 있으면 검증 후 auth 세팅
         //    - 토큰 없거나/깨져도 예외 던지지 말고 그냥 통과
@@ -77,6 +76,7 @@ class JwtAuthenticationFilter(
             val isReviewsUri = request.requestURI.startsWith("/reviews")
             val isMyReviewUri = request.requestURI == "/reviews/me"
             val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
+
             if (isReviewsUri && !isMyReviewUri && !isPrivate) {
                 setAnonymousPrincipal() // authenticated=false
                 filterChain.doFilter(request, response)
@@ -140,6 +140,7 @@ class JwtAuthenticationFilter(
     }
 
     private fun setAuthenticatedPrincipal(userId: Int) {
+
         // authenticated=true
         val auth = UsernamePasswordAuthenticationToken(UserPrincipal(userId), null, emptyList())
         SecurityContextHolder.getContext().authentication = auth
@@ -165,6 +166,11 @@ class JwtAuthenticationFilter(
     }
 }
 
+/**
+ * 컨트롤러/서비스 단에서 userId 꺼낼 때 사용.
+ * - 인증/익명 모두 UserPrincipal이 주입되므로 그대로 사용 가능.
+ * - SecurityContext에 아무 principal도 없다면 UnauthorizedUserException 던짐(정책 위반).
+ */
 val HttpServletRequest.userId: Int
     get() {
         val principal = SecurityContextHolder.getContext().authentication?.principal
