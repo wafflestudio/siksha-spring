@@ -1,7 +1,7 @@
 package siksha.wafflestudio.core.domain.main.menu.dto
 
+import java.sql.Timestamp
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 interface MenuSummary {
     fun getId(): Int
@@ -22,9 +22,9 @@ interface MenuSummary {
 
     fun getEtc(): String?
 
-    fun getCreatedAt(): LocalDateTime
+    fun getCreatedAt(): Timestamp
 
-    fun getUpdatedAt(): LocalDateTime
+    fun getUpdatedAt(): Timestamp
 
     fun getScore(): Double?
 

@@ -2,31 +2,44 @@ package siksha.wafflestudio.core.domain.main.review.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
+import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.ReviewSaveFailedException
+import siksha.wafflestudio.core.domain.common.exception.SelfReviewLikeNotAllowedException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
+import siksha.wafflestudio.core.domain.main.review.data.KeywordReview
 import siksha.wafflestudio.core.domain.main.review.data.Review
+import siksha.wafflestudio.core.domain.main.review.data.ReviewLike
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
+import siksha.wafflestudio.core.domain.main.review.dto.KeywordReviewSummary
+import siksha.wafflestudio.core.domain.main.review.dto.KeywordScoreDistributionResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewWithImagesRequest
+import siksha.wafflestudio.core.domain.main.review.repository.KeywordReviewRepository
+import siksha.wafflestudio.core.domain.main.review.repository.ReviewLikeRepository
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import siksha.wafflestudio.core.util.EtcUtils
+import siksha.wafflestudio.core.util.KeywordReviewUtil
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -38,6 +51,8 @@ class ReviewService(
     private val userRepository: UserRepository,
     private val menuRepository: MenuRepository,
     private val imageRepository: ImageRepository,
+    private val keywordReviewRepository: KeywordReviewRepository,
+    private val reviewLikeRepository: ReviewLikeRepository,
     private val s3Service: S3Service,
 ) {
     @Autowired
@@ -52,7 +67,12 @@ class ReviewService(
         val menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException()
         val score = reviewWithImagesRequest.score
         val comment = reviewWithImagesRequest.comment
+        val tasteKeyword = reviewWithImagesRequest.taste
+        val priceKeyword = reviewWithImagesRequest.price
+        val foodCompositionKeyword = reviewWithImagesRequest.foodComposition
         val images = reviewWithImagesRequest.images
+
+        validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
         val uploadedFiles =
             images?.takeIf { it.isNotEmpty() }?.let {
@@ -76,17 +96,34 @@ class ReviewService(
 
         val imageUrls = uploadedFiles.map { it.url }
 
-        val review =
-            reviewRepository.save(
-                Review(
-                    user = user,
-                    menu = menu,
-                    score = score,
-                    comment = comment ?: "",
-                    etc = objectMapper.writeValueAsString(imageUrls),
-                    // 이미지 URL 들을 JSON array로 저장
-                ),
-            )
+        val review: Review
+        try {
+            review =
+                reviewRepository.save(
+                    Review(
+                        user = user,
+                        menu = menu,
+                        score = score,
+                        comment = comment ?: "",
+                        etc = objectMapper.writeValueAsString(imageUrls),
+                        // 이미지 URL 들을 JSON array로 저장
+                    ),
+                )
+        } catch (ex: DataIntegrityViolationException) {
+            throw ReviewAlreadyExistsException()
+        } catch (ex: Exception) {
+            throw ReviewSaveFailedException()
+        }
+
+        keywordReviewRepository.save(
+            KeywordReview(
+                taste = KeywordReviewUtil.getTasteLevel(tasteKeyword),
+                price = KeywordReviewUtil.getPriceLevel(priceKeyword),
+                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(foodCompositionKeyword),
+                review = review,
+                menu = menu,
+            ),
+        )
 
         val menuSummary = menuRepository.findMenuById(menu.id.toString())
         val menuLikeSummary =
@@ -95,29 +132,15 @@ class ReviewService(
                 user.id.toString(),
             )
 
-        return MenuDetailsDto(
-            createdAt = menuSummary.getCreatedAt().atOffset(ZoneOffset.UTC),
-            updatedAt = menuSummary.getUpdatedAt().atOffset(ZoneOffset.UTC),
-            id = menuSummary.getId(),
-            restaurantId = menuSummary.getRestaurantId(),
-            code = menuSummary.getCode(),
-            date = menuSummary.getDate(),
-            type = menuSummary.getType(),
-            nameKr = menuSummary.getNameKr(),
-            nameEn = menuSummary.getNameEn(),
-            price = menuSummary.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
-            score = menuSummary.getScore(),
-            reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked() == 1,
-            likeCnt = menuLikeSummary.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
     fun postReview(
         userId: Int,
         request: ReviewRequest,
     ): MenuDetailsDto {
+        validatePartialEmptyFields(request.taste, request.price, request.foodComposition)
+
         val user =
             userRepository.findByIdOrNull(userId)
                 ?: throw UserNotFoundException()
@@ -126,16 +149,34 @@ class ReviewService(
             menuRepository.findByIdOrNull(request.menuId)
                 ?: throw MenuNotFoundException()
 
-        val review =
-            reviewRepository.save(
-                Review(
-                    user = user,
-                    menu = menu,
-                    score = request.score,
-                    comment = request.comment,
-                    etc = "",
-                ),
-            )
+        val review: Review
+
+        try {
+            review =
+                reviewRepository.save(
+                    Review(
+                        user = user,
+                        menu = menu,
+                        score = request.score,
+                        comment = request.comment,
+                        etc = "",
+                    ),
+                )
+        } catch (ex: DataIntegrityViolationException) {
+            throw ReviewAlreadyExistsException()
+        } catch (ex: Exception) {
+            throw ReviewSaveFailedException()
+        }
+
+        keywordReviewRepository.save(
+            KeywordReview(
+                taste = KeywordReviewUtil.getTasteLevel(request.taste),
+                price = KeywordReviewUtil.getPriceLevel(request.price),
+                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(request.foodComposition),
+                review = review,
+                menu = menu,
+            ),
+        )
 
         val menuSummary = menuRepository.findMenuById(menu.id.toString())
         val menuLikeSummary =
@@ -144,47 +185,32 @@ class ReviewService(
                 user.id.toString(),
             )
 
-        return MenuDetailsDto(
-            createdAt = review.createdAt,
-            updatedAt = review.updatedAt,
-            id = menuSummary.getId(),
-            restaurantId = menuSummary.getRestaurantId(),
-            code = menuSummary.getCode(),
-            date = menuSummary.getDate(),
-            type = menuSummary.getType(),
-            nameKr = menuSummary.getNameKr(),
-            nameEn = menuSummary.getNameEn(),
-            price = menuSummary.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
-            score = menuSummary.getScore(),
-            reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked() == 1,
-            likeCnt = menuLikeSummary.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
     fun getReviews(
+        userId: Int,
         menuId: Int,
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val reviews = reviewRepository.findByMenuIdOrderByCreatedAtDesc(menuId, pageable)
-        val totalCount = reviewRepository.countByMenuId(menuId)
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
+
+        val menuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
+
+        val reviews =
+            reviewRepository.findByMenuIdOrderByCreatedAtDesc(
+                userId,
+                menuPlainSummary.getRestaurantId(),
+                menuPlainSummary.getCode(),
+                pageable,
+            )
+        val totalCount = reviewRepository.countByMenuId(menuPlainSummary.getRestaurantId(), menuPlainSummary.getCode())
         val hasNext = page * size < totalCount
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = menuId,
-                    userId = it.user.id,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
@@ -204,7 +230,13 @@ class ReviewService(
     }
 
     fun getScoreDistribution(menuId: Int): ReviewScoreDistributionResponse {
-        val counts = reviewRepository.findScoreCountsByMenuId(menuId)
+        val menuPlainSummary: MenuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
+
+        val counts =
+            reviewRepository.findScoreCountsByMenuId(
+                menuPlainSummary.getRestaurantId(),
+                menuPlainSummary.getCode(),
+            )
 
         val dist = MutableList(5) { 0 } // [0, 0, 0, 0, 0]
 
@@ -217,30 +249,46 @@ class ReviewService(
         return ReviewScoreDistributionResponse(dist)
     }
 
+    fun getKeywordScoreDistribution(menuId: Int): KeywordScoreDistributionResponse {
+        val menu: MenuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
+        val keywordReviewSummary: KeywordReviewSummary =
+            keywordReviewRepository.findScoreCountsByRestaurantIdAndCode(menu.getRestaurantId(), menu.getCode())
+                ?: return KeywordScoreDistributionResponse()
+        return KeywordScoreDistributionResponse.from(keywordReviewSummary)
+    }
+
     fun getFilteredReviews(
+        userId: Int,
         menuId: Int,
         comment: Boolean?,
         etc: Boolean?,
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val reviews = reviewRepository.findFilteredReviews(menuId, comment, etc, pageable)
-        val totalCount = reviewRepository.countFilteredReviews(menuId, comment, etc)
+        val menuPlainSummary: MenuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
+
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
+        val reviews =
+            reviewRepository.findFilteredReviews(
+                userId,
+                menuPlainSummary.getRestaurantId(),
+                menuPlainSummary.getCode(),
+                comment,
+                etc,
+                pageable,
+            )
+        val totalCount =
+            reviewRepository.countFilteredReviews(
+                menuPlainSummary.getRestaurantId(),
+                menuPlainSummary.getCode(),
+                comment,
+                etc,
+            )
         val hasNext = page * size < totalCount
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = menuId,
-                    userId = it.user.id,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
@@ -255,23 +303,14 @@ class ReviewService(
         page: Int,
         size: Int,
     ): ReviewListResponse {
-        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
         val reviews = reviewRepository.findByUserId(userId, pageable)
         val totalCount = reviewRepository.countByUserId(userId)
         val hasNext = page * size < totalCount
 
         val result =
             reviews.map {
-                ReviewResponse(
-                    id = it.id,
-                    menuId = it.menu.id,
-                    userId = userId,
-                    score = it.score,
-                    comment = it.comment,
-                    etc = it.etc,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                )
+                ReviewResponse.from(it)
             }
 
         return ReviewListResponse(
@@ -279,5 +318,40 @@ class ReviewService(
             hasNext = hasNext,
             result = result,
         )
+    }
+
+    fun likeReview(
+        reviewId: Int,
+        userId: Int,
+    ) {
+        val user = userRepository.getReferenceById(userId)
+        val review = reviewRepository.getReferenceById(reviewId)
+
+        if (review.user == user) throw SelfReviewLikeNotAllowedException()
+
+        val reviewLike =
+            ReviewLike(
+                id = 0,
+                user = user,
+                review = review,
+            )
+        reviewLikeRepository.save(reviewLike)
+    }
+
+    @Transactional
+    fun unlikeReview(
+        reviewId: Int,
+        userId: Int,
+    ): Boolean {
+        val deleteCount = reviewLikeRepository.deleteByUserIdAndReviewId(userId, reviewId)
+        return deleteCount > 0
+    }
+
+    private fun validatePartialEmptyFields(vararg fields: String) {
+        val blankCount = fields.count { it.isBlank() }
+
+        if (blankCount in 1..2) {
+            throw KeywordMissingException()
+        }
     }
 }

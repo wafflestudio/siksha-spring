@@ -50,8 +50,8 @@ data class MenuInListDto
                 likeInfo: MenuLikeSummary?,
             ): MenuInListDto {
                 return MenuInListDto(
-                    createdAt = menu.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    updatedAt = menu.getUpdatedAt().atOffset(ZoneOffset.UTC),
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     code = menu.getCode(),
                     nameKr = menu.getNameKr(),
@@ -205,8 +205,8 @@ data class MenuDetailsDto
                 likeInfo: MenuLikeSummary?,
             ): MenuDetailsDto {
                 return MenuDetailsDto(
-                    createdAt = menu.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    updatedAt = menu.getUpdatedAt().atOffset(ZoneOffset.UTC),
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     restaurantId = menu.getRestaurantId(),
                     code = menu.getCode(),

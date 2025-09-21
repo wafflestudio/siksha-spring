@@ -14,6 +14,7 @@ import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.domain.user.service.UserService
 import kotlin.test.assertEquals
 
 @Testcontainers
@@ -22,12 +23,14 @@ class AuthServiceTest {
     private lateinit var jwtProvider: JwtProvider
     private lateinit var userRepository: UserRepository
     private lateinit var authService: AuthService
+    private lateinit var userService: UserService
 
     @BeforeEach
     internal fun setUp() {
         jwtProvider = mockk()
         userRepository = mockk()
-        authService = AuthService(jwtProvider, userRepository)
+        userService = mockk()
+        authService = AuthService(jwtProvider, userRepository, userService)
         clearAllMocks()
     }
 
