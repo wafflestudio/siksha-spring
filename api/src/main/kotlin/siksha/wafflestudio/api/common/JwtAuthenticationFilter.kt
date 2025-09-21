@@ -16,23 +16,23 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
 ) : OncePerRequestFilter() {
-
     private val menuGetPattern = Regex("^/menus(?:/\\d+)?$") // /menus, /menus/{id}
 
     // SecurityConfig의 permitAll 목록과 최대한 맞춰주세요
-    private val permitAllMatchers = listOf(
-        AntPathRequestMatcher("/error"),
-        AntPathRequestMatcher("/swagger-ui/**"),
-        AntPathRequestMatcher("/v3/api-docs/**"),
-        AntPathRequestMatcher("/actuator/health"),
-        AntPathRequestMatcher("/restaurants"),
-        AntPathRequestMatcher("/auth/privacy-policy"),
-        AntPathRequestMatcher("/auth/login/**"),
-        AntPathRequestMatcher("/auth/nicknames/validate"),
-        AntPathRequestMatcher("/docs"),
-        // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
-        AntPathRequestMatcher("/community/boards", "GET"),
-    )
+    private val permitAllMatchers =
+        listOf(
+            AntPathRequestMatcher("/error"),
+            AntPathRequestMatcher("/swagger-ui/**"),
+            AntPathRequestMatcher("/v3/api-docs/**"),
+            AntPathRequestMatcher("/actuator/health"),
+            AntPathRequestMatcher("/restaurants"),
+            AntPathRequestMatcher("/auth/privacy-policy"),
+            AntPathRequestMatcher("/auth/login/**"),
+            AntPathRequestMatcher("/auth/nicknames/validate"),
+            AntPathRequestMatcher("/docs"),
+            // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
+            AntPathRequestMatcher("/community/boards", "GET"),
+        )
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -41,7 +41,8 @@ class JwtAuthenticationFilter(
     ) {
         // 0) CORS preflight는 무조건 통과
         if (request.method.equals(HttpMethod.OPTIONS.name(), ignoreCase = true)) {
-            filterChain.doFilter(request, response); return
+            filterChain.doFilter(request, response)
+            return
         }
 
         // 1) SecurityConfig에서 permitAll로 둔 경로라면:
@@ -57,14 +58,16 @@ class JwtAuthenticationFilter(
                     SecurityContextHolder.clearContext() // 그냥 익명으로 통과
                 }
             }
-            filterChain.doFilter(request, response); return
+            filterChain.doFilter(request, response)
+            return
         }
 
         // 2) GET /community/boards (명시적 허용) — 위 permitAll에도 넣었지만 안전하게 한 번 더
         if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
             request.requestURI == "/community/boards"
         ) {
-            filterChain.doFilter(request, response); return
+            filterChain.doFilter(request, response)
+            return
         }
 
         val token = extractToken(request)
@@ -76,7 +79,8 @@ class JwtAuthenticationFilter(
             val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
             if (isReviewsUri && !isMyReviewUri && !isPrivate) {
                 setAnonymousPrincipal() // authenticated=false
-                filterChain.doFilter(request, response); return
+                filterChain.doFilter(request, response)
+                return
             }
         }
 
@@ -86,7 +90,8 @@ class JwtAuthenticationFilter(
         ) {
             if (token.isNullOrBlank()) {
                 setAnonymousPrincipal()
-                filterChain.doFilter(request, response); return
+                filterChain.doFilter(request, response)
+                return
             } else {
                 runCatching {
                     val userId = verifyAndExtractUserId(token)
@@ -104,22 +109,23 @@ class JwtAuthenticationFilter(
         // 5) 그 외: 토큰 필수
         if (token.isNullOrBlank()) {
             SecurityContextHolder.clearContext()
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"); return
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+            return
         } else {
             runCatching {
                 val userId = verifyAndExtractUserId(token)
                 setAuthenticatedPrincipal(userId)
             }.onFailure {
                 SecurityContextHolder.clearContext()
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"); return
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+                return
             }
         }
 
         filterChain.doFilter(request, response)
     }
 
-    private fun isPermitAll(request: HttpServletRequest): Boolean =
-        permitAllMatchers.any { it.matches(request) }
+    private fun isPermitAll(request: HttpServletRequest): Boolean = permitAllMatchers.any { it.matches(request) }
 
     private fun verifyAndExtractUserId(token: String): Int {
         val claims = jwtProvider.verifyJwtGetClaims(token)
