@@ -23,3 +23,15 @@ class MenuLikeException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메�
 class DuplicatedNicknameException : MainException(HttpStatus.CONFLICT, "중복된 닉네임이 존재합니다.")
 
 class BannedWordException : MainException(HttpStatus.BAD_REQUEST, "사용이 불가능한 단어가 포함되어 있습니다.")
+
+class KeywordMissingException : MainException(HttpStatus.BAD_REQUEST, "작성하지 않은 키워드 리뷰가 존재합니다.")
+
+class ReviewAlreadyExistsException : MainException(HttpStatus.CONFLICT, "이 메뉴에 대한 리뷰가 이미 존재합니다")
+
+class ReviewSaveFailedException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "리뷰 저장 중에 오류가 발생했습니다.")
+
+class SelfReviewLikeNotAllowedException : MainException(HttpStatus.BAD_REQUEST, "본인의 리뷰에는 좋아요를 누를 수 없습니다.")
+
+class ReviewNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰가 존재하지 않습니다.")
+
+class NotReviewOwnerException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰를 작성한 사용자가 아닙니다.")
