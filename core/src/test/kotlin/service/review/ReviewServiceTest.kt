@@ -171,13 +171,13 @@ class ReviewServiceTest {
         `when`(menuSummary.getNameEn()).thenReturn("Test Menu")
         `when`(menuSummary.getPrice()).thenReturn(10000)
         `when`(menuSummary.getEtc()).thenReturn("[]")
-        `when`(menuSummary.getCreatedAt()).thenReturn(Timestamp.valueOf(OffsetDateTime.now().toLocalDateTime()))
-        `when`(menuSummary.getUpdatedAt()).thenReturn(Timestamp.valueOf(OffsetDateTime.now().toLocalDateTime()))
+        `when`(menuSummary.getCreatedAt()).thenReturn(OffsetDateTime.now())
+        `when`(menuSummary.getUpdatedAt()).thenReturn(OffsetDateTime.now())
         `when`(menuSummary.getScore()).thenReturn(4.5)
         `when`(menuSummary.getReviewCnt()).thenReturn(10)
 
         val menuLikeSummary = mock<MenuLikeSummary>()
-        `when`(menuLikeSummary.getIsLiked()).thenReturn(0)
+        `when`(menuLikeSummary.getIsLiked()).thenReturn(false)
         `when`(menuLikeSummary.getLikeCnt()).thenReturn(0)
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
