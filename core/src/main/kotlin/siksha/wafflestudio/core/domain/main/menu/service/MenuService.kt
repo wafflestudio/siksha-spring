@@ -213,9 +213,7 @@ class MenuService(
         return getMenuById(menuId = menuId, userId = userId)
     }
 
-    fun getMyMenus(
-        userId: Int,
-    ): MyMenuListResponseDto {
+    fun getMyMenus(userId: Int): MyMenuListResponseDto {
         val userIdStr = userId.toString()
         val menuIds = menuRepository.findMyMenuByUserId(userIdStr)
         if (menuIds.isEmpty()) {

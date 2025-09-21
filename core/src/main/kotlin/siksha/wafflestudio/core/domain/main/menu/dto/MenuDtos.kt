@@ -151,13 +151,13 @@ data class MenuListResponseDto
 // /menus/me 요청에 대한 전체 Dto
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class MyMenuListResponseDto
-@JsonCreator
-constructor(
-    @JsonProperty("count")
-    val count: Int,
-    @JsonProperty("result")
-    val result: List<RestaurantInListDto>,
-)
+    @JsonCreator
+    constructor(
+        @JsonProperty("count")
+        val count: Int,
+        @JsonProperty("result")
+        val result: List<RestaurantInListDto>,
+    )
 
 // menus/{menu_id} 요청에 대한 Dto
 // menus/{menu_id)/like, unlike 요청에 대한 Dto

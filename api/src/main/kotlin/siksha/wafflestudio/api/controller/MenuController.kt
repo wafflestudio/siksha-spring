@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
@@ -73,9 +72,7 @@ class MenuController(
 
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    fun getMyMenus(
-        request: HttpServletRequest,
-    ): MyMenuListResponseDto {
+    fun getMyMenus(request: HttpServletRequest): MyMenuListResponseDto {
         return menuService.getMyMenus(
             userId = request.userId,
         )
