@@ -19,6 +19,7 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
 import siksha.wafflestudio.core.domain.main.review.dto.KeywordScoreDistributionResponse
+import siksha.wafflestudio.core.domain.main.review.dto.MyReviewsResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewScoreDistributionResponse
