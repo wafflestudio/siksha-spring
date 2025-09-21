@@ -6,82 +6,164 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import siksha.wafflestudio.core.domain.main.review.data.Review
+import siksha.wafflestudio.core.domain.main.review.dto.ReviewSummary
 
 @Repository
 interface ReviewRepository : JpaRepository<Review, Int> {
     @Query(
-        """
-        SELECT r FROM review r
-        WHERE r.menu.id = :menuId
-        ORDER BY r.createdAt DESC
+        value = """
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.taste, kr.price, kr.food_composition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM review_like rl2 
+                    WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+                ) 
+                THEN 1 
+                ELSE 0 
+            END AS is_liked,
+            r.created_at, r.updated_at 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
+        WHERE r.menu_id IN (
+            SELECT id 
+            FROM menu 
+            WHERE restaurant_id = :restaurantId AND code = :code
+        )
+        ORDER BY r.created_at DESC
     """,
+        nativeQuery = true,
     )
     fun findByMenuIdOrderByCreatedAtDesc(
-        menuId: Int,
+        @Param("userId") userId: Int,
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         """
-        SELECT COUNT(r) FROM review r
-        WHERE r.menu.id = :menuId
-    """,
+            SELECT COUNT(*) FROM review r
+            WHERE r.menu_id IN (
+                SELECT id 
+                FROM menu 
+                WHERE restaurant_id = :restaurantId AND code = :code
+            )
+        """,
+        nativeQuery = true,
     )
-    fun countByMenuId(menuId: Int): Long
+    fun countByMenuId(
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
+    ): Long
 
     @Query(
         value = """
-    SELECT * FROM review r
-    WHERE r.menu_id = :menuId
-    AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-    AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.taste, kr.price, kr.food_composition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM review_like rl2 
+                    WHERE rl2.review_id = r.id AND rl2.user_id = :userId
+                ) 
+                THEN 1 
+                ELSE 0 
+            END AS is_liked,
+            r.created_at, r.updated_at 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
+        WHERE r.menu_id IN (
+            SELECT id 
+            FROM menu 
+            WHERE restaurant_id = :restaurantId AND code = :code
+        )
+        AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
+        AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
     fun findFilteredReviews(
-        @Param("menuId") menuId: Int,
+        @Param("userId") userId: Int,
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
         @Param("comment") comment: Boolean?,
         @Param("etc") etc: Boolean?,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         value = """
         SELECT COUNT(*) FROM review r
-        WHERE r.menu_id = :menuId
+        WHERE r.menu_id IN (
+            SELECT id 
+            FROM menu 
+            WHERE restaurant_id = :restaurantId AND code = :code
+        )
         AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
         AND (:imageExist IS NULL OR (:imageExist = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
     fun countFilteredReviews(
-        @Param("menuId") menuId: Int,
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
         @Param("comment") comment: Boolean?,
         @Param("imageExist") imageExist: Boolean?,
     ): Long
 
     @Query(
         """
-    SELECT r FROM review r
+    SELECT r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, kr.taste, kr.price, kr.food_composition, r.created_at, r.updated_at 
+    FROM review r
+    Left JOIN keyword_review kr ON r.id = kr.review_id
     WHERE r.menu.id = :menuId AND r.user.id = :userId
 """,
+        nativeQuery = true,
     )
     fun findByMenuIdAndUserId(
         @Param("menuId") menuId: Int,
         @Param("userId") userId: Int,
-    ): Review?
+    ): ReviewSummary?
 
     @Query(
         value = """
-    SELECT * FROM review
-    WHERE user_id = :userId
+        SELECT 
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
+            kr.taste, kr.price, kr.food_composition, 
+            IFNULL(rl.like_count, 0) AS like_count,
+            0 AS is_liked,
+            r.created_at, r.updated_at 
+        FROM review r
+        LEFT JOIN keyword_review kr ON r.id = kr.review_id
+        LEFT JOIN (
+            SELECT review_id, COUNT(*) AS like_count
+            FROM review_like
+            GROUP BY review_id
+        ) rl ON r.id = rl.review_id
+        WHERE user_id = :userId
     """,
         nativeQuery = true,
     )
     fun findByUserId(
         @Param("userId") userId: Int,
         pageable: Pageable,
-    ): List<Review>
+    ): List<ReviewSummary>
 
     @Query(
         value = """
@@ -111,12 +193,17 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         value = """
         SELECT score, COUNT(*) as cnt 
         FROM review 
-        WHERE menu_id = :menuId 
+        WHERE r.menu_id IN (
+            SELECT id 
+            FROM menu 
+            WHERE restaurant_id = :restaurantId AND code = :code
+        )
         GROUP BY score
     """,
         nativeQuery = true,
     )
     fun findScoreCountsByMenuId(
-        @Param("menuId") menuId: Int,
+        @Param("restaurantId") restaurantId: Int,
+        @Param("code") code: String,
     ): List<Array<Any>>
 }
