@@ -2,9 +2,11 @@ package siksha.wafflestudio.core.domain.user.service
 
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.common.exception.BannedWordException
 import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
@@ -20,6 +22,10 @@ import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * User 객체의 CRUD를 다루는 서비스입니다.
+ * 인증, 회원가입 등은 AuthService의 책임입니다.
+ */
 @Service
 class UserService(
     private val userRepository: UserRepository,
@@ -30,6 +36,35 @@ class UserService(
     fun getUser(userId: Int): UserResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
         return UserResponseDto.from(user)
+    }
+
+    @Transactional
+    fun upsertUser(socialProfile: SocialProfile): UserWithProfileUrlResponseDto {
+        val type = socialProfile.provider.toString()
+        val identity = socialProfile.externalId
+
+        // update if exists
+        userRepository.findByTypeAndIdentity(type, identity)
+            ?.let { return UserWithProfileUrlResponseDto.from(it) }
+
+        // insert if not exists
+        val toSave =
+            User(
+                type = type,
+                identity = identity,
+                nickname = NicknameGenerator.generate(),
+            )
+
+        val created =
+            try {
+                userRepository.save(toSave)
+            } catch (e: DataIntegrityViolationException) {
+                // race condition
+                userRepository.findByTypeAndIdentity(type, identity)
+                    ?: throw e
+            }
+
+        return UserWithProfileUrlResponseDto.from(created)
     }
 
     @Transactional

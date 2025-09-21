@@ -5,8 +5,8 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.Date
 import javax.crypto.SecretKey
 
@@ -24,9 +24,9 @@ class JwtProvider(
 
     fun generateAccessToken(
         userId: Int,
-        lifetimeInDays: Long,
+        lifetime: Duration,
     ): String {
-        val exp = Date.from(Instant.now().plus(lifetimeInDays, ChronoUnit.DAYS))
+        val exp = Date.from(Instant.now().plus(lifetime))
 
         return Jwts.builder()
             .expiration(exp)
@@ -36,11 +36,10 @@ class JwtProvider(
     }
 
     fun verifyJwtGetClaims(token: String): Claims {
-        val trimmed = token.removePrefix("Bearer ")
         return Jwts.parser()
             .verifyWith(encodedJwtSecretKey)
             .build()
-            .parseSignedClaims(trimmed)
+            .parseSignedClaims(token)
             .payload
     }
 }
