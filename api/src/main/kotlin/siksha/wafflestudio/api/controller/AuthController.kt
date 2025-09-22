@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -65,27 +64,21 @@ class AuthController(
     }
 
     @PostMapping("/login/apple")
-    fun loginTypeApple(
-        request: HttpServletRequest,
-    ): AuthResponseDto {
+    fun loginTypeApple(request: HttpServletRequest): AuthResponseDto {
         val token = trimTokenHeader(request, SocialProvider.APPLE)
         val socialProfile = verifier.verifyAppleIdToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
     @PostMapping("/login/google")
-    fun loginTypeGoogle(
-        request: HttpServletRequest,
-    ): AuthResponseDto {
+    fun loginTypeGoogle(request: HttpServletRequest): AuthResponseDto {
         val token = trimTokenHeader(request, SocialProvider.GOOGLE)
         val socialProfile = verifier.verifyAppleIdToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
     @PostMapping("/login/kakao")
-    fun loginTypeKakao(
-        request: HttpServletRequest,
-    ): AuthResponseDto {
+    fun loginTypeKakao(request: HttpServletRequest): AuthResponseDto {
         val token = trimTokenHeader(request, SocialProvider.KAKAO)
         val socialProfile = verifier.verifyAppleIdToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)

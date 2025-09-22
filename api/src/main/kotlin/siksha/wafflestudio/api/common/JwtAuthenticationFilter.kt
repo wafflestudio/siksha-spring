@@ -33,7 +33,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/docs"),
             // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
             AntPathRequestMatcher("/community/boards", "GET"),
-            AntPathRequestMatcher("/community/**/web")
+            AntPathRequestMatcher("/community/**/web"),
         )
 
     override fun doFilterInternal(
