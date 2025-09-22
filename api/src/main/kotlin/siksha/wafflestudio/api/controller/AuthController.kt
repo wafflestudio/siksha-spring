@@ -59,7 +59,7 @@ class AuthController(
     fun loginTypeTest(
         @RequestBody body: LoginTypeTestRequestDto,
     ): AuthResponseDto {
-        return authService.upsertUserAndGetAccessToken(
+        return authService.getOrCreateAccessTokenBySocialProfile(
             SocialProfile(provider = SocialProvider.TEST, externalId = body.identity),
         )
     }
@@ -77,7 +77,7 @@ class AuthController(
                 SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
                 SocialProvider.TEST -> error("unreachable") // loginTypeTest() will handle this
             }
-        return authService.upsertUserAndGetAccessToken(socialProfile)
+        return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
     @GetMapping("/me")

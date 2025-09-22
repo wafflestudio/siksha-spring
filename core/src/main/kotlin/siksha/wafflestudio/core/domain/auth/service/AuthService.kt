@@ -26,8 +26,8 @@ class AuthService(
         return AuthResponseDto(accessToken = token)
     }
 
-    fun upsertUserAndGetAccessToken(socialProfile: SocialProfile): AuthResponseDto {
-        val user = userService.upsertUser(socialProfile)
+    fun getOrCreateAccessTokenBySocialProfile(socialProfile: SocialProfile): AuthResponseDto {
+        val user = userService.findOrCreateBySocialProfile(socialProfile)
         return getAccessTokenByUserId(user.id)
     }
 
