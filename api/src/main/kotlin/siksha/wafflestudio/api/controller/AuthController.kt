@@ -64,19 +64,30 @@ class AuthController(
         )
     }
 
-    @PostMapping("/login/{provider}")
-    fun login(
-        @PathVariable("provider") provider: SocialProvider,
+    @PostMapping("/login/apple")
+    fun loginTypeApple(
         request: HttpServletRequest,
     ): AuthResponseDto {
-        val token = trimTokenHeader(request, provider)
-        val socialProfile =
-            when (provider) {
-                SocialProvider.APPLE -> verifier.verifyAppleIdToken(token)
-                SocialProvider.GOOGLE -> verifier.verifyGoogleIdToken(token)
-                SocialProvider.KAKAO -> verifier.verifyKakaoAccessToken(token)
-                SocialProvider.TEST -> error("unreachable") // loginTypeTest() will handle this
-            }
+        val token = trimTokenHeader(request, SocialProvider.APPLE)
+        val socialProfile = verifier.verifyAppleIdToken(token)
+        return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
+    }
+
+    @PostMapping("/login/google")
+    fun loginTypeGoogle(
+        request: HttpServletRequest,
+    ): AuthResponseDto {
+        val token = trimTokenHeader(request, SocialProvider.GOOGLE)
+        val socialProfile = verifier.verifyAppleIdToken(token)
+        return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
+    }
+
+    @PostMapping("/login/kakao")
+    fun loginTypeKakao(
+        request: HttpServletRequest,
+    ): AuthResponseDto {
+        val token = trimTokenHeader(request, SocialProvider.KAKAO)
+        val socialProfile = verifier.verifyAppleIdToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
