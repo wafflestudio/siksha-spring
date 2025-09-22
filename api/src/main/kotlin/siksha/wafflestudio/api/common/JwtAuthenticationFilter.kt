@@ -147,6 +147,7 @@ class JwtAuthenticationFilter(
         SecurityContextHolder.getContext().authentication = auth
     }
 
+    // TODO: remove this
     private fun setAnonymousPrincipal() {
         // authenticated=false 로 유지 (중요)
         val auth = UsernamePasswordAuthenticationToken(UserPrincipal(ANONYMOUS_USER_ID), null)
