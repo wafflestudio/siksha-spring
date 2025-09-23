@@ -33,8 +33,8 @@ object EtcUtils {
         return jsonEncoder.encodeToString<Etc>(etc)
     }
 
-    // restaurant의 etc 필드가 JSON 형태로 저장되어 있을 때, 이를 JsonNode로 변환
-    fun convertRestEtc(etc: String?): JsonNode {
+    // etc 필드가 JSON 형태로 저장되어 있을 때, 이를 JsonNode로 변환
+    fun convertEtc(etc: String?): JsonNode {
         return if (etc.isNullOrBlank()) {
             jacksonObjectMapper().createObjectNode()
         } else {
