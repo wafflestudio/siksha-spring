@@ -16,6 +16,7 @@ import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserExceptio
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
 ) : OncePerRequestFilter() {
+    // TODO: remove this
     private val menuGetPattern = Regex("^/menus(?:/\\d+)?$") // /menus, /menus/{id}
 
     // SecurityConfig의 permitAll 목록과 최대한 맞춰주세요
@@ -32,6 +33,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/docs"),
             // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
             AntPathRequestMatcher("/community/boards", "GET"),
+            AntPathRequestMatcher("/community/**/web"),
         )
 
     override fun doFilterInternal(
@@ -145,6 +147,7 @@ class JwtAuthenticationFilter(
         SecurityContextHolder.getContext().authentication = auth
     }
 
+    // TODO: remove this
     private fun setAnonymousPrincipal() {
         // authenticated=false 로 유지 (중요)
         val auth = UsernamePasswordAuthenticationToken(UserPrincipal(ANONYMOUS_USER_ID), null)

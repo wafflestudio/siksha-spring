@@ -46,6 +46,7 @@ class SecurityConfig(
                         "/auth/nicknames/validate",
                         "/docs",
                     ).permitAll()
+                    .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling { handler ->
