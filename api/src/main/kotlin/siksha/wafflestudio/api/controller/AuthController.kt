@@ -73,14 +73,14 @@ class AuthController(
     @PostMapping("/login/google")
     fun loginTypeGoogle(request: HttpServletRequest): AuthResponseDto {
         val token = trimTokenHeader(request, SocialProvider.GOOGLE)
-        val socialProfile = verifier.verifyAppleIdToken(token)
+        val socialProfile = verifier.verifyGoogleIdToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
     @PostMapping("/login/kakao")
     fun loginTypeKakao(request: HttpServletRequest): AuthResponseDto {
         val token = trimTokenHeader(request, SocialProvider.KAKAO)
-        val socialProfile = verifier.verifyAppleIdToken(token)
+        val socialProfile = verifier.verifyKakaoAccessToken(token)
         return authService.getOrCreateAccessTokenBySocialProfile(socialProfile)
     }
 
