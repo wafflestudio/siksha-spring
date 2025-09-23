@@ -1,8 +1,10 @@
 package siksha.wafflestudio.core.domain.main.review.dto
 
+import com.fasterxml.jackson.databind.JsonNode
 import siksha.wafflestudio.core.util.KeywordReviewUtil
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import siksha.wafflestudio.core.util.EtcUtils
 
 data class ReviewResponse(
     val id: Int,
@@ -10,7 +12,7 @@ data class ReviewResponse(
     val userId: Int,
     val score: Int,
     val comment: String?,
-    val etc: String?,
+    val etc: JsonNode,
     val keywordReviews: List<String?>,
     val likeCount: Int,
     val isLiked: Boolean,
@@ -25,7 +27,7 @@ data class ReviewResponse(
                 userId = review.getUserId(),
                 score = review.getScore(),
                 comment = review.getComment(),
-                etc = review.getEtc(),
+                etc = EtcUtils.convertEtc(review.getEtc()),
                 keywordReviews =
                     listOf(
                         KeywordReviewUtil.getTasteKeyword(review.getTaste()),

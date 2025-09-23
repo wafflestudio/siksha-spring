@@ -112,7 +112,7 @@ data class RestaurantInListDto
                     addr = restaurant.addr,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
-                    etc = EtcUtils.convertRestEtc(restaurant.etc),
+                    etc = EtcUtils.convertEtc(restaurant.etc),
                     menus = menus,
                 )
             }
