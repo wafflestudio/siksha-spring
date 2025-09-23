@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.community.post.data.Post
-import java.time.OffsetDateTime
 import siksha.wafflestudio.core.util.EtcUtils
+import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PaginatedPostsResponseDto(

@@ -1,10 +1,10 @@
 package siksha.wafflestudio.core.domain.main.review.dto
 
 import com.fasterxml.jackson.databind.JsonNode
+import siksha.wafflestudio.core.util.EtcUtils
 import siksha.wafflestudio.core.util.KeywordReviewUtil
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import siksha.wafflestudio.core.util.EtcUtils
 
 data class ReviewResponse(
     val id: Int,
