@@ -15,6 +15,9 @@ spring:
   cache:
     type: redis
 
+server:
+  forward-headers-strategy: framework
+
 siksha:
   banned:
     words:
