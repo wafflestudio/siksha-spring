@@ -31,7 +31,6 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
-                // set whitelist here
                 it.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/community/boards").permitAll()
                     .requestMatchers(AntPathRequestMatcher.antMatcher("/community/**/web")).permitAll()
