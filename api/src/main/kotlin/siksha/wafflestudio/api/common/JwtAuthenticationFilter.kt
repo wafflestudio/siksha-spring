@@ -3,25 +3,31 @@ package siksha.wafflestudio.api.common
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import org.springframework.web.servlet.HandlerExceptionResolver
 import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 
 @Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
+    @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
-    // TODO: remove this
-    private val menuGetPattern = Regex("^/menus(?:/\\d+)?$") // /menus, /menus/{id}
+    // GET /menus 또는 /menus/{menu_id}
+    private val menuGetPattern = Regex("^/menus(?:/\\d+)?$")
 
-    // SecurityConfig의 permitAll 목록과 최대한 맞춰주세요
+    // SecurityConfig의 permitAll과 "항상" 동기화해 주세요.
     private val permitAllMatchers =
         listOf(
+            AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
+            AntPathRequestMatcher("/community/**/web"),
             AntPathRequestMatcher("/error"),
             AntPathRequestMatcher("/swagger-ui/**"),
             AntPathRequestMatcher("/v3/api-docs/**"),
@@ -31,152 +37,125 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/auth/login/**"),
             AntPathRequestMatcher("/auth/nicknames/validate"),
             AntPathRequestMatcher("/docs"),
-            // 별도: GET /community/boards (아래에서 따로 처리도 하지만 여기에도 포함)
-            AntPathRequestMatcher("/community/boards", "GET"),
-            AntPathRequestMatcher("/community/**/web"),
         )
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain,
+        chain: FilterChain,
     ) {
         // 0) CORS preflight는 무조건 통과
         if (request.method.equals(HttpMethod.OPTIONS.name(), ignoreCase = true)) {
-            filterChain.doFilter(request, response)
-            return
-        }
-        // 1) SecurityConfig에서 permitAll로 둔 경로라면:
-        //    - 토큰 있으면 검증 후 auth 세팅
-        //    - 토큰 없거나/깨져도 예외 던지지 말고 그냥 통과
-        if (isPermitAll(request)) {
-            val token = extractToken(request)
-            if (!token.isNullOrBlank()) {
-                runCatching {
-                    val userId = verifyAndExtractUserId(token)
-                    setAuthenticatedPrincipal(userId)
-                }.onFailure {
-                    SecurityContextHolder.clearContext() // 그냥 익명으로 통과
-                }
-            }
-            filterChain.doFilter(request, response)
+            chain.doFilter(request, response)
             return
         }
 
-        // 2) GET /community/boards (명시적 허용) — 위 permitAll에도 넣었지만 안전하게 한 번 더
+        // 1) SecurityConfig에서 permitAll 처리된 경로는 즉시 통과
+        if (permitAllMatchers.any { it.matches(request) }) {
+            chain.doFilter(request, response)
+            return
+        }
+
+        val token = extractBearerToken(request)
+
+        // 2) [특례] GET /reviews: is_private=false인 공개 리뷰는 익명으로 허용
         if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
-            request.requestURI == "/community/boards"
+            request.requestURI.startsWith("/reviews") && request.requestURI != "/reviews/me"
         ) {
-            filterChain.doFilter(request, response)
-            return
-        }
-
-        val token = extractToken(request)
-
-        // 3) /reviews 공개 열람(익명 userId=0)
-        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true)) {
-            val isReviewsUri = request.requestURI.startsWith("/reviews")
-            val isMyReviewUri = request.requestURI == "/reviews/me"
             val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
-
-            if (isReviewsUri && !isMyReviewUri && !isPrivate) {
-                setAnonymousPrincipal() // authenticated=false
-                filterChain.doFilter(request, response)
+            if (!isPrivate) {
+                // [변경] 익명 사용자 인증 정보 설정
+                setAnonymousAuthentication(request)
+                chain.doFilter(request, response)
                 return
             }
         }
 
-        // 4) 메뉴 API 특례
+        // 3) [특례] GET /menus(/{id}): 토큰 없으면 익명, 있으면 검증
         if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
             menuGetPattern.matches(request.requestURI)
         ) {
             if (token.isNullOrBlank()) {
-                setAnonymousPrincipal()
-                filterChain.doFilter(request, response)
-                return
-            } else {
-                runCatching {
-                    val userId = verifyAndExtractUserId(token)
-                    setAuthenticatedPrincipal(userId)
-                    filterChain.doFilter(request, response)
-                }.onFailure {
-                    SecurityContextHolder.clearContext()
-                    // 여기선 401을 바로 내려도 됨. 필터에서 예외를 던지면 전역 핸들러만 탈 수 있음.
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
-                }
+                // [변경] 익명 사용자 인증 정보 설정
+                setAnonymousAuthentication(request)
+                chain.doFilter(request, response)
                 return
             }
         }
 
-        // 5) 그 외: 토큰 필수
+        // 4) 위 특례에 해당하지 않는 모든 보호된 경로: 토큰 필수 검증
         if (token.isNullOrBlank()) {
-            SecurityContextHolder.clearContext()
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+            unauthorized(request, response)
             return
-        } else {
-            runCatching {
-                val userId = verifyAndExtractUserId(token)
-                setAuthenticatedPrincipal(userId)
-            }.onFailure {
-                SecurityContextHolder.clearContext()
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
-                return
-            }
         }
 
-        filterChain.doFilter(request, response)
+        // 5) 토큰 검증 및 userId 설정
+        runCatching {
+            val userId = verifyAndExtractUserId(token)
+            // [변경] 인증된 사용자 정보 설정
+            setAuthenticatedUser(userId, request)
+        }.getOrElse {
+            unauthorized(request, response)
+            return
+        }
+
+        // 6) 다음 필터로 전달
+        chain.doFilter(request, response)
     }
 
-    private fun isPermitAll(request: HttpServletRequest): Boolean = permitAllMatchers.any { it.matches(request) }
+    // ... 기존 extractBearerToken, verifyAndExtractUserId, unauthorized 함수 ...
+
+    private fun extractBearerToken(request: HttpServletRequest): String? {
+        val h = request.getHeader(HDR_AUTHORIZATION) ?: return null
+        if (!h.startsWith(BEARER_PREFIX, ignoreCase = true)) return null
+        return h.substring(BEARER_PREFIX.length).trim().takeIf { it.isNotEmpty() }
+    }
 
     private fun verifyAndExtractUserId(token: String): Int {
         val claims = jwtProvider.verifyJwtGetClaims(token)
-        val value = claims[USER_ID_KEY_IN_JWT] ?: error("no userId claim")
-        return when (value) {
-            is Int -> value
-            is Long -> value.toInt()
-            is Number -> value.toInt()
-            is String -> value.toIntOrNull() ?: error("bad userId")
+        val v = claims[USER_ID_CLAIM] ?: error("no userId claim")
+        return when (v) {
+            is Int -> v
+            is Long -> v.toInt()
+            is Number -> v.toInt()
+            is String -> v.toIntOrNull() ?: error("bad userId")
             else -> error("bad userId type")
         }
     }
 
-    private fun setAuthenticatedPrincipal(userId: Int) {
-        // authenticated=true
-        val auth = UsernamePasswordAuthenticationToken(UserPrincipal(userId), null, emptyList())
-        SecurityContextHolder.getContext().authentication = auth
+    private fun unauthorized(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ) {
+        resolver.resolveException(request, response, null, UnauthorizedUserException())
     }
 
-    // TODO: remove this
-    private fun setAnonymousPrincipal() {
-        // authenticated=false 로 유지 (중요)
-        val auth = UsernamePasswordAuthenticationToken(UserPrincipal(ANONYMOUS_USER_ID), null)
-        SecurityContextHolder.getContext().authentication = auth
+    private fun setAnonymousAuthentication(request: HttpServletRequest) {
+        val authorities = listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS"))
+        val authentication = UsernamePasswordAuthenticationToken(ANONYMOUS_USER_ID, null, authorities)
+        SecurityContextHolder.getContext().authentication = authentication
+        request.setAttribute(REQ_ATTR_USER_ID, ANONYMOUS_USER_ID)
     }
 
-    private fun extractToken(request: HttpServletRequest): String? {
-        val raw =
-            request.getHeader("Authorization")?.takeIf { it.isNotBlank() }
-                ?: request.getHeader(AUTHORIZATION_HEADER_NAME)?.takeIf { it.isNotBlank() }
-        return raw?.removePrefix("Bearer ")?.trim()
+    private fun setAuthenticatedUser(
+        userId: Int,
+        request: HttpServletRequest,
+    ) {
+        val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
+        val authentication = UsernamePasswordAuthenticationToken(userId, null, authorities)
+        SecurityContextHolder.getContext().authentication = authentication
+        request.setAttribute(REQ_ATTR_USER_ID, userId)
     }
 
     companion object {
-        private const val USER_ID_KEY_IN_JWT = "userId" // 실제 클레임 키와 맞추세요 (예: "sub")
-        private const val AUTHORIZATION_HEADER_NAME = "Authorization-Token"
+        private const val USER_ID_CLAIM = "userId"
+        private const val REQ_ATTR_USER_ID = "userId"
+        private const val HDR_AUTHORIZATION = "Authorization"
+        private const val BEARER_PREFIX = "Bearer "
         private const val ANONYMOUS_USER_ID = 0
     }
 }
 
-/**
- * 컨트롤러/서비스 단에서 userId 꺼낼 때 사용.
- * - 인증/익명 모두 UserPrincipal이 주입되므로 그대로 사용 가능.
- * - SecurityContext에 아무 principal도 없다면 UnauthorizedUserException 던짐(정책 위반).
- */
+/** 컨트롤러/서비스 단에서 userId 꺼낼 때 사용 */
 val HttpServletRequest.userId: Int
-    get() {
-        val principal = SecurityContextHolder.getContext().authentication?.principal
-        return (principal as? UserPrincipal)?.userId ?: throw UnauthorizedUserException()
-    }
-
-data class UserPrincipal(val userId: Int)
+    get() = (this.getAttribute("userId") as? Int) ?: throw UnauthorizedUserException()

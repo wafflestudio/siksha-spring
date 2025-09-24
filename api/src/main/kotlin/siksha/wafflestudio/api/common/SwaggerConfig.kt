@@ -19,9 +19,9 @@ class SwaggerConfig {
                 Components().addSecuritySchemes(
                     "bearerAuth",
                     SecurityScheme()
-                        .type(SecurityScheme.Type.APIKEY)
-                        .`in`(SecurityScheme.In.HEADER)
-                        .name("Authorization"),
+                        .type(SecurityScheme.Type.HTTP)
+                        .scheme("bearer")
+                        .bearerFormat("JWT"),
                 ),
             )
             .addSecurityItem(
