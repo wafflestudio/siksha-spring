@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.api.common.filter.userId
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
 import siksha.wafflestudio.core.domain.community.post.dto.CreatePostReportRequestDto
 import siksha.wafflestudio.core.domain.community.post.dto.PaginatedPostsResponseDto

@@ -4,6 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import siksha.wafflestudio.core.domain.main.review.data.ReviewLike
 
 interface ReviewLikeRepository : JpaRepository<ReviewLike, Int> {
+    fun existsByUserIdAndReviewId(
+        userId: Int,
+        reviewId: Int,
+    ): Boolean
+
     fun deleteByUserIdAndReviewId(
         userId: Int,
         reviewId: Int,

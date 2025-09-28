@@ -67,17 +67,17 @@ class ReviewService(
 
     fun postReviewWithImages(
         userId: Int,
-        reviewWithImagesRequest: ReviewWithImagesRequest,
+        request: ReviewWithImagesRequest,
     ): MenuDetailsDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
-        val menuId = reviewWithImagesRequest.menuId
+        val menuId = request.menuId
         val menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException()
-        val score = reviewWithImagesRequest.score
-        val comment = reviewWithImagesRequest.comment
-        val tasteKeyword = reviewWithImagesRequest.taste
-        val priceKeyword = reviewWithImagesRequest.price
-        val foodCompositionKeyword = reviewWithImagesRequest.foodComposition
-        val images = reviewWithImagesRequest.images
+        val score = request.score
+        val comment = request.comment
+        val tasteKeyword = request.taste
+        val priceKeyword = request.price
+        val foodCompositionKeyword = request.foodComposition
+        val images = request.images
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
@@ -263,7 +263,6 @@ class ReviewService(
     ) {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
-
         if (review.user.id != userId) {
             throw NotReviewOwnerException()
         }
@@ -277,15 +276,31 @@ class ReviewService(
         reviewRepository.deleteById(reviewId)
     }
 
-    fun getReview(reviewId: Int): MyReviewResponse {
+    fun getReview(
+        reviewId: Int,
+        userId: Int,
+    ): MyReviewResponse {
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
-        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordMissingException()
+        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId)
         val keywordReviews =
-            listOf(
-                getTasteKeyword(keywordReview.taste),
-                getPriceKeyword(keywordReview.price),
-                getFoodCompositionKeyword(keywordReview.foodComposition),
-            )
+            if (keywordReview == null) {
+                listOf(null, null, null)
+            } else {
+                listOf(
+                    getTasteKeyword(keywordReview.taste),
+                    getPriceKeyword(keywordReview.price),
+                    getFoodCompositionKeyword(keywordReview.foodComposition),
+                )
+            }
+
+        // Check if user liked this review (false for anonymous users with userId = 0)
+        val isLiked =
+            if (userId == 0) {
+                false
+            } else {
+                reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId)
+            }
+
         return MyReviewResponse(
             id = review.id,
             menuId = review.menu.id,
@@ -298,6 +313,7 @@ class ReviewService(
             createdAt = review.updatedAt,
             updatedAt = review.updatedAt,
             keywordReviews = keywordReviews,
+            isLiked = isLiked,
         )
     }
 
@@ -374,7 +390,7 @@ class ReviewService(
         userId: Int,
         menuId: Int,
         comment: Boolean?,
-        etc: Boolean?,
+        image: Boolean?,
         page: Int,
         size: Int,
     ): ReviewListResponse {
@@ -387,7 +403,7 @@ class ReviewService(
                 menuPlainSummary.getRestaurantId(),
                 menuPlainSummary.getCode(),
                 comment,
-                etc,
+                image,
                 pageable,
             )
         val totalCount =
@@ -395,7 +411,7 @@ class ReviewService(
                 menuPlainSummary.getRestaurantId(),
                 menuPlainSummary.getCode(),
                 comment,
-                etc,
+                image,
             )
         val hasNext = page * size < totalCount
 
@@ -462,13 +478,17 @@ class ReviewService(
                     nameEn = rest.nameEn,
                     reviews =
                         list.map { it ->
-                            val keywordReview = keywordByReviewId[it.id] ?: throw KeywordMissingException()
+                            val keywordReview = keywordByReviewId[it.id]
                             val keywordReviews =
-                                listOf(
-                                    getTasteKeyword(keywordReview.taste),
-                                    getPriceKeyword(keywordReview.price),
-                                    getFoodCompositionKeyword(keywordReview.foodComposition),
-                                )
+                                if (keywordReview != null) {
+                                    listOf(
+                                        getTasteKeyword(keywordReview.taste),
+                                        getPriceKeyword(keywordReview.price),
+                                        getFoodCompositionKeyword(keywordReview.foodComposition),
+                                    )
+                                } else {
+                                    listOf(null, null, null)
+                                }
 
                             MyReviewResponse(
                                 id = it.id,
@@ -482,6 +502,7 @@ class ReviewService(
                                 createdAt = it.createdAt,
                                 updatedAt = it.updatedAt,
                                 keywordReviews = keywordReviews,
+                                isLiked = false,
                             )
                         },
                 )
@@ -527,6 +548,7 @@ class ReviewService(
     private fun validatePartialEmptyFields(vararg fields: String) {
         val blankCount = fields.count { it.isBlank() }
 
+        // 키워드 리뷰는 0개 혹은 3개만 허용
         if (blankCount in 1..2) {
             throw KeywordMissingException()
         }

@@ -21,7 +21,8 @@ class SwaggerConfig {
                     SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
-                        .bearerFormat("JWT"),
+                        .bearerFormat("JWT")
+                        .description("JWT Bearer 토큰. Bearer Prefix 없이 token 입력"),
                 ),
             )
             .addSecurityItem(

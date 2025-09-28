@@ -67,20 +67,20 @@ interface ReviewRepository : JpaRepository<Review, Int> {
 
     @Query(
         value = """
-        SELECT 
-            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc, 
-            kr.taste, kr.price, kr.food_composition, 
+        SELECT
+            r.id, r.menu_id AS menuId, r.user_id AS userId, r.score, r.comment, r.etc,
+            kr.taste, kr.price, kr.food_composition,
             IFNULL(rl.like_count, 0) AS like_count,
-            CASE 
+            CASE
                 WHEN EXISTS (
-                    SELECT 1 
-                    FROM review_like rl2 
+                    SELECT 1
+                    FROM review_like rl2
                     WHERE rl2.review_id = r.id AND rl2.user_id = :userId
-                ) 
-                THEN 1 
-                ELSE 0 
+                )
+                THEN 1
+                ELSE 0
             END AS is_liked,
-            r.created_at, r.updated_at 
+            r.created_at, r.updated_at
         FROM review r
         LEFT JOIN keyword_review kr ON r.id = kr.review_id
         LEFT JOIN (
@@ -89,12 +89,12 @@ interface ReviewRepository : JpaRepository<Review, Int> {
             GROUP BY review_id
         ) rl ON r.id = rl.review_id
         WHERE r.menu_id IN (
-            SELECT id 
-            FROM menu 
+            SELECT id
+            FROM menu
             WHERE restaurant_id = :restaurantId AND code = :code
         )
         AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-        AND (:etc IS NULL OR (:etc = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        AND (:image IS NULL OR (:image = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
@@ -103,7 +103,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         @Param("restaurantId") restaurantId: Int,
         @Param("code") code: String,
         @Param("comment") comment: Boolean?,
-        @Param("etc") etc: Boolean?,
+        @Param("image") image: Boolean?,
         pageable: Pageable,
     ): List<ReviewSummary>
 
@@ -111,12 +111,12 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         value = """
         SELECT COUNT(*) FROM review r
         WHERE r.menu_id IN (
-            SELECT id 
-            FROM menu 
+            SELECT id
+            FROM menu
             WHERE restaurant_id = :restaurantId AND code = :code
         )
         AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-        AND (:imageExist IS NULL OR (:imageExist = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        AND (:image IS NULL OR (:image = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
     """,
         nativeQuery = true,
     )
@@ -124,7 +124,7 @@ interface ReviewRepository : JpaRepository<Review, Int> {
         @Param("restaurantId") restaurantId: Int,
         @Param("code") code: String,
         @Param("comment") comment: Boolean?,
-        @Param("imageExist") imageExist: Boolean?,
+        @Param("image") image: Boolean?,
     ): Long
 
     @Query(

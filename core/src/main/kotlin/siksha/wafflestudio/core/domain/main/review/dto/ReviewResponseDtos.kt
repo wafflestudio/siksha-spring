@@ -100,6 +100,7 @@ data class MyReviewResponse(
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
     val keywordReviews: List<String?>,
+    val isLiked: Boolean,
 )
 
 data class RestaurantWithReviewListResponse(
