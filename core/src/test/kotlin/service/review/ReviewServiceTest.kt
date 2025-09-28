@@ -749,7 +749,7 @@ class ReviewServiceTest {
 
         // when & then
         assertThrows(ReviewNotFoundException::class.java) {
-            reviewService.getReview(reviewId)
+            reviewService.getReview(reviewId, 0)
         }
         verify(reviewRepository).findById(reviewId)
         // 키워드 조회는 호출되지 않아야 함
@@ -757,7 +757,7 @@ class ReviewServiceTest {
     }
 
     @Test
-    fun `getReview - 키워드가 없는 경우 예외`() {
+    fun `getReview - 키워드가 없는 경우 null 리턴`() {
         // given
         val reviewId = 10
         val user =
@@ -799,10 +799,12 @@ class ReviewServiceTest {
         whenever(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review))
         whenever(keywordReviewRepository.findById(reviewId)).thenReturn(Optional.empty())
 
-        // when & then
-        assertThrows(KeywordMissingException::class.java) {
-            reviewService.getReview(reviewId)
-        }
+        // when
+        val result = reviewService.getReview(reviewId, 0)
+
+        // then
+        assertNotNull(result)
+        assertEquals(listOf(null, null, null), result.keywordReviews)
         verify(reviewRepository).findById(reviewId)
         verify(keywordReviewRepository).findById(reviewId)
     }
@@ -837,7 +839,6 @@ class ReviewServiceTest {
         `when`(reviewSummary.getUpdatedAt()).thenReturn(Timestamp.valueOf(OffsetDateTime.now().toLocalDateTime()))
 
         val reviews = listOf(reviewSummary)
-        val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "created_at"))
 
         `when`(menuRepository.findPlainMenuById(menuId.toString())).thenReturn(menuPlainSummary)
         whenever(
