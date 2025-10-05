@@ -12,6 +12,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
@@ -210,5 +211,49 @@ class MenuService(
 
         // 삭제 후 변경된 좋아요 수와 상태를 포함한 상세 정보 반환
         return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    fun getMyMenus(userId: Int): MyMenuListResponseDto {
+        val userIdStr = userId.toString()
+        val menuIds = menuRepository.findMyMenuByUserId(userIdStr)
+        if (menuIds.isEmpty()) {
+            return MyMenuListResponseDto(
+                count = 0,
+                result = emptyList(),
+            )
+        }
+
+        val menuSummaries = menuRepository.findMenusByMenuIds(menuIds)
+        val menuLikeSummaries = menuRepository.findMenuLikesByMenuIds(menuIds)
+        val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
+
+        val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
+
+        val list = mutableListOf<RestaurantInListDto>()
+        allRestaurants.forEach { restaurant ->
+            list.add(
+                RestaurantInListDto.from(restaurant, mutableListOf()),
+            )
+        }
+
+        val menusByKey = menuSummaries.groupBy { it.getRestaurantId() }
+        menusByKey.forEach { (restaurantId, summaries) ->
+            val menuDtos =
+                summaries.map { menu ->
+                    val likeInfo = likeInfoMap[menu.getId()]
+                    MenuInListDto.from(menu, likeInfo)
+                }
+
+            list.find { it.id == restaurantId }?.let {
+                (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
+            }
+        }
+
+        val result = list.filter { it.menus.isNotEmpty() }.toMutableList()
+
+        return MyMenuListResponseDto(
+            count = result.size,
+            result = result,
+        )
     }
 }

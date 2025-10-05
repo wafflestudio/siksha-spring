@@ -175,8 +175,8 @@ class ReviewServiceTest {
         `when`(menuSummary.getNameEn()).thenReturn("Test Menu")
         `when`(menuSummary.getPrice()).thenReturn(10000)
         `when`(menuSummary.getEtc()).thenReturn("[]")
-        `when`(menuSummary.getCreatedAt()).thenReturn(OffsetDateTime.now())
-        `when`(menuSummary.getUpdatedAt()).thenReturn(OffsetDateTime.now())
+        `when`(menuSummary.getCreatedAt()).thenReturn(Timestamp(System.currentTimeMillis()))
+        `when`(menuSummary.getUpdatedAt()).thenReturn(Timestamp(System.currentTimeMillis()))
         `when`(menuSummary.getScore()).thenReturn(4.5)
         `when`(menuSummary.getReviewCnt()).thenReturn(10)
 

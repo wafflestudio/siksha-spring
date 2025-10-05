@@ -253,23 +253,7 @@ class ReviewService(
                 user.id.toString(),
             )
 
-        return MenuDetailsDto(
-            createdAt = menuSummary.getCreatedAt(),
-            updatedAt = menuSummary.getUpdatedAt(),
-            id = menuSummary.getId(),
-            restaurantId = menuSummary.getRestaurantId(),
-            code = menuSummary.getCode(),
-            date = menuSummary.getDate(),
-            type = menuSummary.getType(),
-            nameKr = menuSummary.getNameKr(),
-            nameEn = menuSummary.getNameEn(),
-            price = menuSummary.getPrice(),
-            etc = EtcUtils.convertMenuEtc(menuSummary.getEtc()),
-            score = menuSummary.getScore(),
-            reviewCnt = menuSummary.getReviewCnt(),
-            isLiked = menuLikeSummary.getIsLiked(),
-            likeCnt = menuLikeSummary.getLikeCnt(),
-        )
+        return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
     @Transactional

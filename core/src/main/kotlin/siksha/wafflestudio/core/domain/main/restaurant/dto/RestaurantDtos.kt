@@ -47,7 +47,7 @@ data class RestaurantResponseDto
                     addr = restaurant.addr,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
-                    etc = EtcUtils.convertRestEtc(restaurant.etc),
+                    etc = EtcUtils.convertEtc(restaurant.etc),
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
