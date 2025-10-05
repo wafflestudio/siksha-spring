@@ -82,7 +82,7 @@ class MenuService(
         val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
 
         // 모든 restaurant 정보 조회
-        val allRestaurants = restaurantRepository.findAll()
+        val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
 
         // 날짜·타입별 기본 구조 초기화 (모든 식당, 빈 메뉴 리스트 포함)
         val dateGroupMap = mutableMapOf<LocalDate, MutableMap<String, MutableList<RestaurantInListDto>>>()
