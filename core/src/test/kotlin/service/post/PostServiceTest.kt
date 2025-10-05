@@ -276,7 +276,7 @@ class PostServiceTest {
         val response = service.createPost(userId, dto)
 
         // then
-        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc)
+        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc.toString())
 
         assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
 
@@ -864,7 +864,7 @@ class PostServiceTest {
         assertEquals("new title", response.title)
         assertEquals(true, response.anonymous)
 
-        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc)
+        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc.toString())
         assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
 
         // verify

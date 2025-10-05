@@ -15,6 +15,9 @@ spring:
   cache:
     type: redis
 
+server:
+  forward-headers-strategy: framework
+
 siksha:
   banned:
     words:
@@ -44,6 +47,20 @@ spring:
 jwt:
   secret-key:
 
+siksha:
+  oauth:
+    google:
+      client-id:
+        android:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
+    kakao:
+      app-id:
+    apple:
+      approved-audience:
+
 secret-names: dev/siksha-api-server
 ---
 spring:
@@ -71,6 +88,20 @@ spring:
 jwt:
   secret-key:
 
+siksha:
+  oauth:
+    google:
+      client-id:
+        android:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
+    kakao:
+      app-id:
+    apple:
+      approved-audience:
+
 secret-names: dev/siksha-api-server
 ---
 spring:
@@ -97,5 +128,19 @@ spring:
 
 jwt:
   secret-key:
+
+siksha:
+  oauth:
+    google:
+      client-id:
+        android:
+        ios-prod:
+        ios-dev:
+        web-prod:
+        web-dev:
+    kakao:
+      app-id:
+    apple:
+      approved-audience:
 
 secret-names: prod/siksha-api-server

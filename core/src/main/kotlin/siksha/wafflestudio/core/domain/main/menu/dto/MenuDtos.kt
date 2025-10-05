@@ -10,6 +10,7 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
 import siksha.wafflestudio.core.util.EtcUtils
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 // /menus 요청에 대한 Menu 단위 Dto
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -49,8 +50,8 @@ data class MenuInListDto
                 likeInfo: MenuLikeSummary?,
             ): MenuInListDto {
                 return MenuInListDto(
-                    createdAt = menu.getCreatedAt(),
-                    updatedAt = menu.getUpdatedAt(),
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     code = menu.getCode(),
                     nameKr = menu.getNameKr(),
@@ -60,7 +61,7 @@ data class MenuInListDto
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
-                    isLiked = likeInfo?.getIsLiked() ?: false,
+                    isLiked = likeInfo?.getIsLiked() == 1,
                 )
             }
         }
@@ -111,7 +112,7 @@ data class RestaurantInListDto
                     addr = restaurant.addr,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
-                    etc = EtcUtils.convertRestEtc(restaurant.etc),
+                    etc = EtcUtils.convertEtc(restaurant.etc),
                     menus = menus,
                 )
             }
@@ -145,6 +146,17 @@ data class MenuListResponseDto
         val count: Int,
         @JsonProperty("result")
         val result: List<DateWithTypeInListDto>,
+    )
+
+// /menus/me 요청에 대한 전체 Dto
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MyMenuListResponseDto
+    @JsonCreator
+    constructor(
+        @JsonProperty("count")
+        val count: Int,
+        @JsonProperty("result")
+        val result: List<RestaurantInListDto>,
     )
 
 // menus/{menu_id} 요청에 대한 Dto
@@ -193,8 +205,8 @@ data class MenuDetailsDto
                 likeInfo: MenuLikeSummary?,
             ): MenuDetailsDto {
                 return MenuDetailsDto(
-                    createdAt = menu.getCreatedAt(),
-                    updatedAt = menu.getUpdatedAt(),
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
                     restaurantId = menu.getRestaurantId(),
                     code = menu.getCode(),
@@ -206,9 +218,45 @@ data class MenuDetailsDto
                     etc = EtcUtils.convertMenuEtc(menu.getEtc()),
                     score = menu.getScore(),
                     reviewCnt = menu.getReviewCnt(),
-                    isLiked = likeInfo?.getIsLiked() ?: false,
+                    isLiked = likeInfo?.getIsLiked() == 1,
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
                 )
             }
         }
     }
+
+// menus/{menu_id}/alarm/on, off 요청에 대한 Dto
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuAlarmDto
+    @JsonCreator
+    constructor(
+        @JsonProperty("created_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val createdAt: OffsetDateTime,
+        @JsonProperty("updated_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val updatedAt: OffsetDateTime,
+        @JsonProperty("id")
+        val id: Int,
+        @JsonProperty("restaurant_id")
+        val restaurantId: Int,
+        @JsonProperty("code")
+        val code: String,
+        @JsonProperty("date")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        val date: LocalDate,
+        @JsonProperty("type")
+        val type: String,
+        @JsonProperty("name_kr")
+        val nameKr: String?,
+        @JsonProperty("name_en")
+        val nameEn: String?,
+        @JsonProperty("price")
+        val price: Int?,
+        @JsonProperty("etc")
+        val etc: List<String>,
+        @JsonProperty("is_liked")
+        val isLiked: Boolean,
+        @JsonProperty("alarm")
+        val alarm: Boolean,
+    )

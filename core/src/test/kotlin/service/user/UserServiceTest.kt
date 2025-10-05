@@ -74,41 +74,6 @@ class UserServiceTest {
     }
 
     @Test
-    fun `getUserWithProfileUrl - user not found`() {
-        // given
-        val notFoundUserId = 999
-        every { userRepository.findByIdOrNull(notFoundUserId) } returns null
-
-        // when & then
-        assertThrows<UserNotFoundException> {
-            userService.getUserWithProfileUrl(notFoundUserId)
-        }
-
-        // verify
-        verify { userRepository.findByIdOrNull(notFoundUserId) }
-    }
-
-    @Test
-    fun `getUserWithProfileUrl - success`() {
-        // given
-        val userId = 1
-        val profileUrl = "https://example.com/profile.jpg"
-        val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity", profileUrl = profileUrl)
-        every { userRepository.findByIdOrNull(userId) } returns user
-
-        // when
-        val result = userService.getUserWithProfileUrl(userId)
-
-        // then
-        assertEquals(userId, result.id)
-        assertEquals("test-user", result.nickname)
-        assertEquals(profileUrl, result.profileUrl)
-
-        // verify
-        verify { userRepository.findByIdOrNull(userId) }
-    }
-
-    @Test
     fun `deleteUser - user not found`() {
         // given
         val notFoundUserId = 999
@@ -139,7 +104,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `patchUserWithProfileUrl - user not found`() {
+    fun `patchUser - user not found`() {
         // given
         val notFoundUserId = 999
         val request = UserProfilePatchDto(nickname = "new-nickname", image = null, changeToDefaultImage = false)
@@ -147,7 +112,7 @@ class UserServiceTest {
 
         // when & then
         assertThrows<UserNotFoundException> {
-            userService.patchUserWithProfileUrl(notFoundUserId, request)
+            userService.patchUser(notFoundUserId, request)
         }
 
         // verify
@@ -155,7 +120,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `patchUserWithProfileUrl - nickname updated`() {
+    fun `patchUser - nickname updated`() {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "old-nickname", type = "test", identity = "test-identity")
@@ -166,7 +131,7 @@ class UserServiceTest {
         every { userRepository.save(any()) } returns updatedUser
 
         // when
-        val result = userService.patchUserWithProfileUrl(userId, request)
+        val result = userService.patchUser(userId, request)
 
         // then
         assertEquals("new-nickname", result.nickname)
@@ -178,7 +143,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `patchUserWithProfileUrl - duplicated nickname`() {
+    fun `patchUser - duplicated nickname`() {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "old-nickname", type = "test", identity = "test-identity")
@@ -188,7 +153,7 @@ class UserServiceTest {
 
         // when & then
         assertThrows<DuplicatedNicknameException> {
-            userService.patchUserWithProfileUrl(userId, request)
+            userService.patchUser(userId, request)
         }
 
         // verify
@@ -197,7 +162,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `patchUserWithProfileUrl - profile image updated`() {
+    fun `patchUser - profile image updated`() {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity")
@@ -211,7 +176,7 @@ class UserServiceTest {
         every { userRepository.save(any()) } returns user.apply { profileUrl = uploadFileDto.url }
 
         // when
-        val result = userService.patchUserWithProfileUrl(userId, request)
+        val result = userService.patchUser(userId, request)
 
         // then
         assertEquals("some-url", result.profileUrl)
@@ -224,7 +189,7 @@ class UserServiceTest {
     }
 
     @Test
-    fun `patchUserWithProfileUrl - change to default image`() {
+    fun `patchUser - change to default image`() {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity", profileUrl = "some-url")
@@ -237,7 +202,7 @@ class UserServiceTest {
         every { userRepository.save(any()) } returns savedUser
 
         // when
-        val result = userService.patchUserWithProfileUrl(userId, request)
+        val result = userService.patchUser(userId, request)
 
         // then
         assertNull(result.profileUrl)

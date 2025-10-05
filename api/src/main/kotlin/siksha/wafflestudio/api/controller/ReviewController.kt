@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.review.dto.CommentRecommendationResponse
+import siksha.wafflestudio.core.domain.main.review.dto.KeywordScoreDistributionResponse
+import siksha.wafflestudio.core.domain.main.review.dto.MyReviewResponse
 import siksha.wafflestudio.core.domain.main.review.dto.MyReviewsResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewListResponse
 import siksha.wafflestudio.core.domain.main.review.dto.ReviewRequest
@@ -64,8 +66,8 @@ class ReviewController(
     @ResponseStatus(HttpStatus.OK)
     fun getReview(
         @PathVariable("review_id") reviewId: Int,
-    ) {
-        reviewService.getReview(reviewId = reviewId)
+    ): MyReviewResponse {
+        return reviewService.getReview(reviewId = reviewId)
     }
 
     @PatchMapping("/{review_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -102,10 +104,12 @@ class ReviewController(
     @ResponseStatus(HttpStatus.OK)
     fun getReviews(
         @RequestParam("menu_id") menuId: Int,
+        @RequestParam("is_private", required = false) isPrivate: Boolean,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        request: HttpServletRequest,
     ): ReviewListResponse {
-        return reviewService.getReviews(menuId, page, size)
+        return reviewService.getReviews(request.userId, menuId, page, size)
     }
 
     @GetMapping("/comments/recommendation")
@@ -124,6 +128,14 @@ class ReviewController(
         return reviewService.getScoreDistribution(menuId)
     }
 
+    @GetMapping("/keyword/dist")
+    @ResponseStatus(HttpStatus.OK)
+    fun getKeywordScoreDistribution(
+        @RequestParam("menu_id") menuId: Int,
+    ): KeywordScoreDistributionResponse {
+        return reviewService.getKeywordScoreDistribution(menuId)
+    }
+
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
     fun getFilteredReviews(
@@ -132,8 +144,10 @@ class ReviewController(
         @RequestParam("etc", required = false) etc: Boolean?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam("is_private", required = false) isPrivate: Boolean,
+        request: HttpServletRequest,
     ): ReviewListResponse {
-        return reviewService.getFilteredReviews(menuId, comment, etc, page, size)
+        return reviewService.getFilteredReviews(request.userId, menuId, comment, etc, page, size)
     }
 
     @GetMapping("/me")
@@ -146,4 +160,18 @@ class ReviewController(
         val userId = request.userId
         return reviewService.getMyReviews(userId, page, perPage)
     }
+
+    @PostMapping("/{review_id}/like")
+    @ResponseStatus(HttpStatus.CREATED)
+    fun likeReview(
+        @PathVariable("review_id") reviewId: Int,
+        request: HttpServletRequest,
+    ) = reviewService.likeReview(reviewId, request.userId)
+
+    @DeleteMapping("/{review_id}/like")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun unlikeReview(
+        @PathVariable("review_id") reviewId: Int,
+        request: HttpServletRequest,
+    ) = reviewService.unlikeReview(reviewId, request.userId)
 }

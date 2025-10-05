@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.community.post.data.Post
+import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -54,7 +56,7 @@ data class PostResponseDto
         @JsonProperty("is_mine")
         val isMine: Boolean,
         @JsonProperty("etc")
-        val etc: String?,
+        val etc: JsonNode,
         @JsonProperty("like_cnt")
         val likeCnt: Int,
         @JsonProperty("comment_cnt")
@@ -82,7 +84,7 @@ data class PostResponseDto
                     available = post.available,
                     anonymous = post.anonymous,
                     isMine = isMine,
-                    etc = post.etc,
+                    etc = EtcUtils.convertEtc(post.etc),
                     likeCnt = likeCnt,
                     commentCnt = commentCnt,
                     isLiked = userPostLiked,

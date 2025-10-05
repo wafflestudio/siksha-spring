@@ -5,34 +5,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.OffsetDateTime
 
-// TODO: remove this and use UserWithProfileUrlResponseDto instead
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class UserResponseDto(
-    val id: Int = 0,
-    val type: String,
-    val identity: String,
-    val etc: String? = null,
-    val nickname: String,
-    val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime,
-) {
-    companion object {
-        fun from(user: User): UserResponseDto {
-            return UserResponseDto(
-                id = user.id,
-                type = user.type,
-                identity = user.identity,
-                etc = user.etc,
-                nickname = user.nickname,
-                createdAt = user.createdAt,
-                updatedAt = user.updatedAt,
-            )
-        }
-    }
-}
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class UserWithProfileUrlResponseDto(
     val id: Int = 0,
     val type: String,
     val identity: String,
@@ -43,8 +17,8 @@ data class UserWithProfileUrlResponseDto(
     val updatedAt: OffsetDateTime,
 ) {
     companion object {
-        fun from(user: User): UserWithProfileUrlResponseDto {
-            return UserWithProfileUrlResponseDto(
+        fun from(user: User): UserResponseDto {
+            return UserResponseDto(
                 id = user.id,
                 type = user.type,
                 identity = user.identity,
