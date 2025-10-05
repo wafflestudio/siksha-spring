@@ -77,4 +77,22 @@ class MenuController(
             userId = request.userId,
         )
     }
+
+    @PostMapping("/{menu_id}/alarm/on")
+    fun menuAlarmOn(
+        @PathVariable("menu_id") menuId: Int,
+        request: HttpServletRequest,
+    ) = menuService.menuAlarmOn(
+        menuId = menuId,
+        userId = request.userId,
+    )
+
+    @PostMapping("/{menu_id}/alarm/off")
+    fun menuAlarmOff(
+        @PathVariable("menu_id") menuId: Int,
+        request: HttpServletRequest,
+    ) = menuService.menuAlarmOff(
+        menuId = menuId,
+        userId = request.userId,
+    )
 }
