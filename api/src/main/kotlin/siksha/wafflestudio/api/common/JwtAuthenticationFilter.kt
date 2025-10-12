@@ -20,6 +20,13 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
+    companion object {
+        private const val USER_ID_CLAIM = "userId"
+        private const val REQ_ATTR_USER_ID = "userId"
+        private const val HDR_AUTHORIZATION = "Authorization"
+        private const val BEARER_PREFIX = "Bearer "
+    }
+
     private val permitAllMatchers =
         listOf(
             AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
@@ -30,12 +37,12 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/error"),
             AntPathRequestMatcher("/swagger-ui/**"),
             AntPathRequestMatcher("/v3/api-docs/**"),
+            AntPathRequestMatcher("/docs"),
             AntPathRequestMatcher("/actuator/health"),
             AntPathRequestMatcher("/restaurants"),
             AntPathRequestMatcher("/auth/privacy-policy"),
             AntPathRequestMatcher("/auth/login/**"),
             AntPathRequestMatcher("/auth/nicknames/validate"),
-            AntPathRequestMatcher("/docs"),
             AntPathRequestMatcher("/reviews/comments/recommendation"),
             AntPathRequestMatcher("/reviews/dist"),
             AntPathRequestMatcher("/reviews/keyword/dist"),
@@ -46,25 +53,30 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         chain: FilterChain,
     ) {
+        // CORS preflight 요청은 무조건 통과
         if (request.method.equals(HttpMethod.OPTIONS.name(), ignoreCase = true)) {
             chain.doFilter(request, response)
             return
         }
 
+        // permitAll 경로는 인증 없이 통과
         if (permitAllMatchers.any { it.matches(request) }) {
             chain.doFilter(request, response)
             return
         }
 
+        // Bearer 토큰 추출
         val token = extractBearerToken(request)
-        if (token.isNullOrBlank()) {
+        if (token == null) {
             unauthorized(request, response)
             return
         }
+
+        // 토큰 검증 및 사용자 인증 설정
         runCatching {
             val userId = verifyAndExtractUserId(token)
             setAuthenticatedUser(userId, request)
-        }.getOrElse {
+        }.onFailure {
             unauthorized(request, response)
             return
         }
@@ -72,20 +84,21 @@ class JwtAuthenticationFilter(
         chain.doFilter(request, response)
     }
 
-    private fun extractBearerToken(request: HttpServletRequest): String? {
-        val h = request.getHeader(HDR_AUTHORIZATION) ?: return null
-        if (!h.startsWith(BEARER_PREFIX, ignoreCase = true)) return null
-        return h.substring(BEARER_PREFIX.length).trim().takeIf { it.isNotEmpty() }
-    }
+    private fun extractBearerToken(request: HttpServletRequest): String? =
+        request.getHeader(HDR_AUTHORIZATION)
+            ?.takeIf { it.startsWith(BEARER_PREFIX, ignoreCase = true) }
+            ?.substring(BEARER_PREFIX.length)
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
 
     private fun verifyAndExtractUserId(token: String): Int {
         val claims = jwtProvider.verifyJwtGetClaims(token)
-        val v = claims[USER_ID_CLAIM] ?: error("no userId claim")
-        return when (v) {
-            is Int -> v
-            is Long -> v.toInt()
-            is Number -> v.toInt()
-            is String -> v.toIntOrNull() ?: error("bad userId")
+        val value = claims[USER_ID_CLAIM] ?: error("no userId claim")
+        return when (value) {
+            is Int -> value
+            is Long -> value.toInt()
+            is Number -> value.toInt()
+            is String -> value.toIntOrNull() ?: error("bad userId")
             else -> error("bad userId type")
         }
     }
@@ -97,13 +110,6 @@ class JwtAuthenticationFilter(
         resolver.resolveException(request, response, null, UnauthorizedUserException())
     }
 
-    private fun setAnonymousAuthentication(request: HttpServletRequest) {
-        val authorities = listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS"))
-        val authentication = UsernamePasswordAuthenticationToken(ANONYMOUS_USER_ID, null, authorities)
-        SecurityContextHolder.getContext().authentication = authentication
-        request.setAttribute(REQ_ATTR_USER_ID, ANONYMOUS_USER_ID)
-    }
-
     private fun setAuthenticatedUser(
         userId: Int,
         request: HttpServletRequest,
@@ -113,16 +119,8 @@ class JwtAuthenticationFilter(
         SecurityContextHolder.getContext().authentication = authentication
         request.setAttribute(REQ_ATTR_USER_ID, userId)
     }
-
-    companion object {
-        private const val USER_ID_CLAIM = "userId"
-        private const val REQ_ATTR_USER_ID = "userId"
-        private const val HDR_AUTHORIZATION = "Authorization"
-        private const val BEARER_PREFIX = "Bearer "
-        private const val ANONYMOUS_USER_ID = 0
-    }
 }
 
-/** 컨트롤러/서비스 단에서 userId 꺼낼 때 사용 */
+/** 컨트롤러/서비스 단에서 userId 꺼낼 때 사용하는 확장 프로퍼티 */
 val HttpServletRequest.userId: Int
-    get() = (this.getAttribute("userId") as? Int) ?: throw UnauthorizedUserException()
+    get() = (getAttribute("userId") as? Int) ?: throw UnauthorizedUserException()
