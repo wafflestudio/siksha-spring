@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.MenuLikeException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
 import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
@@ -82,7 +80,7 @@ class MenuService(
         val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
 
         // 모든 restaurant 정보 조회
-        val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
+        val allRestaurants = restaurantRepository.findAll()
 
         // 날짜·타입별 기본 구조 초기화 (모든 식당, 빈 메뉴 리스트 포함)
         val dateGroupMap = mutableMapOf<LocalDate, MutableMap<String, MutableList<RestaurantInListDto>>>()
@@ -257,47 +255,5 @@ class MenuService(
             count = result.size,
             result = result,
         )
-    }
-
-    @Transactional
-    fun menuAlarmOn(
-        menuId: Int,
-        userId: Int,
-    ): MenuAlarmDto {
-        val menuIdStr = menuId.toString()
-        val userIdStr = userId.toString()
-        val menu =
-            try {
-                menuRepository.findMenuById(menuIdStr)
-            } catch (e: EmptyResultDataAccessException) {
-                throw MenuNotFoundException()
-            }
-
-        val menuLike = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, userIdStr)
-        if (menuLike.getIsLiked() == 0) throw MenuNotLikedException()
-
-        // TODO: alarm 추가 로직
-        return MenuAlarmDto.from(menu, menuLike.getIsLiked(), true)
-    }
-
-    @Transactional
-    fun menuAlarmOff(
-        menuId: Int,
-        userId: Int,
-    ): MenuAlarmDto {
-        val menuIdStr = menuId.toString()
-        val userIdStr = userId.toString()
-        val menu =
-            try {
-                menuRepository.findMenuById(menuIdStr)
-            } catch (e: EmptyResultDataAccessException) {
-                throw MenuNotFoundException()
-            }
-
-        val menuLike = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, userIdStr)
-        if (menuLike.getIsLiked() == 0) throw MenuNotLikedException()
-
-        // TODO: alarm 해제 로직
-        return MenuAlarmDto.from(menu, menuLike.getIsLiked(), false)
     }
 }
