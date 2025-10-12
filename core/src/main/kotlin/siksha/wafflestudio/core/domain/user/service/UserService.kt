@@ -86,8 +86,7 @@ class UserService(
                 user.nickname = it.nickname
             }
 
-            // TODO: refactor this after modify API request spec
-            if (it.changeToDefaultImage) {
+            if (it.changeToDefaultImage == true) {
                 this.deleteProfileImage(user)
             } else if (it.image != null) {
                 val profileUrl = this.uploadProfileImage(userId, it.image)
