@@ -43,5 +43,13 @@ jobs:
       - name: Run ktlint checks
         run: ./gradlew ktlintCheck
 
+      - name: Set Firebase Service Key JSON File
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase_service_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_KEY }}
+          dir: './core/src/main/resources'
+
       - name: Run tests and build
         run: ./gradlew build --no-daemon --info
