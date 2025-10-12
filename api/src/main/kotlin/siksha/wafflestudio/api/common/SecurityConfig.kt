@@ -33,7 +33,10 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/community/boards").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/community/boards/{board_id}").permitAll()
                     .requestMatchers(AntPathRequestMatcher.antMatcher("/community/**/web")).permitAll()
+                    .requestMatchers(AntPathRequestMatcher.antMatcher("/menus/**/web")).permitAll()
+                    .requestMatchers(AntPathRequestMatcher.antMatcher("/reviews/**/web")).permitAll()
                     .requestMatchers(
                         "/error",
                         "/swagger-ui/**",
@@ -44,6 +47,9 @@ class SecurityConfig(
                         "/auth/login/**",
                         "/auth/nicknames/validate",
                         "/docs",
+                        "/reviews/comments/recommendation",
+                        "/reviews/dist",
+                        "/reviews/keyword/dist",
                     ).permitAll()
                     .anyRequest().authenticated()
             }

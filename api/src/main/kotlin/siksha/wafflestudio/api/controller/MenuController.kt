@@ -22,6 +22,7 @@ import java.time.LocalDate
 class MenuController(
     private val menuService: MenuService,
 ) {
+    // GET /menus
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getMenusWhereDate(
@@ -38,6 +39,23 @@ class MenuController(
         )
     }
 
+    // GET /menus/web
+    @GetMapping("/web")
+    @ResponseStatus(HttpStatus.OK)
+    fun getMenusWhereDateWithoutAuth(
+        @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
+        @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
+    ): MenuListResponseDto {
+        return menuService.getMenusWhereDate(
+            startDate = startDate,
+            endDate = endDate,
+            exceptEmpty = exceptEmpty,
+            userId = null,
+        )
+    }
+
+    // GET /menus/{menu_id}
     @GetMapping("/{menu_id}")
     @ResponseStatus(HttpStatus.OK)
     fun getMenuById(
@@ -50,6 +68,19 @@ class MenuController(
         )
     }
 
+    // GET /menus/{menu_id}/web
+    @GetMapping("/{menu_id}/web")
+    @ResponseStatus(HttpStatus.OK)
+    fun getMenuByIdWithoutAuth(
+        @PathVariable("menu_id") menuId: Int,
+    ): MenuDetailsDto {
+        return menuService.getMenuById(
+            menuId = menuId,
+            userId = null,
+        )
+    }
+
+    // POST /menus/{menu_id}/like
     @PostMapping("/{menu_id}/like")
     @ResponseStatus(HttpStatus.CREATED)
     fun likeMenu(
@@ -60,6 +91,7 @@ class MenuController(
         userId = request.userId,
     )
 
+    // POST /menus/{menu_id}/unlike
     @PostMapping("/{menu_id}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
     fun unlikeMenu(
@@ -70,6 +102,7 @@ class MenuController(
         userId = request.userId,
     )
 
+    // GET /menus/me
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     fun getMyMenus(request: HttpServletRequest): MyMenuListResponseDto {

@@ -20,14 +20,14 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
-    // GET /menus 또는 /menus/{menu_id}
-    private val menuGetPattern = Regex("^/menus(?:/\\d+)?$")
-
     // SecurityConfig의 permitAll과 "항상" 동기화해 주세요.
     private val permitAllMatchers =
         listOf(
             AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
+            AntPathRequestMatcher("/community/boards/{board_id}", HttpMethod.GET.name()),
             AntPathRequestMatcher("/community/**/web"),
+            AntPathRequestMatcher("/menus/**/web"),
+            AntPathRequestMatcher("/reviews/**/web"),
             AntPathRequestMatcher("/error"),
             AntPathRequestMatcher("/swagger-ui/**"),
             AntPathRequestMatcher("/v3/api-docs/**"),
@@ -37,6 +37,9 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/auth/login/**"),
             AntPathRequestMatcher("/auth/nicknames/validate"),
             AntPathRequestMatcher("/docs"),
+            AntPathRequestMatcher("/reviews/comments/recommendation"),
+            AntPathRequestMatcher("/reviews/dist"),
+            AntPathRequestMatcher("/reviews/keyword/dist"),
         )
 
     override fun doFilterInternal(
@@ -57,31 +60,6 @@ class JwtAuthenticationFilter(
         }
 
         val token = extractBearerToken(request)
-
-        // 2) [특례] GET /reviews: is_private=false인 공개 리뷰는 익명으로 허용
-        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
-            request.requestURI.startsWith("/reviews") && request.requestURI != "/reviews/me"
-        ) {
-            val isPrivate = request.getParameter("is_private")?.toBoolean() ?: false
-            if (!isPrivate) {
-                // [변경] 익명 사용자 인증 정보 설정
-                setAnonymousAuthentication(request)
-                chain.doFilter(request, response)
-                return
-            }
-        }
-
-        // 3) [특례] GET /menus(/{id}): 토큰 없으면 익명, 있으면 검증
-        if (request.method.equals(HttpMethod.GET.name(), ignoreCase = true) &&
-            menuGetPattern.matches(request.requestURI)
-        ) {
-            if (token.isNullOrBlank()) {
-                // [변경] 익명 사용자 인증 정보 설정
-                setAnonymousAuthentication(request)
-                chain.doFilter(request, response)
-                return
-            }
-        }
 
         // 4) 위 특례에 해당하지 않는 모든 보호된 경로: 토큰 필수 검증
         if (token.isNullOrBlank()) {

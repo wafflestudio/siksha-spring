@@ -8,12 +8,12 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -89,22 +89,12 @@ class AuthController(
         return userService.getUser(request.userId)
     }
 
-    // TODO: request param 재정의
     @PatchMapping("/me/profile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun updateUserProfile(
         request: HttpServletRequest,
-        @RequestPart("nickname") nickname: String?,
-        @RequestPart("image") image: MultipartFile?,
-        @RequestPart("change_to_default_image") changeToDefaultImage: Boolean? = false,
+        @ModelAttribute userProfilePatchDto: UserProfilePatchDto,
     ): UserResponseDto {
-        val patchDto =
-            UserProfilePatchDto(
-                nickname = nickname,
-                image = image,
-                changeToDefaultImage = changeToDefaultImage ?: false,
-            )
-
-        return userService.patchUser(request.userId, patchDto)
+        return userService.patchUser(request.userId, userProfilePatchDto)
     }
 
     @GetMapping("/nicknames/validate")

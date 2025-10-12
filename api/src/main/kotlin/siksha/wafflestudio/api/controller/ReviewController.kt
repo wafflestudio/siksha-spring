@@ -156,60 +156,86 @@ class ReviewController(
     }
 
     // ============================================================================
-    // GET Endpoints (Conditional Authentication via is_private parameter)
+    // GET Endpoints (Conditional Authentication)
     // ============================================================================
+
+    @GetMapping("/{review_id}/web")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "리뷰 상세 조회 (비로그인)", description = "특정 리뷰의 상세 정보를 조회합니다 (비로그인)")
+    fun getReviewWithoutAuth(
+        @PathVariable("review_id") reviewId: Int,
+    ): MyReviewResponse {
+        return reviewService.getReview(reviewId = reviewId, userId = null)
+    }
 
     @GetMapping("/{review_id}")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-        summary = "리뷰 상세 조회",
-        description = "특정 리뷰의 상세 정보를 조회합니다. 'is_login' 파라미터에 따라 인증이 조건부로 적용됩니다.",
-    )
+    @Operation(summary = "리뷰 상세 조회 (로그인)", description = "특정 리뷰의 상세 정보를 조회합니다 (로그인)")
     @SecurityRequirement(name = "bearerAuth")
-    fun getReview(
+    fun getReviewLogin(
         @PathVariable("review_id") reviewId: Int,
-        @Parameter(description = "사용자 로그인 여부. 인증 요구사항을 결정합니다.")
-        @RequestParam("is_login") isLogin: Boolean,
         request: HttpServletRequest,
     ): MyReviewResponse {
         val userId = request.userId
         return reviewService.getReview(reviewId = reviewId, userId = userId)
     }
 
-    @GetMapping
+    @GetMapping("/web")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-        summary = "메뉴의 리뷰 목록 조회",
-        description = "특정 메뉴의 리뷰 목록을 조회합니다. 'is_login' 파라미터에 따라 인증이 조건부로 적용됩니다.",
-    )
-    @SecurityRequirement(name = "bearerAuth")
-    fun getReviews(
+    @Operation(summary = "메뉴의 리뷰 목록 조회 (비로그인)", description = "특정 메뉴의 리뷰 목록을 조회합니다 (비로그인).")
+    fun getReviewsWithoutAuth(
         @RequestParam("menu_id") menuId: Int,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
-        @Parameter(description = "사용자 로그인 여부. 인증 요구사항을 결정합니다.")
-        @RequestParam("is_login") isLogin: Boolean,
+    ): ReviewListResponse {
+        val userId = null
+        return reviewService.getReviews(userId, menuId, page, size)
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "메뉴의 리뷰 목록 조회 (로그인)", description = "특정 메뉴의 리뷰 목록을 조회합니다 (로그인).")
+    @SecurityRequirement(name = "bearerAuth")
+    fun getReviewsLogin(
+        @RequestParam("menu_id") menuId: Int,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
         request: HttpServletRequest,
     ): ReviewListResponse {
         val userId = request.userId
         return reviewService.getReviews(userId, menuId, page, size)
     }
 
-    @GetMapping("/filter")
+    @GetMapping("/filter/web")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-        summary = "메뉴의 필터링된 리뷰 조회",
-        description = "특정 메뉴의 리뷰를 댓글/이미지 필터와 함께 조회합니다. 'is_login' 파라미터에 따라 인증이 조건부로 적용됩니다.",
+        summary = "메뉴의 필터링된 리뷰 조회 (비로그인)",
+        description = "특정 메뉴의 리뷰를 댓글/이미지 필터와 함께 조회합니다 (비로그인).",
     )
-    @SecurityRequirement(name = "bearerAuth")
     fun getFilteredReviews(
         @RequestParam("menu_id") menuId: Int,
         @RequestParam("comment", required = false) comment: Boolean?,
         @RequestParam("image", required = false) image: Boolean?,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "10") size: Int,
-        @Parameter(description = "사용자 로그인 여부. 인증 요구사항을 결정합니다.")
-        @RequestParam("is_login") isLogin: Boolean,
+    ): ReviewListResponse {
+        val userId = null
+        return reviewService.getFilteredReviews(userId, menuId, comment, image, page, size)
+    }
+
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+        summary = "메뉴의 필터링된 리뷰 조회 (로그인)",
+        description = "특정 메뉴의 리뷰를 댓글/이미지 필터와 함께 조회합니다 (로그인).",
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    fun getFilteredReviewsLogin(
+        @RequestParam("menu_id") menuId: Int,
+        @RequestParam("comment", required = false) comment: Boolean?,
+        @RequestParam("image", required = false) image: Boolean?,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int,
         request: HttpServletRequest,
     ): ReviewListResponse {
         val userId = request.userId
