@@ -11,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
+import siksha.wafflestudio.core.domain.common.exception.KeywordReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.NotReviewOwnerException
 import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.ReviewAndMenuMismatchException
 import siksha.wafflestudio.core.domain.common.exception.ReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.ReviewSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.SelfReviewLikeNotAllowedException
@@ -199,20 +201,23 @@ class ReviewService(
     fun updateReviewWithImages(
         userId: Int,
         reviewId: Int,
-        reviewWithImagesRequest: ReviewWithImagesRequest,
+        request: ReviewWithImagesRequest,
     ): MenuDetailsDto {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+        // review가 존재하는지 확인
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
-        if (review.user.id != userId) {
-            throw NotReviewOwnerException()
-        }
+        if (review.user.id != userId) throw NotReviewOwnerException()
+        val menuId = request.menuId
+        if (menuId != review.menu.id) throw ReviewAndMenuMismatchException()
+        val score = request.score
+        val comment = request.comment
+        val tasteKeyword = request.taste
+        val priceKeyword = request.price
+        val foodCompositionKeyword = request.foodComposition
+        val images = request.images
 
-        val menuId = review.menu.id
-        val menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException()
-        val score = reviewWithImagesRequest.score
-        val comment = reviewWithImagesRequest.comment
-        val images = reviewWithImagesRequest.images
+        validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
+        // 기존 review에 있던 images는 삭제하고 진행
         review.etc?.let {
             val parsedImageUrls = EtcUtils.parseImageUrlsFromEtc(it)
             val keys = EtcUtils.getImageKeysFromUrlList(parsedImageUrls)
@@ -244,13 +249,17 @@ class ReviewService(
         review.score = score
         review.comment = comment ?: ""
         review.etc = objectMapper.writeValueAsString(imageUrls)
-        review.updatedAt = OffsetDateTime.now()
 
-        val menuSummary = menuRepository.findMenuById(menu.id.toString())
+        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordReviewNotFoundException()
+        keywordReview.taste = KeywordReviewUtil.getTasteLevel(tasteKeyword)
+        keywordReview.price = KeywordReviewUtil.getPriceLevel(priceKeyword)
+        keywordReview.foodComposition = KeywordReviewUtil.getFoodCompositionLevel(foodCompositionKeyword)
+
+        val menuSummary = menuRepository.findMenuById(menuId.toString())
         val menuLikeSummary =
             menuRepository.findMenuLikeByMenuIdAndUserId(
-                menu.id.toString(),
-                user.id.toString(),
+                menuId.toString(),
+                userId.toString(),
             )
 
         return MenuDetailsDto.from(menuSummary, menuLikeSummary)
@@ -273,6 +282,9 @@ class ReviewService(
             imageRepository.softDeleteByKeyIn(keys)
         }
 
+        if (keywordReviewRepository.existsById(reviewId)) {
+            keywordReviewRepository.deleteById(reviewId)
+        }
         reviewRepository.deleteById(reviewId)
     }
 

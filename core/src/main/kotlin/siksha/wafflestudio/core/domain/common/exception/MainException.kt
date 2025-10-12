@@ -42,3 +42,7 @@ class SelfReviewLikeNotAllowedException : MainException(HttpStatus.BAD_REQUEST, 
 class ReviewNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰가 존재하지 않습니다.")
 
 class NotReviewOwnerException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰를 작성한 사용자가 아닙니다.")
+
+class KeywordReviewNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 키워드 리뷰가 존재하지 않습니다.")
+
+class ReviewAndMenuMismatchException : MainException(HttpStatus.BAD_REQUEST, "해당 리뷰의 메뉴와 요청하신 메뉴가 일치하지 않아 리뷰를 수정할 수 없습니다.")
