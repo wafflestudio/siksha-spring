@@ -11,16 +11,19 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.service.MenuService
+import siksha.wafflestudio.core.infrastructure.fcm.FcmService
 import java.time.LocalDate
 
 @RestController
 @RequestMapping("/menus")
 class MenuController(
     private val menuService: MenuService,
+    private val fcmService: FcmService,
 ) {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -81,11 +84,22 @@ class MenuController(
     @PostMapping("/{menu_id}/alarm/on")
     fun menuAlarmOn(
         @PathVariable("menu_id") menuId: Int,
+        @RequestParam("fcm_token") token: String?,
         request: HttpServletRequest,
-    ) = menuService.menuAlarmOn(
-        menuId = menuId,
-        userId = request.userId,
-    )
+    ): MenuAlarmDto {
+        val result =
+            menuService.menuAlarmOn(
+                menuId = menuId,
+                userId = request.userId,
+            )
+
+        // TODO : 알람 로직 수정
+        if (token != null) {
+            fcmService.sendNotification(token, result.nameKr ?: "", result.alarm.toString())
+        }
+
+        return result
+    }
 
     @PostMapping("/{menu_id}/alarm/off")
     fun menuAlarmOff(

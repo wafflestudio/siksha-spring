@@ -5,18 +5,20 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import org.springframework.context.annotation.Configuration
 import javax.annotation.PostConstruct
-import java.io.FileInputStream
 
 @Configuration
 class FirebaseConfig {
     @PostConstruct
     fun init() {
         if (FirebaseApp.getApps().isEmpty()) {
-            val serviceAccount = FileInputStream("/core/src/main/resources/firebase_service_key.json")
+            val serviceAccount =
+                this::class.java.getResourceAsStream("/firebase_service_key.json")
+                    ?: throw IllegalArgumentException("Resource not found.")
 
-            val options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build()
+            val options =
+                FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build()
 
             FirebaseApp.initializeApp(options)
         }
