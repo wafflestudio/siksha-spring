@@ -206,13 +206,6 @@ class ReviewService(
         // review가 존재하는지 확인
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
         if (review.user.id != userId) throw NotReviewOwnerException()
-        // 기존 review에 있던 images는 삭제하고 진행
-        review.etc?.let {
-            val parsedImageUrls = EtcUtils.parseImageUrlsFromEtc(it)
-            val keys = EtcUtils.getImageKeysFromUrlList(parsedImageUrls)
-            imageRepository.softDeleteByKeyIn(keys)
-        }
-
         val menuId = request.menuId
         if (menuId != review.menu.id) throw ReviewAndMenuMismatchException()
         val score = request.score
@@ -223,6 +216,13 @@ class ReviewService(
         val images = request.images
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
+
+        // 기존 review에 있던 images는 삭제하고 진행
+        review.etc?.let {
+            val parsedImageUrls = EtcUtils.parseImageUrlsFromEtc(it)
+            val keys = EtcUtils.getImageKeysFromUrlList(parsedImageUrls)
+            imageRepository.softDeleteByKeyIn(keys)
+        }
 
         val uploadedFiles =
             images?.takeIf { it.isNotEmpty() }?.let {
