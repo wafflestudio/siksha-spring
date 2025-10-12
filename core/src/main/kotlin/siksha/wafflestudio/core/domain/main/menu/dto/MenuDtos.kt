@@ -259,4 +259,28 @@ data class MenuAlarmDto
         val isLiked: Boolean,
         @JsonProperty("alarm")
         val alarm: Boolean,
-    )
+    ) {
+        companion object {
+            fun from(
+                menu: MenuSummary,
+                isLiked: Int,
+                alarm: Boolean,
+            ): MenuAlarmDto {
+                return MenuAlarmDto(
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    id = menu.getId(),
+                    restaurantId = menu.getRestaurantId(),
+                    code = menu.getCode(),
+                    date = menu.getDate(),
+                    type = menu.getType(),
+                    nameKr = menu.getNameKr(),
+                    nameEn = menu.getNameEn(),
+                    price = menu.getPrice(),
+                    etc = EtcUtils.convertMenuEtc(menu.getEtc()),
+                    isLiked = isLiked == 1,
+                    alarm = alarm,
+                )
+            }
+        }
+    }
