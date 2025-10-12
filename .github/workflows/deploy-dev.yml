@@ -50,11 +50,3 @@ jobs:
           .
 
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Set Firebase Service Key JSON File
-        id: create-json
-        uses: jsdaniell/create-json@v1.2.2
-        with:
-          name: "firebase_service_key.json"
-          json: ${{ secrets.FIREBASE_SERVICE_KEY }}
-          dir: './core/src/main/resources'
