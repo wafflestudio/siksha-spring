@@ -1,7 +1,6 @@
 package siksha.wafflestudio.api.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
@@ -107,10 +106,6 @@ class ReviewController(
         request: HttpServletRequest,
     ) = reviewService.unlikeReview(reviewId, request.userId)
 
-    // ============================================================================
-    // GET Endpoints (Authentication Required)
-    // ============================================================================
-
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "내 리뷰 조회", description = "인증된 사용자가 작성한 리뷰를 조회합니다")
@@ -124,13 +119,9 @@ class ReviewController(
         return reviewService.getMyReviews(userId, page, perPage)
     }
 
-    // ============================================================================
-    // GET Endpoints (No Authentication Required)
-    // ============================================================================
-
     @GetMapping("/comments/recommendation")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "댓글 추천 조회", description = "점수 기반 추천 댓글을 조회합니다 (인증 불필요)")
+    @Operation(summary = "댓글 추천 조회", description = "점수 기반 추천 댓글을 조회합니다")
     fun getCommentRecommendation(
         @RequestParam score: Int,
     ): CommentRecommendationResponse {
@@ -139,7 +130,7 @@ class ReviewController(
 
     @GetMapping("/dist")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "리뷰 점수 분포 조회", description = "메뉴의 점수 분포를 조회합니다 (인증 불필요)")
+    @Operation(summary = "리뷰 점수 분포 조회", description = "메뉴의 점수 분포를 조회합니다")
     fun getReviewScoreDistribution(
         @RequestParam("menu_id") menuId: Int,
     ): ReviewScoreDistributionResponse {
@@ -148,16 +139,12 @@ class ReviewController(
 
     @GetMapping("/keyword/dist")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "키워드 점수 분포 조회", description = "메뉴의 키워드 기반 점수 분포를 조회합니다 (인증 불필요)")
+    @Operation(summary = "키워드 점수 분포 조회", description = "메뉴의 키워드 기반 점수 분포를 조회합니다")
     fun getKeywordScoreDistribution(
         @RequestParam("menu_id") menuId: Int,
     ): KeywordScoreDistributionResponse {
         return reviewService.getKeywordScoreDistribution(menuId)
     }
-
-    // ============================================================================
-    // GET Endpoints (Conditional Authentication)
-    // ============================================================================
 
     @GetMapping("/{review_id}/web")
     @ResponseStatus(HttpStatus.OK)

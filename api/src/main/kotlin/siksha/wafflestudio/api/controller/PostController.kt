@@ -1,5 +1,8 @@
 package siksha.wafflestudio.api.controller
 
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Validator
 import jakarta.validation.constraints.Min
@@ -32,11 +35,13 @@ import siksha.wafflestudio.core.domain.community.post.service.PostService
 @RestController
 @RequestMapping("/community/posts")
 @Validated
+@Tag(name = "Posts", description = "커뮤니티 게시글 관리 엔드포인트")
 class PostController(
     private val postService: PostService,
     private val validator: Validator,
 ) {
     @GetMapping("/web")
+    @Operation(summary = "게시글 목록 조회 (비로그인)", description = "특정 게시판의 게시글 목록을 조회합니다 (비로그인)")
     fun getPostsWithoutAuth(
         @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
@@ -46,6 +51,8 @@ class PostController(
     }
 
     @GetMapping
+    @Operation(summary = "게시글 목록 조회 (로그인)", description = "특정 게시판의 게시글 목록을 조회합니다 (로그인)")
+    @SecurityRequirement(name = "bearerAuth")
     fun getPostsWithAuth(
         request: HttpServletRequest,
         @RequestParam(name = "board_id") boardId: Int,
@@ -57,6 +64,8 @@ class PostController(
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "게시글 작성", description = "새로운 게시글을 작성합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun createPost(
         request: HttpServletRequest,
         @RequestParam("board_id") boardId: Int,
@@ -79,6 +88,8 @@ class PostController(
     }
 
     @GetMapping("/me")
+    @Operation(summary = "내 게시글 조회", description = "인증된 사용자가 작성한 게시글 목록을 조회합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun getMyPosts(
         request: HttpServletRequest,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
@@ -88,6 +99,7 @@ class PostController(
     }
 
     @GetMapping("/{post_id}/web")
+    @Operation(summary = "게시글 상세 조회 (비로그인)", description = "특정 게시글의 상세 정보를 조회합니다 (비로그인)")
     fun getPostWithoutAuth(
         @PathVariable("post_id") postId: Int,
     ): PostResponseDto? {
@@ -95,6 +107,8 @@ class PostController(
     }
 
     @GetMapping("/{post_id}")
+    @Operation(summary = "게시글 상세 조회 (로그인)", description = "특정 게시글의 상세 정보를 조회합니다 (로그인)")
+    @SecurityRequirement(name = "bearerAuth")
     fun getPostWithAuth(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
@@ -103,6 +117,8 @@ class PostController(
     }
 
     @PatchMapping("/{post_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @Operation(summary = "게시글 수정", description = "기존 게시글을 수정합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun patchPost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
@@ -125,6 +141,8 @@ class PostController(
 
     @DeleteMapping("/{post_id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "게시글 삭제", description = "기존 게시글을 삭제합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun deletePost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
@@ -134,6 +152,8 @@ class PostController(
 
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "게시글 좋아요", description = "특정 게시글에 좋아요를 추가합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun createPostLike(
         request: HttpServletRequest,
         @PathVariable postId: Int,
@@ -144,6 +164,8 @@ class PostController(
     // TODO: delete 방식으로 수정
     @PostMapping("/{postId}/unlike")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "게시글 좋아요 취소", description = "특정 게시글의 좋아요를 취소합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun createPostUnlike(
         request: HttpServletRequest,
         @PathVariable postId: Int,
@@ -153,6 +175,8 @@ class PostController(
 
     @PostMapping("/{postId}/report")
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "게시글 신고", description = "특정 게시글을 신고합니다")
+    @SecurityRequirement(name = "bearerAuth")
     fun createPostReport(
         request: HttpServletRequest,
         @PathVariable postId: Int,
@@ -162,6 +186,8 @@ class PostController(
     }
 
     @GetMapping("/popular/trending")
+    @Operation(summary = "인기 게시글 조회 (트렌딩, 로그인)", description = "최근 인기있는 게시글을 조회합니다 (로그인)")
+    @SecurityRequirement(name = "bearerAuth")
     fun getTrendingPosts(
         request: HttpServletRequest,
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
@@ -171,6 +197,7 @@ class PostController(
     }
 
     @GetMapping("/popular/trending/web")
+    @Operation(summary = "인기 게시글 조회 (트렌딩, 비로그인)", description = "최근 인기있는 게시글을 조회합니다 (비로그인)")
     fun getTrendingPostsWithoutAuth(
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
         @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
@@ -179,6 +206,8 @@ class PostController(
     }
 
     @GetMapping("/popular/best")
+    @Operation(summary = "인기 게시글 조회 (베스트, 로그인)", description = "베스트 게시글을 조회합니다 (로그인)")
+    @SecurityRequirement(name = "bearerAuth")
     fun getBestPosts(
         request: HttpServletRequest,
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
@@ -187,6 +216,7 @@ class PostController(
     }
 
     @GetMapping("/popular/best/web")
+    @Operation(summary = "인기 게시글 조회 (베스트, 비로그인)", description = "베스트 게시글을 조회합니다 (비로그인)")
     fun getBestPostsWithoutAuth(
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
     ): PostsResponseDto? {

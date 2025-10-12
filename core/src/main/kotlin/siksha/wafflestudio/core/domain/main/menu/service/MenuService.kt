@@ -148,7 +148,7 @@ class MenuService(
         userId: Int?,
     ): MenuDetailsDto {
         // userId가 0인 경우 비로그인 -> is_liked = false
-        val targetUserId = userId?.toString()?: "0"
+        val targetUserId = userId?.toString() ?: "0"
         val menuIdStr = menuId.toString()
 
         // 1) 메뉴 기본 정보 조회 (score, review_cnt 포함)

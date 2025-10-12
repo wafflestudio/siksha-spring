@@ -20,7 +20,6 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
-    // SecurityConfig의 permitAll과 "항상" 동기화해 주세요.
     private val permitAllMatchers =
         listOf(
             AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
@@ -47,41 +46,31 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         chain: FilterChain,
     ) {
-        // 0) CORS preflight는 무조건 통과
         if (request.method.equals(HttpMethod.OPTIONS.name(), ignoreCase = true)) {
             chain.doFilter(request, response)
             return
         }
 
-        // 1) SecurityConfig에서 permitAll 처리된 경로는 즉시 통과
         if (permitAllMatchers.any { it.matches(request) }) {
             chain.doFilter(request, response)
             return
         }
 
         val token = extractBearerToken(request)
-
-        // 4) 위 특례에 해당하지 않는 모든 보호된 경로: 토큰 필수 검증
         if (token.isNullOrBlank()) {
             unauthorized(request, response)
             return
         }
-
-        // 5) 토큰 검증 및 userId 설정
         runCatching {
             val userId = verifyAndExtractUserId(token)
-            // [변경] 인증된 사용자 정보 설정
             setAuthenticatedUser(userId, request)
         }.getOrElse {
             unauthorized(request, response)
             return
         }
 
-        // 6) 다음 필터로 전달
         chain.doFilter(request, response)
     }
-
-    // ... 기존 extractBearerToken, verifyAndExtractUserId, unauthorized 함수 ...
 
     private fun extractBearerToken(request: HttpServletRequest): String? {
         val h = request.getHeader(HDR_AUTHORIZATION) ?: return null
