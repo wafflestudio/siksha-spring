@@ -163,7 +163,10 @@ class UserService(
     }
 
     @Transactional
-    fun createUserDevice(userId: Int, fcmToken: String) {
+    fun createUserDevice(
+        userId: Int,
+        fcmToken: String,
+    ) {
         if (userRepository.existsById(userId).not()) {
             throw UserNotFoundException()
         }
@@ -173,10 +176,10 @@ class UserService(
         userDeviceRepository.flush()
 
         userDeviceRepository.save(
-        UserDevice(
-            userId = userId.toLong(),
-            fcmToken = fcmToken,
-            )
+            UserDevice(
+                userId = userId.toLong(),
+                fcmToken = fcmToken,
+            ),
         )
     }
 }
