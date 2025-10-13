@@ -14,8 +14,10 @@ import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.user.data.UserDevice
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
+import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
@@ -30,6 +32,7 @@ import java.time.format.DateTimeFormatter
 class UserService(
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
+    private val userDeviceRepository: UserDeviceRepository,
     private val s3Service: S3Service,
     @Value("\${siksha.banned.words:}") private val bannedWords: List<String>,
 ) {
@@ -157,5 +160,23 @@ class UserService(
             }
             user.profileUrl = null
         }
+    }
+
+    @Transactional
+    fun createUserDevice(userId: Int, fcmToken: String) {
+        if (userRepository.existsById(userId).not()) {
+            throw UserNotFoundException()
+        }
+
+        // 동일한 fcm으로 등록된 userDevice는 삭제한다.
+        userDeviceRepository.deleteByFcmToken(fcmToken)
+        userDeviceRepository.flush()
+
+        userDeviceRepository.save(
+        UserDevice(
+            userId = userId.toLong(),
+            fcmToken = fcmToken,
+            )
+        )
     }
 }
