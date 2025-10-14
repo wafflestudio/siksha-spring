@@ -290,7 +290,7 @@ class ReviewService(
 
     fun getReview(
         reviewId: Int,
-        userId: Int,
+        userId: Int?,
     ): MyReviewResponse {
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
         val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId)
@@ -307,7 +307,7 @@ class ReviewService(
 
         // Check if user liked this review (false for anonymous users with userId = 0)
         val isLiked =
-            if (userId == 0) {
+            if (userId == null) {
                 false
             } else {
                 reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId)
@@ -330,18 +330,20 @@ class ReviewService(
     }
 
     fun getReviews(
-        userId: Int,
+        userId: Int?,
         menuId: Int,
         page: Int,
         size: Int,
     ): ReviewListResponse {
+        // userId가 null인 경우 비로그인 -> is_liked = false
+        val targetUserId = userId ?: 0
         val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
 
         val menuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
 
         val reviews =
             reviewRepository.findByMenuIdOrderByCreatedAtDesc(
-                userId,
+                targetUserId,
                 menuPlainSummary.getRestaurantId(),
                 menuPlainSummary.getCode(),
                 pageable,
@@ -399,19 +401,21 @@ class ReviewService(
     }
 
     fun getFilteredReviews(
-        userId: Int,
+        userId: Int?,
         menuId: Int,
         comment: Boolean?,
         image: Boolean?,
         page: Int,
         size: Int,
     ): ReviewListResponse {
+        // userId가 null인 경우 비로그인 -> is_liked = false
+        val targetUserId = userId ?: 0
         val menuPlainSummary: MenuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
 
         val pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "created_at"))
         val reviews =
             reviewRepository.findFilteredReviews(
-                userId,
+                targetUserId,
                 menuPlainSummary.getRestaurantId(),
                 menuPlainSummary.getCode(),
                 comment,

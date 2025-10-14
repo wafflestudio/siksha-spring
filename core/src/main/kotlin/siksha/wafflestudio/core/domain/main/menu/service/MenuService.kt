@@ -61,10 +61,10 @@ class MenuService(
         startDate: LocalDate,
         endDate: LocalDate,
         exceptEmpty: Boolean,
-        userId: Int,
+        userId: Int?,
     ): MenuListResponseDto {
-        // userId가 0인 경우 비로그인 -> is_liked = false
-        val targetUserId = userId.toString()
+        // userId가 null인 경우 비로그인 -> is_liked = false
+        val targetUserId = userId?.toString() ?: "0"
         val startDateStr = startDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
         val endDateStr = endDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
@@ -145,10 +145,10 @@ class MenuService(
 
     fun getMenuById(
         menuId: Int,
-        userId: Int,
+        userId: Int?,
     ): MenuDetailsDto {
         // userId가 0인 경우 비로그인 -> is_liked = false
-        val targetUserId = userId.toString()
+        val targetUserId = userId?.toString() ?: "0"
         val menuIdStr = menuId.toString()
 
         // 1) 메뉴 기본 정보 조회 (score, review_cnt 포함)

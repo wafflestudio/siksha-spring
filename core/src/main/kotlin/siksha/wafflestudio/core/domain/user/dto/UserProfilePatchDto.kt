@@ -8,5 +8,5 @@ import org.springframework.web.multipart.MultipartFile
 data class UserProfilePatchDto(
     val nickname: String?,
     val image: MultipartFile?,
-    val changeToDefaultImage: Boolean,
+    val changeToDefaultImage: Boolean?,
 )
