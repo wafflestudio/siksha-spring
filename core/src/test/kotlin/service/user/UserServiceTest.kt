@@ -17,6 +17,7 @@ import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
+import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.user.service.UserService
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
@@ -28,6 +29,7 @@ import kotlin.test.assertNull
 class UserServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
+    private lateinit var userDeviceRepository: UserDeviceRepository
     private lateinit var s3Service: S3Service
     private lateinit var userService: UserService
 
@@ -35,8 +37,9 @@ class UserServiceTest {
     internal fun setUp() {
         userRepository = mockk()
         imageRepository = mockk()
+        userDeviceRepository = mockk()
         s3Service = mockk()
-        userService = UserService(userRepository, imageRepository, s3Service, listOf())
+        userService = UserService(userRepository, imageRepository, userDeviceRepository, s3Service, listOf())
         clearAllMocks()
     }
 
@@ -212,5 +215,25 @@ class UserServiceTest {
         verify { s3Service.getKeyFromUrl("some-url") }
         verify { imageRepository.softDeleteByKeyIn(listOf("some-key")) }
         verify { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `createUserDevice - success`() {
+        // given
+        val userId = 1
+        val fcmToken = "test-fcm-token"
+        every { userRepository.existsById(userId) } returns true
+        every { userDeviceRepository.deleteByFcmToken(fcmToken) } just Runs
+        every { userDeviceRepository.flush() } just Runs
+        every { userDeviceRepository.save(any()) } returns mockk()
+
+        // when
+        userService.createUserDevice(userId, fcmToken)
+
+        // verify
+        verify(exactly = 1) { userRepository.existsById(userId) }
+        verify(exactly = 1) { userDeviceRepository.deleteByFcmToken(fcmToken) }
+        verify(exactly = 1) { userDeviceRepository.flush() }
+        verify(exactly = 1) { userDeviceRepository.save(match { it.userId == userId.toLong() && it.fcmToken == fcmToken }) }
     }
 }

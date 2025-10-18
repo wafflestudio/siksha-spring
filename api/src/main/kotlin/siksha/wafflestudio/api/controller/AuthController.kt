@@ -27,6 +27,7 @@ import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.TokenParseException
+import siksha.wafflestudio.core.domain.user.dto.UserDeviceCreateDto
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.service.UserService
@@ -139,6 +140,17 @@ class AuthController(
 
         if (!rawHeader.startsWith("Bearer ", ignoreCase = false)) throw TokenParseException()
         return rawHeader.removePrefix("Bearer ")
+    }
+
+    @PostMapping("/userDevice")
+    fun createUserDevice(
+        request: HttpServletRequest,
+        @RequestBody userDeviceCreateDto: UserDeviceCreateDto,
+    ) {
+        userService.createUserDevice(
+            userId = request.userId,
+            fcmToken = userDeviceCreateDto.fcmToken,
+        )
     }
 
     companion object {
