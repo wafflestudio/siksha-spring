@@ -69,20 +69,11 @@ class PostController(
     @SecurityRequirement(name = "bearerAuth")
     fun createPost(
         request: HttpServletRequest,
-        @RequestParam("board_id") boardId: Int,
-        @RequestPart("title") title: String,
-        @RequestPart("content") content: String,
-        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
-        @RequestPart("images", required = false) images: List<MultipartFile>?,
+        @ModelAttribute requestDto: PostCreateRequestDto,
     ): PostResponseDto? {
-        val createDto =
-            PostCreateRequestDto(
-                boardId = boardId,
-                title = title,
-                content = content,
-                anonymous = anonymous ?: false,
-                images = images,
-            )
+        val createDto = requestDto.copy(
+            anonymous = requestDto.anonymous ?: false
+        )
         val violations = validator.validate(createDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.createPost(request.userId, createDto)
