@@ -47,7 +47,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/reviews/dist"),
             AntPathRequestMatcher("/reviews/keyword/dist"),
             AntPathRequestMatcher("/voc"),
-            AntPathRequestMatcher("/ping")
+            AntPathRequestMatcher("/ping"),
         )
 
     override fun doFilterInternal(

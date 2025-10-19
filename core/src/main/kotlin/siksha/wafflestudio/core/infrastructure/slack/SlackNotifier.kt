@@ -20,35 +20,40 @@ class SlackNotifier(
     private val restTemplate = RestTemplate()
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun sendSlackMessage(msg: String, platform: String? = null): Boolean {
+    fun sendSlackMessage(
+        msg: String,
+        platform: String? = null,
+    ): Boolean {
         if (slackToken.isNullOrBlank() || slackChannel.isNullOrBlank()) {
             logger.error("Missing slack token or channel")
             return false
         }
 
         val text = if (platform.isNullOrBlank()) msg else "$msg\nplatform: $platform"
-        val body = mapOf(
-            "channel" to slackChannel,
-            "text" to text
-        )
-        val headers = HttpHeaders().apply {
-            contentType = MediaType.APPLICATION_JSON
-            setBearerAuth(slackToken)
-        }
+        val body =
+            mapOf(
+                "channel" to slackChannel,
+                "text" to text,
+            )
+        val headers =
+            HttpHeaders().apply {
+                contentType = MediaType.APPLICATION_JSON
+                setBearerAuth(slackToken)
+            }
         val request = HttpEntity(body, headers)
 
         try {
-            val response = restTemplate.postForEntity(
-                slackUrl,
-                request,
-                String::class.java
-            )
+            val response =
+                restTemplate.postForEntity(
+                    slackUrl,
+                    request,
+                    String::class.java,
+                )
 
             if (!response.statusCode.is2xxSuccessful) {
                 logger.error("Failed to send slack message: $response")
                 return false
             }
-
         } catch (e: Exception) {
             logger.error("Failed to send slack message: ${e.message}")
             return false

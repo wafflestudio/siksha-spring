@@ -62,7 +62,7 @@ class SecurityConfig(
                 "/reviews/dist",
                 "/reviews/keyword/dist",
                 "/voc",
-                "/ping"
+                "/ping",
             ).permitAll()
             .anyRequest().authenticated()
     }
