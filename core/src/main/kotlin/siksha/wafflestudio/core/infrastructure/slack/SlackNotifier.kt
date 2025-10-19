@@ -11,10 +11,10 @@ import org.springframework.web.client.RestTemplate
 
 @Component
 class SlackNotifier(
-    @Value("\${slack.token}")
-    private val slackToken: String,
-    @Value("\${slack.channel}")
-    private val slackChannel: String,
+    @Value("\${slack.token:}")
+    private val slackToken: String?,
+    @Value("\${slack.channel:}")
+    private val slackChannel: String?,
 ) {
     private val slackUrl = "https://slack.com/api/chat.postMessage"
     private val restTemplate = RestTemplate()
