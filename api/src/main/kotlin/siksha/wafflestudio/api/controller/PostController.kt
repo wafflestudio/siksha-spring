@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
 import siksha.wafflestudio.core.domain.community.post.dto.CreatePostReportRequestDto
@@ -71,9 +69,10 @@ class PostController(
         request: HttpServletRequest,
         @ModelAttribute requestDto: PostCreateRequestDto,
     ): PostResponseDto? {
-        val createDto = requestDto.copy(
-            anonymous = requestDto.anonymous ?: false
-        )
+        val createDto =
+            requestDto.copy(
+                anonymous = requestDto.anonymous ?: false,
+            )
         val violations = validator.validate(createDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.createPost(request.userId, createDto)
