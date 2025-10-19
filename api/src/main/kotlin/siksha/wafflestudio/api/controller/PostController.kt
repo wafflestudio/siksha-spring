@@ -11,6 +11,7 @@ import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -122,18 +123,9 @@ class PostController(
     fun patchPost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
-        @RequestPart("title") title: String?,
-        @RequestPart("content") content: String?,
-        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
-        @RequestPart("images", required = false) images: List<MultipartFile>?,
+        @ModelAttribute requestDto: PostPatchRequestDto,
     ): PostResponseDto? {
-        val patchDto =
-            PostPatchRequestDto(
-                title = title,
-                content = content,
-                anonymous = anonymous ?: false,
-                images = images,
-            )
+        val patchDto = requestDto.copy(anonymous = requestDto.anonymous ?: false)
         val violations = validator.validate(patchDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)

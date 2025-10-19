@@ -48,7 +48,7 @@ data class PostPatchRequestDto(
     @field:NullOrNotBlank(message = "내용은 1자에서 1000자 사이여야 합니다.")
     @field:Size(max = 200, message = "내용은 1자에서 1000자 사이여야 합니다.")
     val content: String?,
-    val anonymous: Boolean?,
+    val anonymous: Boolean? = false,
     val images: List<MultipartFile>?,
 ) {
     fun toEntity(
