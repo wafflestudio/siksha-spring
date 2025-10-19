@@ -3,6 +3,7 @@ package siksha.wafflestudio.api.controller
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,4 +24,11 @@ class BasicController(
     ) {
         slackNotifier.sendSlackMessage(request.voc, request.platform)
     }
+
+    /**
+    * legacy compatibility endpoint
+    * GET /actuator/health is also available.
+    */
+    @GetMapping("/ping")
+    fun ping() = "pong"
 }
