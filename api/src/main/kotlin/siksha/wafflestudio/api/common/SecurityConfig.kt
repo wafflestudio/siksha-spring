@@ -61,6 +61,7 @@ class SecurityConfig(
                 "/reviews/comments/recommendation",
                 "/reviews/dist",
                 "/reviews/keyword/dist",
+                "/voc"
             ).permitAll()
             .anyRequest().authenticated()
     }
