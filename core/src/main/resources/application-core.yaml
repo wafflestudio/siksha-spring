@@ -61,6 +61,10 @@ siksha:
     apple:
       approved-audience:
 
+slack:
+  channel:
+  token:
+
 secret-names: dev/siksha-api-server
 ---
 spring:
@@ -102,6 +106,10 @@ siksha:
     apple:
       approved-audience:
 
+slack:
+  channel:
+  token:
+
 secret-names: dev/siksha-api-server
 ---
 spring:
@@ -142,5 +150,9 @@ siksha:
       app-id:
     apple:
       approved-audience:
+
+slack:
+  channel:
+  token:
 
 secret-names: prod/siksha-api-server
