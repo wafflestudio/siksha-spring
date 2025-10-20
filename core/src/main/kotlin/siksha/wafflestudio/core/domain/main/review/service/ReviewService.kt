@@ -72,13 +72,13 @@ class ReviewService(
         request: ReviewWithImagesRequest,
     ): MenuDetailsDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
-        val menuId = request.menuId
+        val menuId = request.menu_id
         val menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException()
         val score = request.score
         val comment = request.comment
         val tasteKeyword = request.taste
         val priceKeyword = request.price
-        val foodCompositionKeyword = request.foodComposition
+        val foodCompositionKeyword = request.food_composition
         val images = request.images
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
@@ -148,14 +148,14 @@ class ReviewService(
         userId: Int,
         request: ReviewRequest,
     ): MenuDetailsDto {
-        validatePartialEmptyFields(request.taste, request.price, request.foodComposition)
+        validatePartialEmptyFields(request.taste, request.price, request.food_composition)
 
         val user =
             userRepository.findByIdOrNull(userId)
                 ?: throw UserNotFoundException()
 
         val menu =
-            menuRepository.findByIdOrNull(request.menuId)
+            menuRepository.findByIdOrNull(request.menu_id)
                 ?: throw MenuNotFoundException()
 
         val review: Review
@@ -181,7 +181,7 @@ class ReviewService(
             KeywordReview(
                 taste = KeywordReviewUtil.getTasteLevel(request.taste),
                 price = KeywordReviewUtil.getPriceLevel(request.price),
-                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(request.foodComposition),
+                foodComposition = KeywordReviewUtil.getFoodCompositionLevel(request.food_composition),
                 review = review,
                 menu = menu,
             ),
@@ -206,13 +206,13 @@ class ReviewService(
         // review가 존재하는지 확인
         val review = reviewRepository.findByIdOrNull(reviewId) ?: throw ReviewNotFoundException()
         if (review.user.id != userId) throw NotReviewOwnerException()
-        val menuId = request.menuId
+        val menuId = request.menu_id
         if (menuId != review.menu.id) throw ReviewAndMenuMismatchException()
         val score = request.score
         val comment = request.comment
         val tasteKeyword = request.taste
         val priceKeyword = request.price
-        val foodCompositionKeyword = request.foodComposition
+        val foodCompositionKeyword = request.food_composition
         val images = request.images
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)

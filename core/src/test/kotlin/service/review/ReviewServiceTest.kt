@@ -104,12 +104,12 @@ class ReviewServiceTest {
         val menuId = 1
         val request =
             ReviewRequest(
-                menuId = menuId,
+                menu_id = menuId,
                 score = 5,
                 comment = "생각보다 맛있어요",
                 taste = "맛있음",
                 price = "혜자스러워요",
-                foodComposition = "알찬 편이에요",
+                food_composition = "알찬 편이에요",
             )
 
         val user =
@@ -205,12 +205,12 @@ class ReviewServiceTest {
         val userId = 999
         val request =
             ReviewRequest(
-                menuId = 1,
+                menu_id = 1,
                 score = 5,
                 comment = "맛있어요!",
                 taste = "맛있음",
                 price = "적당함",
-                foodComposition = "균형잡힘",
+                food_composition = "균형잡힘",
             )
 
         `when`(userRepository.findById(userId)).thenReturn(Optional.empty())
@@ -228,12 +228,12 @@ class ReviewServiceTest {
         val menuId = 999
         val request =
             ReviewRequest(
-                menuId = menuId,
+                menu_id = menuId,
                 score = 5,
                 comment = "맛있어요!",
                 taste = "맛있음",
                 price = "적당함",
-                foodComposition = "균형잡힘",
+                food_composition = "균형잡힘",
             )
 
         val user =
@@ -263,12 +263,12 @@ class ReviewServiceTest {
         val userId = 1
         val request =
             ReviewRequest(
-                menuId = 1,
+                menu_id = 1,
                 score = 5,
                 comment = "맛있어요!",
                 taste = "맛있음",
                 price = "",
-                foodComposition = "",
+                food_composition = "",
             )
 
         // when & then
@@ -284,12 +284,12 @@ class ReviewServiceTest {
         val menuId = 1
         val request =
             ReviewRequest(
-                menuId = menuId,
+                menu_id = menuId,
                 score = 5,
                 comment = "맛있어요!",
                 taste = "맛있음",
                 price = "적당함",
-                foodComposition = "균형잡힘",
+                food_composition = "균형잡힘",
             )
 
         val user =
