@@ -181,4 +181,17 @@ class UserService(
             ),
         )
     }
+
+    @Transactional
+    fun deleteUserDevice(
+        userId: Int,
+        fcmToken: String,
+    ) {
+        if (userRepository.existsById(userId).not()) {
+            throw UserNotFoundException()
+        }
+
+        // 동일한 fcm으로 등록된 userDevice는 삭제한다.
+        userDeviceRepository.deleteByUserIdAndFcmToken(userId, fcmToken)
+    }
 }
