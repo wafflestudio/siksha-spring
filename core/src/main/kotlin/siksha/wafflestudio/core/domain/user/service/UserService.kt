@@ -89,7 +89,7 @@ class UserService(
                 user.nickname = it.nickname
             }
 
-            if (it.changeToDefaultImage == true) {
+            if (it.change_to_default_image == true) {
                 this.deleteProfileImage(user)
             } else if (it.image != null) {
                 val profileUrl = this.uploadProfileImage(userId, it.image)

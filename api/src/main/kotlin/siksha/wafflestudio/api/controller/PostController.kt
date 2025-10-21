@@ -11,16 +11,15 @@ import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostFormException
 import siksha.wafflestudio.core.domain.community.post.dto.CreatePostReportRequestDto
@@ -68,19 +67,11 @@ class PostController(
     @SecurityRequirement(name = "bearerAuth")
     fun createPost(
         request: HttpServletRequest,
-        @RequestParam("board_id") boardId: Int,
-        @RequestPart("title") title: String,
-        @RequestPart("content") content: String,
-        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
-        @RequestPart("images", required = false) images: List<MultipartFile>?,
+        @ModelAttribute requestDto: PostCreateRequestDto,
     ): PostResponseDto? {
         val createDto =
-            PostCreateRequestDto(
-                boardId = boardId,
-                title = title,
-                content = content,
-                anonymous = anonymous ?: false,
-                images = images,
+            requestDto.copy(
+                anonymous = requestDto.anonymous ?: false,
             )
         val violations = validator.validate(createDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
@@ -122,18 +113,9 @@ class PostController(
     fun patchPost(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
-        @RequestPart("title") title: String?,
-        @RequestPart("content") content: String?,
-        @RequestPart("anonymous", required = false) anonymous: Boolean? = false,
-        @RequestPart("images", required = false) images: List<MultipartFile>?,
+        @ModelAttribute requestDto: PostPatchRequestDto,
     ): PostResponseDto? {
-        val patchDto =
-            PostPatchRequestDto(
-                title = title,
-                content = content,
-                anonymous = anonymous ?: false,
-                images = images,
-            )
+        val patchDto = requestDto.copy(anonymous = requestDto.anonymous ?: false)
         val violations = validator.validate(patchDto)
         if (violations.isNotEmpty()) throw InvalidPostFormException(violations.first().message)
         return postService.patchPost(userId = request.userId, postId = postId, postPatchRequestDto = patchDto)

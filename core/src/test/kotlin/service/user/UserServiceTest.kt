@@ -110,7 +110,7 @@ class UserServiceTest {
     fun `patchUser - user not found`() {
         // given
         val notFoundUserId = 999
-        val request = UserProfilePatchDto(nickname = "new-nickname", image = null, changeToDefaultImage = false)
+        val request = UserProfilePatchDto(nickname = "new-nickname", image = null, change_to_default_image = false)
         every { userRepository.findByIdOrNull(notFoundUserId) } returns null
 
         // when & then
@@ -128,7 +128,7 @@ class UserServiceTest {
         val userId = 1
         val user = User(id = userId, nickname = "old-nickname", type = "test", identity = "test-identity")
         val updatedUser = user.copy(nickname = "new-nickname")
-        val request = UserProfilePatchDto(nickname = "new-nickname", image = null, changeToDefaultImage = false)
+        val request = UserProfilePatchDto(nickname = "new-nickname", image = null, change_to_default_image = false)
         every { userRepository.findByIdOrNull(userId) } returns user
         every { userRepository.existsByNickname("new-nickname") } returns false
         every { userRepository.save(any()) } returns updatedUser
@@ -150,7 +150,7 @@ class UserServiceTest {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "old-nickname", type = "test", identity = "test-identity")
-        val request = UserProfilePatchDto(nickname = "duplicated-nickname", image = null, changeToDefaultImage = false)
+        val request = UserProfilePatchDto(nickname = "duplicated-nickname", image = null, change_to_default_image = false)
         every { userRepository.findByIdOrNull(userId) } returns user
         every { userRepository.existsByNickname("duplicated-nickname") } returns true
 
@@ -170,7 +170,7 @@ class UserServiceTest {
         val userId = 1
         val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity")
         val image = mockk<MultipartFile>()
-        val request = UserProfilePatchDto(nickname = null, image = image, changeToDefaultImage = false)
+        val request = UserProfilePatchDto(nickname = null, image = image, change_to_default_image = false)
         val uploadFileDto = UploadFileDto(key = "some-key", url = "some-url")
 
         every { userRepository.findByIdOrNull(userId) } returns user
@@ -196,7 +196,7 @@ class UserServiceTest {
         // given
         val userId = 1
         val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity", profileUrl = "some-url")
-        val request = UserProfilePatchDto(nickname = null, image = null, changeToDefaultImage = true)
+        val request = UserProfilePatchDto(nickname = null, image = null, change_to_default_image = true)
         val savedUser = user.copy().apply { profileUrl = null }
 
         every { userRepository.findByIdOrNull(userId) } returns user

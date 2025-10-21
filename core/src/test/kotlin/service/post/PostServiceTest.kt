@@ -143,7 +143,7 @@ class PostServiceTest {
         // given
         every { userRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(board_id = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception =
             assertThrows<UnauthorizedUserException> {
                 service.createPost(userId = 1, postCreateRequestDto = dto)
@@ -161,7 +161,7 @@ class PostServiceTest {
         every { userRepository.findByIdOrNull(userId) } returns user
         every { boardRepository.findByIdOrNull(any()) } returns null
         // when
-        val dto = PostCreateRequestDto(boardId = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(board_id = 1, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val exception =
             assertThrows<BoardNotFoundException> {
                 service.createPost(userId = userId, postCreateRequestDto = dto)
@@ -187,7 +187,7 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = true, images = null)
+        val dto = PostCreateRequestDto(board_id = boardId, title = "test", content = "siksha fighting", anonymous = true, images = null)
         val response = service.createPost(userId, dto)
 
         // then
@@ -218,7 +218,7 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = null, images = null)
+        val dto = PostCreateRequestDto(board_id = boardId, title = "test", content = "siksha fighting", anonymous = null, images = null)
         val response = service.createPost(userId, dto)
 
         // then
@@ -272,7 +272,7 @@ class PostServiceTest {
         every { postRepository.save(any()) } returns mockk()
 
         // when
-        val dto = PostCreateRequestDto(boardId = boardId, title = "test", content = "siksha fighting", anonymous = false, images = images)
+        val dto = PostCreateRequestDto(board_id = boardId, title = "test", content = "siksha fighting", anonymous = false, images = images)
         val response = service.createPost(userId, dto)
 
         // then

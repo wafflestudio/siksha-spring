@@ -10,14 +10,15 @@ import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.util.EtcUtils
 
 data class PostCreateRequestDto(
-    val boardId: Int,
+    // TODO: 변수명 camelCase로 전환 (Jackson의 NamingStrategy 사용 불가)
+    val board_id: Int,
     @field:NotBlank(message = "제목은 1자에서 200자 사이여야 합니다.")
     @field:Size(max = 200, message = "제목은 1자에서 200자 사이여야 합니다.")
     val title: String,
     @field:NotBlank(message = "내용은 1자에서 1000자 사이여야 합니다.")
-    @field:Size(max = 200, message = "내용은 1자에서 1000자 사이여야 합니다.")
+    @field:Size(max = 1000, message = "내용은 1자에서 1000자 사이여야 합니다.")
     val content: String,
-    val anonymous: Boolean?,
+    val anonymous: Boolean? = false,
     val images: List<MultipartFile>?,
 ) {
     fun toEntity(
@@ -42,13 +43,14 @@ data class PostCreateRequestDto(
 }
 
 data class PostPatchRequestDto(
+    // Jackson의 NamingStrategy 사용 불가하므로 필요시 변수 snake_case로 추가
     @field:NullOrNotBlank(message = "제목은 1자에서 200자 사이여야 합니다.")
     @field:Size(max = 200, message = "제목은 1자에서 200자 사이여야 합니다.")
     val title: String?,
     @field:NullOrNotBlank(message = "내용은 1자에서 1000자 사이여야 합니다.")
-    @field:Size(max = 200, message = "내용은 1자에서 1000자 사이여야 합니다.")
+    @field:Size(max = 1000, message = "내용은 1자에서 1000자 사이여야 합니다.")
     val content: String?,
-    val anonymous: Boolean?,
+    val anonymous: Boolean? = false,
     val images: List<MultipartFile>?,
 ) {
     fun toEntity(

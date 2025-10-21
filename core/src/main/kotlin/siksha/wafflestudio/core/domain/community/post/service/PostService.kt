@@ -108,12 +108,12 @@ class PostService(
         postCreateRequestDto: PostCreateRequestDto,
     ): PostResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UnauthorizedUserException()
-        val board = boardRepository.findByIdOrNull(postCreateRequestDto.boardId) ?: throw BoardNotFoundException()
+        val board = boardRepository.findByIdOrNull(postCreateRequestDto.board_id) ?: throw BoardNotFoundException()
 
         val imageUrls =
             postCreateRequestDto.images
                 ?.takeIf { it.isNotEmpty() }
-                ?.let { handleImageUpload(postCreateRequestDto.boardId, userId, it) }
+                ?.let { handleImageUpload(postCreateRequestDto.board_id, userId, it) }
 
         val post = postCreateRequestDto.toEntity(user = user, board = board, imageUrls = imageUrls)
 
