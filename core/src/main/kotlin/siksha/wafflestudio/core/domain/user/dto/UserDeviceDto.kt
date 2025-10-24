@@ -1,5 +1,5 @@
 package siksha.wafflestudio.core.domain.user.dto
 
-data class UserDeviceCreateDto(
+data class UserDeviceDto(
     val fcmToken: String,
 )

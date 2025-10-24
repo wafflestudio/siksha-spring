@@ -236,4 +236,20 @@ class UserServiceTest {
         verify(exactly = 1) { userDeviceRepository.flush() }
         verify(exactly = 1) { userDeviceRepository.save(match { it.userId == userId.toLong() && it.fcmToken == fcmToken }) }
     }
+
+    @Test
+    fun `deleteUserDevice - success`() {
+        // given
+        val userId = 1
+        val fcmToken = "test-fcm-token"
+        every { userRepository.existsById(userId) } returns true
+        every { userDeviceRepository.deleteByUserIdAndFcmToken(userId, fcmToken) } just Runs
+
+        // when
+        userService.deleteUserDevice(userId, fcmToken)
+
+        // verify
+        verify(exactly = 1) { userRepository.existsById(userId) }
+        verify(exactly = 1) { userDeviceRepository.deleteByUserIdAndFcmToken(userId, fcmToken) }
+    }
 }

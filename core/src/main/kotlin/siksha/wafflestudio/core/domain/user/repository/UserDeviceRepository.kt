@@ -7,4 +7,9 @@ import siksha.wafflestudio.core.domain.user.data.UserDevice
 @Repository
 interface UserDeviceRepository : JpaRepository<UserDevice, Int> {
     fun deleteByFcmToken(fcmToken: String)
+
+    fun deleteByUserIdAndFcmToken(
+        userId: Int,
+        fcmToken: String,
+    )
 }

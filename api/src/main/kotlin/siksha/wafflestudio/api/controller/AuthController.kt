@@ -27,7 +27,7 @@ import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.TokenParseException
-import siksha.wafflestudio.core.domain.user.dto.UserDeviceCreateDto
+import siksha.wafflestudio.core.domain.user.dto.UserDeviceDto
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.service.UserService
@@ -145,11 +145,22 @@ class AuthController(
     @PostMapping("/userDevice")
     fun createUserDevice(
         request: HttpServletRequest,
-        @RequestBody userDeviceCreateDto: UserDeviceCreateDto,
+        @RequestBody userDeviceDto: UserDeviceDto,
     ) {
         userService.createUserDevice(
             userId = request.userId,
-            fcmToken = userDeviceCreateDto.fcmToken,
+            fcmToken = userDeviceDto.fcmToken,
+        )
+    }
+
+    @DeleteMapping("/userDevice")
+    fun deleteUserDevice(
+        request: HttpServletRequest,
+        @RequestBody userDeviceDeleteDto: UserDeviceDto,
+    ) {
+        userService.deleteUserDevice(
+            userId = request.userId,
+            fcmToken = userDeviceDeleteDto.fcmToken,
         )
     }
 
