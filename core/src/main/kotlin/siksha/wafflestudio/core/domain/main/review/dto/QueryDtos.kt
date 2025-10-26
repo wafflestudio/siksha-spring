@@ -31,15 +31,21 @@ interface ReviewSummary {
 }
 
 interface KeywordReviewSummary {
-    fun getTasteKeyword(): Int
+    fun getTasteKeyword(): Int?
 
-    fun getTasteCnt(): Int
+    fun getTasteCnt(): Int?
 
-    fun getPriceKeyword(): Int
+    fun getTasteTotal(): Int
 
-    fun getPriceCnt(): Int
+    fun getPriceKeyword(): Int?
 
-    fun getFoodCompositionKeyword(): Int
+    fun getPriceCnt(): Int?
 
-    fun getFoodCompositionCnt(): Int
+    fun getPriceTotal(): Int
+
+    fun getFoodCompositionKeyword(): Int?
+
+    fun getFoodCompositionCnt(): Int?
+
+    fun getFoodCompositionTotal(): Int
 }
