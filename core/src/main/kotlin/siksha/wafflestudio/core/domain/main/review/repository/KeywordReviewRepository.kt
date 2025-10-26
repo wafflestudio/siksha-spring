@@ -65,5 +65,5 @@ interface KeywordReviewRepository : JpaRepository<KeywordReview, Int> {
     fun findScoreCountsByRestaurantIdAndCode(
         @Param("restaurant_id") restaurantId: Int,
         @Param("code") code: String,
-    ): KeywordReviewSummary?
+    ): KeywordReviewSummary
 }

@@ -32,12 +32,20 @@ interface ReviewSummary {
 
 interface KeywordReviewSummary {
     fun getTasteKeyword(): Int?
+
     fun getTasteCnt(): Int?
+
     fun getTasteTotal(): Int
+
     fun getPriceKeyword(): Int?
+
     fun getPriceCnt(): Int?
+
     fun getPriceTotal(): Int
+
     fun getFoodCompositionKeyword(): Int?
+
     fun getFoodCompositionCnt(): Int?
+
     fun getFoodCompositionTotal(): Int
 }

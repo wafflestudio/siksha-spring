@@ -396,7 +396,7 @@ class ReviewService(
         val menu: MenuPlainSummary = menuRepository.findPlainMenuById(menuId.toString())
         val keywordReviewSummary: KeywordReviewSummary =
             keywordReviewRepository.findScoreCountsByRestaurantIdAndCode(menu.getRestaurantId(), menu.getCode())
-                ?: return KeywordScoreDistributionResponse()
+
         return KeywordScoreDistributionResponse.from(keywordReviewSummary)
     }
 

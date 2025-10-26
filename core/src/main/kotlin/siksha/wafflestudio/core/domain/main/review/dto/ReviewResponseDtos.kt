@@ -58,13 +58,13 @@ data class ReviewScoreDistributionResponse(
 )
 
 data class KeywordScoreDistributionResponse(
-    val tasteKeyword: String = "맛",
+    val tasteKeyword: String,
     val tasteCnt: Int = 0,
     val tasteTotal: Int = 0,
-    val priceKeyword: String = "가격",
+    val priceKeyword: String,
     val priceCnt: Int = 0,
     val priceTotal: Int = 0,
-    val foodCompositionKeyword: String = "음식구성",
+    val foodCompositionKeyword: String,
     val foodCompositionCnt: Int = 0,
     val foodCompositionTotal: Int = 0,
 ) {
