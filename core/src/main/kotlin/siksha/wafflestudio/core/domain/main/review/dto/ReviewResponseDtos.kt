@@ -60,10 +60,13 @@ data class ReviewScoreDistributionResponse(
 data class KeywordScoreDistributionResponse(
     val tasteKeyword: String = "맛",
     val tasteCnt: Int = 0,
+    val tasteTotal: Int = 0,
     val priceKeyword: String = "가격",
     val priceCnt: Int = 0,
+    val priceTotal: Int = 0,
     val foodCompositionKeyword: String = "음식구성",
     val foodCompositionCnt: Int = 0,
+    val foodCompositionTotal: Int = 0,
 ) {
     companion object {
         fun from(keywordReviewSummary: KeywordReviewSummary): KeywordScoreDistributionResponse {
@@ -72,17 +75,20 @@ data class KeywordScoreDistributionResponse(
                     KeywordReviewUtil.getTasteKeyword(
                         keywordReviewSummary.getTasteKeyword(),
                     ),
-                tasteCnt = keywordReviewSummary.getTasteCnt(),
+                tasteCnt = keywordReviewSummary.getTasteCnt() ?: 0,
+                tasteTotal = keywordReviewSummary.getTasteTotal(),
                 priceKeyword =
                     KeywordReviewUtil.getPriceKeyword(
                         keywordReviewSummary.getPriceKeyword(),
                     ),
-                priceCnt = keywordReviewSummary.getPriceCnt(),
+                priceCnt = keywordReviewSummary.getPriceCnt() ?: 0,
+                priceTotal = keywordReviewSummary.getPriceTotal(),
                 foodCompositionKeyword =
                     KeywordReviewUtil.getFoodCompositionKeyword(
                         keywordReviewSummary.getFoodCompositionKeyword(),
                     ),
-                foodCompositionCnt = keywordReviewSummary.getFoodCompositionCnt(),
+                foodCompositionCnt = keywordReviewSummary.getFoodCompositionCnt() ?: 0,
+                foodCompositionTotal = keywordReviewSummary.getFoodCompositionTotal(),
             )
         }
     }

@@ -5,3 +5,4 @@ build
 out
 mermaid
 mermaid_svg
+package-lock.json
