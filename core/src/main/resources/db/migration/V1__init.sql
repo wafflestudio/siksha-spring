@@ -353,7 +353,7 @@ create table if not exists user_device (
    id         int auto_increment
    primary key,
    user_id    int                                 not null comment '사용자 id',
-   fcm_token  varchar(128)                        not null comment 'fcm 토큰',
+   fcm_token  varchar(255)                        not null comment 'fcm 토큰',
    created_at timestamp default CURRENT_TIMESTAMP not null comment '생성 시간',
 
     constraint user_id_fcm_token

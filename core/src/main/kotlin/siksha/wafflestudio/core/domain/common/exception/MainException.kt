@@ -37,6 +37,8 @@ class ReviewAlreadyExistsException : MainException(HttpStatus.CONFLICT, "이 메
 
 class ReviewSaveFailedException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "리뷰 저장 중에 오류가 발생했습니다.")
 
+class MenuNotLikedException : MainException(HttpStatus.NOT_FOUND, "해당 메뉴에 좋아요를 누르지 않았습니다.")
+
 class SelfReviewLikeNotAllowedException : MainException(HttpStatus.BAD_REQUEST, "본인의 리뷰에는 좋아요를 누를 수 없습니다.")
 
 class ReviewNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 리뷰가 존재하지 않습니다.")
