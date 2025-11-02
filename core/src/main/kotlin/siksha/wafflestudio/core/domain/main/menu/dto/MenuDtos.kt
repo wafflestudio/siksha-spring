@@ -284,12 +284,3 @@ data class MenuAlarmDto
             }
         }
     }
-
-data class MenuAlarmRequestDto(
-    val notificationType: NotificationType = NotificationType.DAILY,
-)
-
-enum class NotificationType {
-    DAILY,
-    EACH_MEAL,
-}
