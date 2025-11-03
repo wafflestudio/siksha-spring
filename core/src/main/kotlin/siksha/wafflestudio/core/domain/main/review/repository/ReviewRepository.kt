@@ -93,8 +93,14 @@ interface ReviewRepository : JpaRepository<Review, Int> {
             FROM menu
             WHERE restaurant_id = :restaurantId AND code = :code
         )
-        AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-        AND (:image IS NULL OR (:image = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        AND (:comment IS NULL
+            OR (:comment = true AND r.comment IS NOT NULL AND r.comment != '')
+            OR (:comment = false AND (r.comment IS NULL OR r.comment = ''))
+        )
+        AND (:image IS NULL
+            OR (:image = true AND r.etc IS NOT NULL AND r.etc != '[]')
+            OR (:image = false AND (r.etc IS NULL OR r.etc = '[]'))
+        )
     """,
         nativeQuery = true,
     )
@@ -115,8 +121,14 @@ interface ReviewRepository : JpaRepository<Review, Int> {
             FROM menu
             WHERE restaurant_id = :restaurantId AND code = :code
         )
-        AND (:comment IS NULL OR (:comment = true AND r.comment IS NOT NULL))
-        AND (:image IS NULL OR (:image = true AND JSON_EXTRACT(r.etc, '$.images') IS NOT NULL))
+        AND (:comment IS NULL
+            OR (:comment = true AND r.comment IS NOT NULL AND r.comment != '')
+            OR (:comment = false AND (r.comment IS NULL OR r.comment = ''))
+        )
+        AND (:image IS NULL
+            OR (:image = true AND r.etc IS NOT NULL AND r.etc != '[]')
+            OR (:image = false AND (r.etc IS NULL OR r.etc = '[]'))
+        )
     """,
         nativeQuery = true,
     )

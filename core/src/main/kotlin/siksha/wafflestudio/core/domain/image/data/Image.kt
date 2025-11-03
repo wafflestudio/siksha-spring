@@ -19,7 +19,7 @@ class Image(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
-    @Column(name = "`key`", length = 60)
+    @Column(name = "`key`", length = 255)
     val key: String,
     @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 10)
