@@ -9,13 +9,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmRequestDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
@@ -132,7 +130,6 @@ class MenuController(
     @PostMapping("/{menu_id}/alarm/on")
     fun menuAlarmOn(
         @PathVariable("menu_id") menuId: Int,
-        @RequestBody notificationType: MenuAlarmRequestDto,
         request: HttpServletRequest,
     ) = menuService.menuAlarmOn(
         menuId = menuId,
@@ -147,4 +144,10 @@ class MenuController(
         menuId = menuId,
         userId = request.userId,
     )
+
+    @PostMapping("/alarm/off")
+    fun menuAlarmOffAll(request: HttpServletRequest) =
+        menuService.menuAlarmOffAll(
+            userId = request.userId,
+        )
 }

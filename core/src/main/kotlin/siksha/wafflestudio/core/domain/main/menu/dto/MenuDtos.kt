@@ -148,6 +148,117 @@ data class MenuListResponseDto
         val result: List<DateWithTypeInListDto>,
     )
 
+// /menus/me 요청에 대한 Menu 단위 Dto
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MyMenuInListDto
+    @JsonCreator
+    constructor(
+        @JsonProperty("created_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val createdAt: OffsetDateTime,
+        @JsonProperty("updated_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val updatedAt: OffsetDateTime,
+        @JsonProperty("id")
+        val id: Int,
+        @JsonProperty("code")
+        val code: String,
+        @JsonProperty("name_kr")
+        val nameKr: String?,
+        @JsonProperty("name_en")
+        val nameEn: String?,
+        @JsonProperty("price")
+        val price: Int?,
+        @JsonProperty("etc")
+        val etc: List<String>,
+        @JsonProperty("score")
+        val score: Double?,
+        @JsonProperty("review_cnt")
+        val reviewCnt: Int,
+        @JsonProperty("like_cnt")
+        val likeCnt: Int,
+        @JsonProperty("is_liked")
+        val isLiked: Boolean,
+        @JsonProperty("alarm")
+        val alarm: Boolean,
+    ) {
+        companion object {
+            fun from(
+                menu: MenuSummary,
+                likeInfo: MenuLikeSummary?,
+                alarm: Boolean,
+            ): MyMenuInListDto {
+                return MyMenuInListDto(
+                    createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
+                    id = menu.getId(),
+                    code = menu.getCode(),
+                    nameKr = menu.getNameKr(),
+                    nameEn = menu.getNameEn(),
+                    price = menu.getPrice(),
+                    etc = EtcUtils.convertMenuEtc(menu.getEtc()),
+                    score = menu.getScore(),
+                    reviewCnt = menu.getReviewCnt(),
+                    likeCnt = likeInfo?.getLikeCnt() ?: 0,
+                    isLiked = likeInfo?.getIsLiked() == 1,
+                    alarm = alarm,
+                )
+            }
+        }
+    }
+
+// /menus 요청에 대한 (Menu+) Restaurant 단위 Dto
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MyRestaurantInListDto
+    @JsonCreator
+    constructor(
+        @JsonProperty("created_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val createdAt: OffsetDateTime,
+        @JsonProperty("updated_at")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+        val updatedAt: OffsetDateTime,
+        @JsonProperty("id")
+        val id: Int,
+        @JsonProperty("code")
+        val code: String,
+        @JsonProperty("name_kr")
+        val nameKr: String?,
+        @JsonProperty("name_en")
+        val nameEn: String?,
+        @JsonProperty("addr")
+        val addr: String?,
+        @JsonProperty("lat")
+        val lat: Double?,
+        @JsonProperty("lng")
+        val lng: Double?,
+        @JsonProperty("etc")
+        val etc: JsonNode,
+        @JsonProperty("menus")
+        val menus: List<MyMenuInListDto>,
+    ) {
+        companion object {
+            fun from(
+                restaurant: Restaurant,
+                menus: List<MyMenuInListDto>,
+            ): MyRestaurantInListDto {
+                return MyRestaurantInListDto(
+                    createdAt = restaurant.createdAt,
+                    updatedAt = restaurant.updatedAt,
+                    id = restaurant.id,
+                    code = restaurant.code,
+                    nameKr = restaurant.nameKr,
+                    nameEn = restaurant.nameEn,
+                    addr = restaurant.addr,
+                    lat = restaurant.lat,
+                    lng = restaurant.lng,
+                    etc = EtcUtils.convertEtc(restaurant.etc),
+                    menus = menus,
+                )
+            }
+        }
+    }
+
 // /menus/me 요청에 대한 전체 Dto
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class MyMenuListResponseDto
@@ -156,7 +267,7 @@ data class MyMenuListResponseDto
         @JsonProperty("count")
         val count: Int,
         @JsonProperty("result")
-        val result: List<RestaurantInListDto>,
+        val result: List<MyRestaurantInListDto>,
     )
 
 // menus/{menu_id} 요청에 대한 Dto
@@ -284,12 +395,3 @@ data class MenuAlarmDto
             }
         }
     }
-
-data class MenuAlarmRequestDto(
-    val notificationType: NotificationType = NotificationType.DAILY,
-)
-
-enum class NotificationType {
-    DAILY,
-    EACH_MEAL,
-}

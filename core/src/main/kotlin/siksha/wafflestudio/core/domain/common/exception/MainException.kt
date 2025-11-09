@@ -21,6 +21,8 @@ class MenuNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 메뉴
 
 class MenuLikeException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메뉴 좋아요 처리 중에 오류가 발생했습니다.")
 
+class MenuAlarmException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메뉴 알림 처리 중에 오류가 발생했습니다.")
+
 class DuplicatedNicknameException : MainException(HttpStatus.CONFLICT, "중복된 닉네임이 존재합니다.")
 
 class BannedWordException : MainException(HttpStatus.BAD_REQUEST, "사용이 불가능한 단어가 포함되어 있습니다.")
@@ -38,6 +40,8 @@ class ReviewAlreadyExistsException : MainException(HttpStatus.CONFLICT, "이 메
 class ReviewSaveFailedException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "리뷰 저장 중에 오류가 발생했습니다.")
 
 class MenuNotLikedException : MainException(HttpStatus.NOT_FOUND, "해당 메뉴에 좋아요를 누르지 않았습니다.")
+
+class MenuAlarmAlreadyExistsException : MainException(HttpStatus.CONFLICT, "이미 알림을 설정하였습니다.")
 
 class SelfReviewLikeNotAllowedException : MainException(HttpStatus.BAD_REQUEST, "본인의 리뷰에는 좋아요를 누를 수 없습니다.")
 

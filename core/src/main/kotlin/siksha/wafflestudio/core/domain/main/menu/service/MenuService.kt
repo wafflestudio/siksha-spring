@@ -6,6 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
 import siksha.wafflestudio.core.domain.common.exception.MenuLikeException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
@@ -14,8 +16,11 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyRestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
@@ -29,6 +34,7 @@ class MenuService(
     private val menuRepository: MenuRepository,
     private val restaurantRepository: RestaurantRepository,
     private val menuLikeRepository: MenuLikeRepository,
+    private val menuAlarmRepository: MenuAlarmRepository,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
@@ -211,6 +217,9 @@ class MenuService(
         }
         // like 없는 경우에 대해 별도 exception 처리 안함
 
+        // 좋아요 해제될 때 알림 역시 해제
+        menuAlarmRepository.deleteMenuAlarm(userId, menu.getRestaurantId(), menu.getCode())
+
         // 삭제 후 변경된 좋아요 수와 상태를 포함한 상세 정보 반환
         return getMenuById(menuId = menuId, userId = userId)
     }
@@ -228,26 +237,28 @@ class MenuService(
         val menuSummaries = menuRepository.findMenusByMenuIds(menuIds)
         val menuLikeSummaries = menuRepository.findMenuLikesByMenuIds(menuIds)
         val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
+        val alarmsInfoList = menuAlarmRepository.findMenuLikesByMenuIds(userId, menuIds)
 
         val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
 
-        val list = mutableListOf<RestaurantInListDto>()
+        val list = mutableListOf<MyRestaurantInListDto>()
         allRestaurants.forEach { restaurant ->
             list.add(
-                RestaurantInListDto.from(restaurant, mutableListOf()),
+                MyRestaurantInListDto.from(restaurant, mutableListOf()),
             )
         }
 
         val menusByKey = menuSummaries.groupBy { it.getRestaurantId() }
         menusByKey.forEach { (restaurantId, summaries) ->
-            val menuDtos =
+            val myMenuDtos =
                 summaries.map { menu ->
                     val likeInfo = likeInfoMap[menu.getId()]
-                    MenuInListDto.from(menu, likeInfo)
+                    val alarmsInfo = alarmsInfoList.contains(menu.getId())
+                    MyMenuInListDto.from(menu, likeInfo, alarmsInfo)
                 }
 
             list.find { it.id == restaurantId }?.let {
-                (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
+                (it.menus as MutableList<MyMenuInListDto>).addAll(myMenuDtos)
             }
         }
 
@@ -276,7 +287,11 @@ class MenuService(
         val menuLike = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, userIdStr)
         if (menuLike.getIsLiked() == 0) throw MenuNotLikedException()
 
-        // TODO: alarm 추가 로직
+        val menuAlarms = menuAlarmRepository.findMenuAlarm(userId, menu.getRestaurantId(), menu.getCode())
+        if (menuAlarms.isEmpty()) throw MenuAlarmAlreadyExistsException()
+
+        menuAlarmRepository.postMenuAlarm(userId, menuId)
+
         return MenuAlarmDto.from(menu, menuLike.getIsLiked(), true)
     }
 
@@ -297,7 +312,25 @@ class MenuService(
         val menuLike = menuRepository.findMenuLikeByMenuIdAndUserId(menuIdStr, userIdStr)
         if (menuLike.getIsLiked() == 0) throw MenuNotLikedException()
 
-        // TODO: alarm 해제 로직
+        try {
+            menuAlarmRepository.deleteMenuAlarm(
+                userId = userId,
+                restaurantId = menu.getRestaurantId(),
+                code = menu.getCode(),
+            )
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+
         return MenuAlarmDto.from(menu, menuLike.getIsLiked(), false)
+    }
+
+    @Transactional
+    fun menuAlarmOffAll(userId: Int) {
+        try {
+            menuAlarmRepository.deleteMenuAlarmByUserId(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
     }
 }
