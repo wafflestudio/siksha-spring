@@ -4,7 +4,6 @@ import io.lettuce.core.dynamic.annotation.Param
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import siksha.wafflestudio.core.domain.main.menu.data.Menu
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeCount
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
@@ -79,24 +78,6 @@ interface MenuRepository : JpaRepository<Menu, Int> {
         nativeQuery = true,
     )
     fun findPlainMenuById(menuId: String): MenuPlainSummary
-
-    @Query(
-        """
-        SELECT m.id, agg.like_cnt AS likeCnt
-        FROM menu m
-        LEFT JOIN (
-            SELECT m.restaurant_id, m.code, COUNT(ml.id) as like_cnt
-            FROM menu m
-                     LEFT JOIN menu_like ml ON m.id = ml.menu_id AND ml.is_liked = 1
-            GROUP BY m.restaurant_id, m.code
-        ) agg ON m.restaurant_id = agg.restaurant_id AND m.code = agg.code
-        WHERE m.id = :menuId
-    """,
-        nativeQuery = true,
-    )
-    fun findMenuLikeByMenuId(
-        @Param("menuId") menuId: String,
-    ): MenuLikeCount
 
     @Query(
         """

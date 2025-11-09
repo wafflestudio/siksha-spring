@@ -17,12 +17,13 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyRestaurantInListDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -34,7 +35,6 @@ class MenuService(
     private val restaurantRepository: RestaurantRepository,
     private val menuLikeRepository: MenuLikeRepository,
     private val menuAlarmRepository: MenuAlarmRepository,
-    private val userRepository: UserRepository,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
@@ -237,26 +237,28 @@ class MenuService(
         val menuSummaries = menuRepository.findMenusByMenuIds(menuIds)
         val menuLikeSummaries = menuRepository.findMenuLikesByMenuIds(menuIds)
         val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
+        val alarmsInfoList = menuAlarmRepository.findMenuLikesByMenuIds(userId, menuIds)
 
         val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
 
-        val list = mutableListOf<RestaurantInListDto>()
+        val list = mutableListOf<MyRestaurantInListDto>()
         allRestaurants.forEach { restaurant ->
             list.add(
-                RestaurantInListDto.from(restaurant, mutableListOf()),
+                MyRestaurantInListDto.from(restaurant, mutableListOf()),
             )
         }
 
         val menusByKey = menuSummaries.groupBy { it.getRestaurantId() }
         menusByKey.forEach { (restaurantId, summaries) ->
-            val menuDtos =
+            val myMenuDtos =
                 summaries.map { menu ->
                     val likeInfo = likeInfoMap[menu.getId()]
-                    MenuInListDto.from(menu, likeInfo)
+                    val alarmsInfo = alarmsInfoList.contains(menu.getId())
+                    MyMenuInListDto.from(menu, likeInfo, alarmsInfo)
                 }
 
             list.find { it.id == restaurantId }?.let {
-                (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
+                (it.menus as MutableList<MyMenuInListDto>).addAll(myMenuDtos)
             }
         }
 

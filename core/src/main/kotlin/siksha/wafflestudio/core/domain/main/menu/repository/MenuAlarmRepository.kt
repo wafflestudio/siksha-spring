@@ -4,11 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.main.menu.data.MenuAlarm
 
 
-interface MenuAlarmRepository : JpaRepository<Menu, Int> {
+interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
     @Modifying
     @Query(
         value = """
@@ -56,4 +55,20 @@ interface MenuAlarmRepository : JpaRepository<Menu, Int> {
         @Param("restaurantId") restaurantId: Int,
         @Param("code") code: String,
     )
+
+    @Query(
+        """
+        SELECT m.id
+        FROM menu m
+        JOIN menu me ON m.restaurant_id = me.restaurant_id AND m.code = me.code
+        INNER JOIN menu_alarm ma ON me.id = ma.menu_id
+        WHERE m.id in :menuIds AND ma.user_id = :userId
+        GROUP BY m.id
+    """,
+        nativeQuery = true,
+    )
+    fun findMenuLikesByMenuIds(
+        @Param("userId") userId: Int,
+        @Param("menuIds") menuIds: List<Int>,
+    ): List<Int>
 }
