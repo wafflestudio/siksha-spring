@@ -57,7 +57,7 @@ class UserService(
                 type = type,
                 identity = identity,
                 nickname = NicknameGenerator.generate(),
-                alarmType = AlarmType.DAILY
+                alarmType = AlarmType.DAILY,
             )
 
         val created =

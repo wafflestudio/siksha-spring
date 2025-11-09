@@ -6,19 +6,19 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
 import siksha.wafflestudio.core.domain.common.exception.MenuLikeException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
-import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
 import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyRestaurantInListDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
@@ -326,9 +326,7 @@ class MenuService(
     }
 
     @Transactional
-    fun menuAlarmOffAll(
-        userId: Int,
-    ) {
+    fun menuAlarmOffAll(userId: Int) {
         try {
             menuAlarmRepository.deleteMenuAlarmByUserId(userId)
         } catch (e: Exception) {

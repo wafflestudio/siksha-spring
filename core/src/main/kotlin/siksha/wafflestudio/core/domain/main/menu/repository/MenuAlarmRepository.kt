@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import siksha.wafflestudio.core.domain.main.menu.data.MenuAlarm
 
-
 interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
     @Modifying
     @Query(
