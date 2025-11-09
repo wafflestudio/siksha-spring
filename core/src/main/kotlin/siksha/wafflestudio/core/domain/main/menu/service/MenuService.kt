@@ -324,4 +324,15 @@ class MenuService(
 
         return MenuAlarmDto.from(menu, menuLike.getIsLiked(), false)
     }
+
+    @Transactional
+    fun menuAlarmOffAll(
+        userId: Int,
+    ) {
+        try {
+            menuAlarmRepository.deleteMenuAlarmByUserId(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
 }

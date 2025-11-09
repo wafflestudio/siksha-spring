@@ -71,4 +71,6 @@ interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
         @Param("userId") userId: Int,
         @Param("menuIds") menuIds: List<Int>,
     ): List<Int>
+
+    fun deleteMenuAlarmByUserId(userId: Int)
 }

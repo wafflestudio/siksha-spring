@@ -144,4 +144,11 @@ class MenuController(
         menuId = menuId,
         userId = request.userId,
     )
+
+    @PostMapping("/alarm/off")
+    fun menuAlarmOffAll(
+        request: HttpServletRequest,
+    ) = menuService.menuAlarmOffAll(
+        userId = request.userId,
+    )
 }
