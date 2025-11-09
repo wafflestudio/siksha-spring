@@ -1,6 +1,8 @@
 package siksha.wafflestudio.core.domain.user.data
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -21,6 +23,9 @@ data class User(
     val etc: String? = null,
     var nickname: String,
     var profileUrl: String? = null,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "alarm_type", length = 10)
+    var alarmType: AlarmType = AlarmType.DAILY,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
@@ -28,3 +33,8 @@ data class User(
     @Column(nullable = false)
     val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )
+
+enum class AlarmType {
+    DAILY,
+    EVERY_MEAL,
+}

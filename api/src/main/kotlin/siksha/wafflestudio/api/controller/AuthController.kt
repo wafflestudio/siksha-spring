@@ -27,6 +27,7 @@ import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.TokenParseException
+import siksha.wafflestudio.core.domain.user.dto.AlarmSettingRequestDto
 import siksha.wafflestudio.core.domain.user.dto.UserDeviceDto
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
@@ -161,6 +162,17 @@ class AuthController(
         userService.deleteUserDevice(
             userId = request.userId,
             fcmToken = userDeviceDeleteDto.fcmToken,
+        )
+    }
+
+    @PostMapping("/alarm")
+    fun setAlarm(
+        request: HttpServletRequest,
+        @RequestBody alarmSettingRequest: AlarmSettingRequestDto,
+    ) {
+        userService.setAlarm(
+            userId = request.userId,
+            alarmType = alarmSettingRequest.type,
         )
     }
 

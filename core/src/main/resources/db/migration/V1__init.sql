@@ -86,6 +86,7 @@ create table if not exists user
     updated_at  timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '변경 시간',
     nickname    varchar(30)                         not null comment '사용자 닉네임',
     profile_url varchar(100)                        null comment '사용자 프로필 url',
+    alarm_type   varchar(10)                         not null comment '알림 시간 설정',
     constraint nickname
         unique (nickname),
     constraint type

@@ -13,6 +13,7 @@ import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
+import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.data.UserDevice
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
@@ -56,6 +57,7 @@ class UserService(
                 type = type,
                 identity = identity,
                 nickname = NicknameGenerator.generate(),
+                alarmType = AlarmType.DAILY
             )
 
         val created =
@@ -193,5 +195,16 @@ class UserService(
 
         // 동일한 fcm으로 등록된 userDevice는 삭제한다.
         userDeviceRepository.deleteByUserIdAndFcmToken(userId, fcmToken)
+    }
+
+    @Transactional
+    fun setAlarm(
+        userId: Int,
+        alarmType: AlarmType,
+    ) {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+
+        user.alarmType = alarmType
+        userRepository.save(user)
     }
 }
