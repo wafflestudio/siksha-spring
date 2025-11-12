@@ -21,6 +21,9 @@ server:
 siksha:
   banned:
     words:
+  firebase:
+    service-account:
+
 ---
 spring:
   config:
