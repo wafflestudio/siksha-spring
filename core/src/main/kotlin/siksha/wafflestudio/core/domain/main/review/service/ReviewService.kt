@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
-import siksha.wafflestudio.core.domain.common.exception.KeywordReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.NotReviewOwnerException
 import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
@@ -263,10 +262,21 @@ class ReviewService(
         review.comment = comment ?: ""
         review.etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) }
 
-        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordReviewNotFoundException()
+        val keywordReview =
+            keywordReviewRepository.findByIdOrNull(reviewId)
+                ?: KeywordReview(
+                    review = review,
+                    menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException(),
+                    taste = -1,
+                    price = -1,
+                    foodComposition = -1,
+                )
+
         keywordReview.taste = KeywordReviewUtil.getTasteLevel(tasteKeyword)
         keywordReview.price = KeywordReviewUtil.getPriceLevel(priceKeyword)
         keywordReview.foodComposition = KeywordReviewUtil.getFoodCompositionLevel(foodCompositionKeyword)
+
+        keywordReviewRepository.save(keywordReview)
 
         val menuSummary = menuRepository.findMenuById(menuId.toString())
         val menuLikeSummary =
