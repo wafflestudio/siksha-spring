@@ -31,7 +31,7 @@ object KeywordReviewUtil {
     }
 
     fun getFoodCompositionLevel(foodKeyword: String?): Int {
-        if (foodKeyword == null || !foodKeyword.contains(foodKeyword)) return -1
+        if (foodKeyword == null || !foodCompositionGrade.contains(foodKeyword)) return -1
         return foodCompositionGrade.indexOf(foodKeyword)
     }
 }
