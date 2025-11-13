@@ -121,7 +121,7 @@ class ReviewService(
                         menu = menu,
                         score = score,
                         comment = comment ?: "",
-                        etc = objectMapper.writeValueAsString(imageUrls),
+                        etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) },
                         // 이미지 URL 들을 JSON array로 저장
                     ),
                 )
@@ -175,7 +175,7 @@ class ReviewService(
                         menu = menu,
                         score = request.score,
                         comment = request.comment,
-                        etc = "",
+                        etc = null,
                     ),
                 )
         } catch (ex: DataIntegrityViolationException) {
@@ -261,7 +261,7 @@ class ReviewService(
 
         review.score = score
         review.comment = comment ?: ""
-        review.etc = objectMapper.writeValueAsString(imageUrls)
+        review.etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) }
 
         val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordReviewNotFoundException()
         keywordReview.taste = KeywordReviewUtil.getTasteLevel(tasteKeyword)
