@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
@@ -79,7 +80,11 @@ class ReviewService(
         val tasteKeyword = request.taste
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
-        val images = request.images
+
+        val images: List<MultipartFile>? = when (request.images) {
+            is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+            else -> null
+        }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
@@ -213,7 +218,11 @@ class ReviewService(
         val tasteKeyword = request.taste
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
-        val images = request.images
+
+        val images: List<MultipartFile>? = when (request.images) {
+            is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+            else -> null
+        }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 

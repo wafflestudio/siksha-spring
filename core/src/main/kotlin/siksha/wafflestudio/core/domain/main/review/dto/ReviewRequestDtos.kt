@@ -36,5 +36,5 @@ data class ReviewWithImagesRequest(
     val taste: String = "",
     val price: String = "",
     val food_composition: String = "",
-    val images: List<MultipartFile>? = null,
+    val images: Any? = null,
 )
