@@ -84,6 +84,7 @@ class ReviewService(
         val images: List<MultipartFile>? =
             when (request.images) {
                 is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                is MultipartFile -> listOf(request.images as MultipartFile)
                 else -> null
             }
 
@@ -223,6 +224,7 @@ class ReviewService(
         val images: List<MultipartFile>? =
             when (request.images) {
                 is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                is MultipartFile -> listOf(request.images as MultipartFile)
                 else -> null
             }
 
