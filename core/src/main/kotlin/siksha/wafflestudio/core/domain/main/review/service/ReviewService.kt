@@ -81,10 +81,11 @@ class ReviewService(
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
 
-        val images: List<MultipartFile>? = when (request.images) {
-            is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
-            else -> null
-        }
+        val images: List<MultipartFile>? =
+            when (request.images) {
+                is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                else -> null
+            }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
@@ -219,10 +220,11 @@ class ReviewService(
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
 
-        val images: List<MultipartFile>? = when (request.images) {
-            is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
-            else -> null
-        }
+        val images: List<MultipartFile>? =
+            when (request.images) {
+                is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                else -> null
+            }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
