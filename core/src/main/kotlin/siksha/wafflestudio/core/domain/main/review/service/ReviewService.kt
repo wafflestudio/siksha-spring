@@ -67,6 +67,7 @@ class ReviewService(
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
+    @Transactional
     fun postReviewWithImages(
         userId: Int,
         request: ReviewWithImagesRequest,
@@ -150,6 +151,7 @@ class ReviewService(
         return MenuDetailsDto.from(menuSummary, menuLikeSummary)
     }
 
+    @Transactional
     fun postReview(
         userId: Int,
         request: ReviewRequest,
@@ -557,6 +559,7 @@ class ReviewService(
         )
     }
 
+    @Transactional
     fun likeReview(
         reviewId: Int,
         userId: Int,
