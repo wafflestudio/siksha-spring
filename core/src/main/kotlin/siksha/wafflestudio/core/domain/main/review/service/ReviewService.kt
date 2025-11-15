@@ -8,10 +8,10 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.common.exception.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidScoreException
 import siksha.wafflestudio.core.domain.common.exception.KeywordMissingException
-import siksha.wafflestudio.core.domain.common.exception.KeywordReviewNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.NotReviewOwnerException
 import siksha.wafflestudio.core.domain.common.exception.ReviewAlreadyExistsException
@@ -79,7 +79,13 @@ class ReviewService(
         val tasteKeyword = request.taste
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
-        val images = request.images
+
+        val images: List<MultipartFile>? =
+            when (request.images) {
+                is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                is MultipartFile -> listOf(request.images as MultipartFile)
+                else -> null
+            }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
@@ -114,7 +120,7 @@ class ReviewService(
                         menu = menu,
                         score = score,
                         comment = comment ?: "",
-                        etc = objectMapper.writeValueAsString(imageUrls),
+                        etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) },
                         // 이미지 URL 들을 JSON array로 저장
                     ),
                 )
@@ -168,7 +174,7 @@ class ReviewService(
                         menu = menu,
                         score = request.score,
                         comment = request.comment,
-                        etc = "",
+                        etc = null,
                     ),
                 )
         } catch (ex: DataIntegrityViolationException) {
@@ -213,7 +219,13 @@ class ReviewService(
         val tasteKeyword = request.taste
         val priceKeyword = request.price
         val foodCompositionKeyword = request.food_composition
-        val images = request.images
+
+        val images: List<MultipartFile>? =
+            when (request.images) {
+                is List<*> -> request.images.filterIsInstance<MultipartFile>().takeIf { it.isNotEmpty() }
+                is MultipartFile -> listOf(request.images as MultipartFile)
+                else -> null
+            }
 
         validatePartialEmptyFields(tasteKeyword, priceKeyword, foodCompositionKeyword)
 
@@ -248,12 +260,23 @@ class ReviewService(
 
         review.score = score
         review.comment = comment ?: ""
-        review.etc = objectMapper.writeValueAsString(imageUrls)
+        review.etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) }
 
-        val keywordReview = keywordReviewRepository.findByIdOrNull(reviewId) ?: throw KeywordReviewNotFoundException()
+        val keywordReview =
+            keywordReviewRepository.findByIdOrNull(reviewId)
+                ?: KeywordReview(
+                    review = review,
+                    menu = menuRepository.findByIdOrNull(menuId) ?: throw MenuNotFoundException(),
+                    taste = -1,
+                    price = -1,
+                    foodComposition = -1,
+                )
+
         keywordReview.taste = KeywordReviewUtil.getTasteLevel(tasteKeyword)
         keywordReview.price = KeywordReviewUtil.getPriceLevel(priceKeyword)
         keywordReview.foodComposition = KeywordReviewUtil.getFoodCompositionLevel(foodCompositionKeyword)
+
+        keywordReviewRepository.save(keywordReview)
 
         val menuSummary = menuRepository.findMenuById(menuId.toString())
         val menuLikeSummary =
