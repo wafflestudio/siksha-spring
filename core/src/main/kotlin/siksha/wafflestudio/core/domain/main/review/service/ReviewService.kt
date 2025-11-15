@@ -121,7 +121,7 @@ class ReviewService(
                         menu = menu,
                         score = score,
                         comment = comment ?: "",
-                        etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) },
+                        etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(mapOf("images" to it)) },
                         // 이미지 URL 들을 JSON array로 저장
                     ),
                 )
@@ -262,7 +262,7 @@ class ReviewService(
 
         review.score = score
         review.comment = comment ?: ""
-        review.etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(it) }
+        review.etc = imageUrls.takeIf { it.isNotEmpty() }?.let { objectMapper.writeValueAsString(mapOf("images" to it)) }
 
         val keywordReview =
             keywordReviewRepository.findByIdOrNull(reviewId)
