@@ -16,6 +16,7 @@ import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.data.UserDevice
+import siksha.wafflestudio.core.domain.user.dto.UserAlarmResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
@@ -206,5 +207,11 @@ class UserService(
 
         user.alarmType = alarmType
         userRepository.save(user)
+    }
+
+    fun getAlarm(userId: Int): UserAlarmResponseDto {
+        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
+
+        return UserAlarmResponseDto(alarmType = user.alarmType)
     }
 }

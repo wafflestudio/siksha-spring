@@ -288,7 +288,7 @@ class MenuService(
         if (menuLike.getIsLiked() == 0) throw MenuNotLikedException()
 
         val menuAlarms = menuAlarmRepository.findMenuAlarm(userId, menu.getRestaurantId(), menu.getCode())
-        if (menuAlarms.isEmpty()) throw MenuAlarmAlreadyExistsException()
+        if (menuAlarms.isNotEmpty()) throw MenuAlarmAlreadyExistsException()
 
         menuAlarmRepository.postMenuAlarm(userId, menuId)
 

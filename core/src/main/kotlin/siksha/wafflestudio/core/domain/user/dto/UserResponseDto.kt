@@ -2,6 +2,7 @@ package siksha.wafflestudio.core.domain.user.dto
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
 import java.time.OffsetDateTime
 
@@ -31,3 +32,8 @@ data class UserResponseDto(
         }
     }
 }
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class UserAlarmResponseDto(
+    val alarmType: AlarmType,
+)
