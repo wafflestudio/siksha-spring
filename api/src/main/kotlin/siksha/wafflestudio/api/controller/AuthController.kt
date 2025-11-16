@@ -28,6 +28,7 @@ import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
 import siksha.wafflestudio.core.domain.common.exception.TokenParseException
 import siksha.wafflestudio.core.domain.user.dto.AlarmSettingRequestDto
+import siksha.wafflestudio.core.domain.user.dto.UserAlarmResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserDeviceDto
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
@@ -174,6 +175,11 @@ class AuthController(
             userId = request.userId,
             alarmType = alarmSettingRequest.type,
         )
+    }
+
+    @GetMapping("/alarm")
+    fun getAlarm(request: HttpServletRequest): UserAlarmResponseDto {
+        return userService.getAlarm(request.userId)
     }
 
     companion object {
