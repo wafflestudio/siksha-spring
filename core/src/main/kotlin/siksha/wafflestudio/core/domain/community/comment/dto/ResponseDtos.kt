@@ -20,7 +20,7 @@ data class CommentResponseDto(
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
     val nickname: String?,
-    val profileUri: String?,
+    val profileUrl: String?,
     val available: Boolean,
     val anonymous: Boolean,
     val isMine: Boolean,
@@ -28,7 +28,7 @@ data class CommentResponseDto(
     val isLiked: Boolean,
 ) {
     init {
-        if (anonymous) check(nickname == null && profileUri == null)
+        if (anonymous) check(nickname == null && profileUrl == null)
     }
 
     companion object {
@@ -44,7 +44,7 @@ data class CommentResponseDto(
             createdAt = comment.createdAt,
             updatedAt = comment.updatedAt,
             nickname = if (comment.anonymous) null else comment.user.nickname,
-            profileUri = if (comment.anonymous) null else comment.user.profileUrl,
+            profileUrl = if (comment.anonymous) null else comment.user.profileUrl,
             available = comment.available,
             anonymous = comment.anonymous,
             isMine = isMine,
