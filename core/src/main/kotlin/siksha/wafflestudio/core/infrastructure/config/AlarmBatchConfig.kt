@@ -13,6 +13,7 @@ import org.springframework.batch.item.data.RepositoryItemReader
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.domain.Sort
 import org.springframework.transaction.PlatformTransactionManager
 import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
@@ -54,5 +55,6 @@ class AlarmBatchConfig(
             .methodName("findAllByAlarmType")
             .arguments(listOf(AlarmType.DAILY))
             .pageSize(USER_BATCH_SIZE)
+            .sorts(mapOf("id" to Sort.Direction.ASC))
             .build()
 }

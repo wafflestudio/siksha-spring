@@ -24,9 +24,6 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
-import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -38,9 +35,6 @@ class MenuService(
     private val restaurantRepository: RestaurantRepository,
     private val menuLikeRepository: MenuLikeRepository,
     private val menuAlarmRepository: MenuAlarmRepository,
-    private val userRepository: UserRepository,
-    private val userDeviceRepository: UserDeviceRepository,
-    private val fcmPushClient: FcmPushClient,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
