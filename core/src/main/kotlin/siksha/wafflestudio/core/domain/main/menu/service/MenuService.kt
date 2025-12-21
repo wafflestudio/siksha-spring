@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
@@ -24,10 +25,19 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
+import siksha.wafflestudio.core.domain.user.data.AlarmType
+import siksha.wafflestudio.core.domain.user.data.UserDevice
+import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
+import siksha.wafflestudio.core.infrastructure.firebase.PushMessage
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
+private const val USER_BATCH_SIZE = 500
+private const val FCM_TOKEN_BATCH_SIZE = 500
 
 @Service
 class MenuService(
@@ -35,6 +45,9 @@ class MenuService(
     private val restaurantRepository: RestaurantRepository,
     private val menuLikeRepository: MenuLikeRepository,
     private val menuAlarmRepository: MenuAlarmRepository,
+    private val userRepository: UserRepository,
+    private val userDeviceRepository: UserDeviceRepository,
+    private val fcmPushClient: FcmPushClient,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
@@ -331,6 +344,68 @@ class MenuService(
             menuAlarmRepository.deleteMenuAlarmByUserId(userId)
         } catch (e: Exception) {
             throw MenuAlarmException()
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun sendDailyMenuAlarmsBatch() {
+        // 오늘 메뉴 조회
+        val todayMenus = menuRepository.findAllByDate(LocalDate.now())
+        if (todayMenus.isEmpty()) return
+        val todayMenusSet = todayMenus.map { it.code to it.restaurant.id }.toSet()
+
+        var page = 0
+        while (true) {
+            // 알림 대상 User 조회
+            val userPage = userRepository.findAllByAlarmType(
+                AlarmType.DAILY,
+                PageRequest.of(page, USER_BATCH_SIZE)
+            )
+
+            if (userPage.isEmpty) break
+
+            val userIds = userPage.content.map { it.id }
+
+            val devices = userDeviceRepository.findAllByUserIds(userIds)
+                .groupBy { it.userId.toInt() }
+
+            // 각 유저별 알림 설정 메뉴
+            val userMenus = menuAlarmRepository
+                .findMenuAlarmByUserIds(userIds)
+                .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
+                .groupBy { it.getUserId() }
+
+            // 알림 보내기
+            userIds.forEach { userId ->
+                val userDevices = devices[userId]
+                    ?: return@forEach
+
+                val menuNames = userMenus[userId]
+                    ?.mapNotNull { it.getNameKr() }
+                    ?: return@forEach
+
+                sendInChunks(userDevices, menuNames)
+            }
+
+            if (!userPage.hasNext()) break
+            page++
+        }
+    }
+
+    private fun sendInChunks(
+        userDevices: List<UserDevice>,
+        menuNames: List<String>
+    ) {
+        userDevices.chunked(FCM_TOKEN_BATCH_SIZE).forEach { device ->
+            val pushMessage = PushMessage(
+                title = "오늘 제공되는 메뉴",
+                body = menuNames.joinToString(", "),
+            )
+
+            fcmPushClient.sendPushMessages(
+                userDevices = device,
+                pushMessage = pushMessage,
+            )
         }
     }
 }

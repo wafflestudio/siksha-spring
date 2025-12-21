@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import siksha.wafflestudio.core.domain.main.menu.data.MenuAlarm
+import siksha.wafflestudio.core.domain.main.menu.dto.AlarmMenuSummary
 
 interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
     @Modifying
@@ -72,4 +73,17 @@ interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
     ): List<Int>
 
     fun deleteMenuAlarmByUserId(userId: Int)
+
+    @Query(
+        """
+        SELECT m.id, ma.user_id AS userId, m.name_kr AS NameKr, m.restaurant_id AS restaurantId, m.code
+        FROM menu_alarm ma
+        JOIN menu m ON ma.menu_id = m.id
+        WHERE ma.user_id in :userIds
+    """,
+        nativeQuery = true,
+    )
+    fun findMenuAlarmByUserIds(
+        @Param("userIds") userIds: List<Int>,
+    ): List<AlarmMenuSummary>
 }

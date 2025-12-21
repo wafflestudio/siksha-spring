@@ -7,6 +7,7 @@ import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
+import java.time.LocalDate
 
 interface MenuRepository : JpaRepository<Menu, Int> {
     @Query(
@@ -144,4 +145,6 @@ interface MenuRepository : JpaRepository<Menu, Int> {
     fun findMenuLikesByMenuIds(
         @Param("menuIds") menuIds: List<Int>,
     ): List<MenuLikeSummary>
+
+    fun findAllByDate(date: LocalDate): List<Menu>
 }
