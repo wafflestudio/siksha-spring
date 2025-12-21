@@ -26,7 +26,7 @@ private const val USER_BATCH_SIZE = 500
 @EnableBatchProcessing
 class AlarmBatchConfig(
     private val jobRepository: JobRepository,
-    private val transactionManager: PlatformTransactionManager
+    private val transactionManager: PlatformTransactionManager,
 ) {
     @Bean
     fun dailyMenuAlarmJob(dailyMenuAlarmStep: Step): Job =
@@ -38,7 +38,7 @@ class AlarmBatchConfig(
     fun dailyMenuAlarmStep(
         reader: ItemReader<User>,
         processor: ItemProcessor<User, DailyMenuAlarm>,
-        writer: ItemWriter<DailyMenuAlarm>
+        writer: ItemWriter<DailyMenuAlarm>,
     ): Step =
         StepBuilder("dailyMenuAlarmStep", jobRepository)
             .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
@@ -48,16 +48,12 @@ class AlarmBatchConfig(
             .build()
 
     @Bean
-    fun dailyAlarmUserReader(
-        userRepository: UserRepository
-    ): RepositoryItemReader<User> =
+    fun dailyAlarmUserReader(userRepository: UserRepository): RepositoryItemReader<User> =
         RepositoryItemReaderBuilder<User>()
             .name("dailyAlarmUserReader")
             .repository(userRepository)
             .methodName("findAllByAlarmType")
             .arguments(listOf(AlarmType.DAILY))
             .pageSize(USER_BATCH_SIZE)
-            .sorts(mapOf("id" to Sort.Direction.ASC))
             .build()
 }
-

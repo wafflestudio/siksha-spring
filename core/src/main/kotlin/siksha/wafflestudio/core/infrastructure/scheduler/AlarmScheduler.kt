@@ -17,7 +17,7 @@ class AlarmScheduler(
             dailyMenuAlarmJob,
             JobParametersBuilder()
                 .addLong("runAt", System.currentTimeMillis())
-                .toJobParameters()
+                .toJobParameters(),
         )
     }
 }

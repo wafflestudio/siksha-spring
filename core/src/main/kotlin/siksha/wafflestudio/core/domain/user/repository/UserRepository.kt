@@ -16,5 +16,8 @@ interface UserRepository : JpaRepository<User, Int> {
         identity: String,
     ): User?
 
-    fun findAllByAlarmType(alarmType: AlarmType, pageable: Pageable): Page<User>
+    fun findAllByAlarmType(
+        alarmType: AlarmType,
+        pageable: Pageable,
+    ): Page<User>
 }

@@ -18,20 +18,21 @@ class MenuAlarmWriter(
         items.forEach { alarm ->
             sendMenuAlarms(
                 alarm.devices,
-                alarm.menuNames
+                alarm.menuNames,
             )
         }
     }
 
     private fun sendMenuAlarms(
         userDevices: List<UserDevice>,
-        menuNames: List<String>
+        menuNames: List<String>,
     ) {
         userDevices.chunked(FCM_TOKEN_BATCH_SIZE).forEach { device ->
-            val pushMessage = PushMessage(
-                title = "오늘 제공되는 메뉴",
-                body = menuNames.joinToString(", "),
-            )
+            val pushMessage =
+                PushMessage(
+                    title = "오늘 제공되는 메뉴",
+                    body = menuNames.joinToString(", "),
+                )
 
             fcmPushClient.sendPushMessages(
                 userDevices = device,
@@ -40,4 +41,3 @@ class MenuAlarmWriter(
         }
     }
 }
-

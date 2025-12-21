@@ -13,7 +13,7 @@ import java.time.LocalDate
 class MenuAlarmProcessor(
     private val menuRepository: MenuRepository,
     private val userDeviceRepository: UserDeviceRepository,
-    private val menuAlarmRepository: MenuAlarmRepository
+    private val menuAlarmRepository: MenuAlarmRepository,
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
         menuRepository.findAllByDate(LocalDate.now())
@@ -25,16 +25,17 @@ class MenuAlarmProcessor(
         val devices = userDeviceRepository.findAllByUserIds(listOf(user.id))
         if (devices.isEmpty()) return null
 
-        val menuNames = menuAlarmRepository.findMenuAlarmByUserIds(listOf(user.id))
-            .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
-            .mapNotNull { it.getNameKr() }
+        val menuNames =
+            menuAlarmRepository.findMenuAlarmByUserIds(listOf(user.id))
+                .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
+                .mapNotNull { it.getNameKr() }
 
         if (menuNames.isEmpty()) return null
 
         return DailyMenuAlarm(
             userId = user.id,
             devices = devices,
-            menuNames = menuNames
+            menuNames = menuNames,
         )
     }
 }

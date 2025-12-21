@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
@@ -25,12 +24,9 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
-import siksha.wafflestudio.core.domain.user.data.AlarmType
-import siksha.wafflestudio.core.domain.user.data.UserDevice
 import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
-import siksha.wafflestudio.core.infrastructure.firebase.PushMessage
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate

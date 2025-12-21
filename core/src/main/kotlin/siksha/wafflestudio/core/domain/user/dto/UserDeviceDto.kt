@@ -9,6 +9,5 @@ data class UserDeviceDto(
 data class DailyMenuAlarm(
     val userId: Int,
     val devices: List<UserDevice>,
-    val menuNames: List<String>
+    val menuNames: List<String>,
 )
-
