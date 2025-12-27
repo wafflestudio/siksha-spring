@@ -11,6 +11,7 @@ class AlarmScheduler(
     private val jobLauncher: JobLauncher,
     private val dailyMenuAlarmJob: Job,
 ) {
+    // 오전 7시 30분 실행
     @Scheduled(cron = "0 30 7 * * *")
     fun morningAlarm() {
         jobLauncher.run(
