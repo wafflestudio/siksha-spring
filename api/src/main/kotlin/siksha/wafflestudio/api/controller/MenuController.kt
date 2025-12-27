@@ -150,4 +150,10 @@ class MenuController(
         menuService.menuAlarmOffAll(
             userId = request.userId,
         )
+
+    @PostMapping("/alarm/on")
+    fun menuAlarmOnAll(request: HttpServletRequest) =
+        menuService.menuAlarmOnAll(
+            userId = request.userId,
+        )
 }

@@ -37,6 +37,8 @@ interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
         @Param("code") code: String,
     ): List<MenuAlarm>
 
+    fun findAllByUserId(userId: Int): List<MenuAlarm>
+
     @Modifying
     @Query(
         value = """
