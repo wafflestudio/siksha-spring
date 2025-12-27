@@ -337,9 +337,7 @@ class MenuService(
     @Transactional
     fun menuAlarmOnAll(userId: Int) {
         val userIdStr = userId.toString()
-        val myMenuIds = menuRepository.findMyMenuByUserId(userIdStr)
-        val alarmMenuIds = menuAlarmRepository.findAllByUserId(userId).map { it.id }
-        val targetIds = myMenuIds.filterNot { it in alarmMenuIds }
+        val targetIds = menuRepository.findAlarmAllMenuByUserId(userIdStr)
 
         try {
             targetIds.forEach { targetId ->
