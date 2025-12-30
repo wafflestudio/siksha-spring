@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.infrastructure.config
 
+import org.springframework.batch.core.ChunkListener
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -20,6 +21,7 @@ import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.scheduler.ChunkPrefetchListener
 
 private const val USER_BATCH_SIZE = 500
 
@@ -42,12 +44,14 @@ class AlarmBatchConfig(
         @Qualifier("dailyAlarmProcessor")
         processor: ItemProcessor<User, DailyMenuAlarm>,
         writer: ItemWriter<DailyMenuAlarm>,
+        chunkPrefetchListener: ChunkPrefetchListener,
     ): Step =
         StepBuilder("dailyMenuAlarmStep", jobRepository)
             .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            .listener(chunkPrefetchListener as ChunkListener)
             .build()
 
     @Bean
@@ -74,12 +78,14 @@ class AlarmBatchConfig(
         @Qualifier("everyMealAlarmProcessor")
         processor: ItemProcessor<User, DailyMenuAlarm>,
         writer: ItemWriter<DailyMenuAlarm>,
+        chunkPrefetchListener: ChunkPrefetchListener,
     ): Step =
         StepBuilder("everyMealAlarmStep", jobRepository)
             .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            .listener(chunkPrefetchListener as ChunkListener)
             .build()
 
     @Bean

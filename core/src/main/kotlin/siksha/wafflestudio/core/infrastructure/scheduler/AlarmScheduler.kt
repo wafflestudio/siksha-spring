@@ -35,7 +35,7 @@ class AlarmScheduler(
         runEveryMealJob("LU")
     }
 
-    // 저녁 4시 30분 실행
+    // 오후 4시 30분 실행
     @Scheduled(cron = "0 30 16 * * *")
     fun dinnerAlarm() {
         runEveryMealJob("DN")
