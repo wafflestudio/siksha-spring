@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.infrastructure.scheduler
 
 import org.springframework.batch.item.ItemProcessor
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
@@ -10,7 +11,8 @@ import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import java.time.LocalDate
 
 @Component
-class MenuAlarmProcessor(
+@Qualifier("dailyAlarmProcessor")
+class DailyAlarmProcessor(
     private val menuRepository: MenuRepository,
     private val userDeviceRepository: UserDeviceRepository,
     private val menuAlarmRepository: MenuAlarmRepository,

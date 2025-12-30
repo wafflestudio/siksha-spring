@@ -11,6 +11,7 @@ import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.data.RepositoryItemReader
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Sort
@@ -36,7 +37,9 @@ class AlarmBatchConfig(
 
     @Bean
     fun dailyMenuAlarmStep(
+        @Qualifier("dailyAlarmUserReader")
         reader: ItemReader<User>,
+        @Qualifier("dailyAlarmProcessor")
         processor: ItemProcessor<User, DailyMenuAlarm>,
         writer: ItemWriter<DailyMenuAlarm>,
     ): Step =
@@ -54,6 +57,38 @@ class AlarmBatchConfig(
             .repository(userRepository)
             .methodName("findAllByAlarmType")
             .arguments(listOf(AlarmType.DAILY))
+            .pageSize(USER_BATCH_SIZE)
+            .sorts(mapOf("id" to Sort.Direction.ASC))
+            .build()
+
+    @Bean
+    fun everyMealAlarmJob(everyMealAlarmStep: Step): Job =
+        JobBuilder("everyMealAlarmJob", jobRepository)
+            .start(everyMealAlarmStep)
+            .build()
+
+    @Bean
+    fun everyMealAlarmStep(
+        @Qualifier("everyMealAlarmUserReader")
+        reader: ItemReader<User>,
+        @Qualifier("everyMealAlarmProcessor")
+        processor: ItemProcessor<User, DailyMenuAlarm>,
+        writer: ItemWriter<DailyMenuAlarm>,
+    ): Step =
+        StepBuilder("everyMealAlarmStep", jobRepository)
+            .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
+            .reader(reader)
+            .processor(processor)
+            .writer(writer)
+            .build()
+
+    @Bean
+    fun everyMealAlarmUserReader(userRepository: UserRepository): RepositoryItemReader<User> =
+        RepositoryItemReaderBuilder<User>()
+            .name("everyMealAlarmUserReader")
+            .repository(userRepository)
+            .methodName("findAllByAlarmType")
+            .arguments(listOf(AlarmType.EVERY_MEAL))
             .pageSize(USER_BATCH_SIZE)
             .sorts(mapOf("id" to Sort.Direction.ASC))
             .build()

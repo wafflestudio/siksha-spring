@@ -162,4 +162,9 @@ interface MenuRepository : JpaRepository<Menu, Int> {
     ): List<MenuLikeSummary>
 
     fun findAllByDate(date: LocalDate): List<Menu>
+
+    fun findAllByDateAndType(
+        date: LocalDate,
+        type: String,
+    ): List<Menu>
 }
