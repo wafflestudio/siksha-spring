@@ -62,5 +62,7 @@ interface AlarmMenuSummary {
 
     fun getRestaurantId(): Int
 
+    fun getRestaurantName(): String
+
     fun getCode(): String
 }

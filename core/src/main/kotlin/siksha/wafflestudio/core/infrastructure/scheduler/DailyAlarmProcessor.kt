@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
+import siksha.wafflestudio.core.domain.user.dto.MenuAlarmSendDto
 import java.time.LocalDate
 
 @Component
@@ -28,17 +29,25 @@ class DailyAlarmProcessor(
 
         if (devices.isEmpty()) return null
 
-        val menuNames =
+        val menus =
             chunkPrefetchListener.userMenuAlarmsMap[user.id].orEmpty()
                 .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
-                .mapNotNull { it.getNameKr() }
+                .mapNotNull {
+                    it.getNameKr()?.let { nameKr ->
+                        MenuAlarmSendDto(
+                            menuName = nameKr,
+                            restaurantName = it.getRestaurantName(),
+                        )
+                    }
+                }
 
-        if (menuNames.isEmpty()) return null
+        if (menus.isEmpty()) return null
 
         return DailyMenuAlarm(
             userId = user.id,
+            alarmType = "DAILY",
             devices = devices,
-            menuNames = menuNames,
+            menus = menus,
         )
     }
 }
