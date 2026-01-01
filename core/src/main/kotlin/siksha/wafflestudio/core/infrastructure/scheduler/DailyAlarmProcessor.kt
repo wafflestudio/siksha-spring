@@ -40,6 +40,7 @@ class DailyAlarmProcessor(
                         )
                     }
                 }
+                .sortedBy { it.restaurantName }
 
         if (menus.isEmpty()) return null
 

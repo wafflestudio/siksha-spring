@@ -45,6 +45,7 @@ class EveryMealAlarmProcessor(
                         )
                     }
                 }
+                .sortedBy { it.restaurantName }
 
         if (menus.isEmpty()) return null
 
