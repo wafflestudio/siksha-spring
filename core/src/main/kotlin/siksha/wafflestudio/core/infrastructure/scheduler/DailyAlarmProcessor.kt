@@ -19,7 +19,7 @@ class DailyAlarmProcessor(
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
         menuRepository.findAllByDate(LocalDate.now())
-            .map { it.code to it.restaurant.id }
+            .map { it.getCode() to it.getRestaurantId() }
             .toSet()
     }
 

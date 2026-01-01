@@ -24,7 +24,7 @@ class EveryMealAlarmProcessor(
             LocalDate.now(),
             type,
         )
-            .map { it.code to it.restaurant.id }
+            .map { it.getCode() to it.getRestaurantId() }
             .toSet()
     }
 
