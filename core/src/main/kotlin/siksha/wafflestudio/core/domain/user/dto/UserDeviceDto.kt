@@ -6,8 +6,14 @@ data class UserDeviceDto(
     val fcmToken: String,
 )
 
+data class MenuAlarmSendDto(
+    val menuName: String,
+    val restaurantName: String,
+)
+
 data class DailyMenuAlarm(
     val userId: Int,
+    val alarmType: String,
     val devices: List<UserDevice>,
-    val menuNames: List<String>,
+    val menus: List<MenuAlarmSendDto>,
 )

@@ -78,9 +78,10 @@ interface MenuAlarmRepository : JpaRepository<MenuAlarm, Int> {
 
     @Query(
         """
-        SELECT m.id, ma.user_id AS userId, m.name_kr AS NameKr, m.restaurant_id AS restaurantId, m.code
+        SELECT m.id, ma.user_id AS userId, m.name_kr AS NameKr, m.restaurant_id AS restaurantId, r.name_kr AS restaurantName, m.code
         FROM menu_alarm ma
         JOIN menu m ON ma.menu_id = m.id
+        JOIN restaurant r ON m.restaurant_id = r.id
         WHERE ma.user_id in :userIds
     """,
         nativeQuery = true,

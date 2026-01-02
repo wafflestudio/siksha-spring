@@ -161,5 +161,26 @@ interface MenuRepository : JpaRepository<Menu, Int> {
         @Param("menuIds") menuIds: List<Int>,
     ): List<MenuLikeSummary>
 
-    fun findAllByDate(date: LocalDate): List<Menu>
+    @Query(
+        """
+        SELECT m.id, m.restaurant_id AS restaurantId, m.code
+        FROM menu m
+        WHERE m.date = :date
+    """,
+        nativeQuery = true,
+    )
+    fun findAllByDate(date: LocalDate): List<MenuPlainSummary>
+
+    @Query(
+        """
+        SELECT m.id, m.restaurant_id AS restaurantId, m.code
+        FROM menu m
+        WHERE m.date = :date AND m.type = :type
+    """,
+        nativeQuery = true,
+    )
+    fun findAllByDateAndType(
+        date: LocalDate,
+        type: String,
+    ): List<MenuPlainSummary>
 }

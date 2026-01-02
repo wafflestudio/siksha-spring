@@ -1,5 +1,6 @@
 package siksha.wafflestudio.core.infrastructure.config
 
+import org.springframework.batch.core.ChunkListener
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing
@@ -11,6 +12,7 @@ import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.data.RepositoryItemReader
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Sort
@@ -19,6 +21,7 @@ import siksha.wafflestudio.core.domain.user.data.AlarmType
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.scheduler.ChunkPrefetchListener
 
 private const val USER_BATCH_SIZE = 500
 
@@ -36,15 +39,19 @@ class AlarmBatchConfig(
 
     @Bean
     fun dailyMenuAlarmStep(
+        @Qualifier("dailyAlarmUserReader")
         reader: ItemReader<User>,
+        @Qualifier("dailyAlarmProcessor")
         processor: ItemProcessor<User, DailyMenuAlarm>,
         writer: ItemWriter<DailyMenuAlarm>,
+        chunkPrefetchListener: ChunkPrefetchListener,
     ): Step =
         StepBuilder("dailyMenuAlarmStep", jobRepository)
             .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            .listener(chunkPrefetchListener as ChunkListener)
             .build()
 
     @Bean
@@ -54,6 +61,40 @@ class AlarmBatchConfig(
             .repository(userRepository)
             .methodName("findAllByAlarmType")
             .arguments(listOf(AlarmType.DAILY))
+            .pageSize(USER_BATCH_SIZE)
+            .sorts(mapOf("id" to Sort.Direction.ASC))
+            .build()
+
+    @Bean
+    fun everyMealAlarmJob(everyMealAlarmStep: Step): Job =
+        JobBuilder("everyMealAlarmJob", jobRepository)
+            .start(everyMealAlarmStep)
+            .build()
+
+    @Bean
+    fun everyMealAlarmStep(
+        @Qualifier("everyMealAlarmUserReader")
+        reader: ItemReader<User>,
+        @Qualifier("everyMealAlarmProcessor")
+        processor: ItemProcessor<User, DailyMenuAlarm>,
+        writer: ItemWriter<DailyMenuAlarm>,
+        chunkPrefetchListener: ChunkPrefetchListener,
+    ): Step =
+        StepBuilder("everyMealAlarmStep", jobRepository)
+            .chunk<User, DailyMenuAlarm>(USER_BATCH_SIZE, transactionManager)
+            .reader(reader)
+            .processor(processor)
+            .writer(writer)
+            .listener(chunkPrefetchListener as ChunkListener)
+            .build()
+
+    @Bean
+    fun everyMealAlarmUserReader(userRepository: UserRepository): RepositoryItemReader<User> =
+        RepositoryItemReaderBuilder<User>()
+            .name("everyMealAlarmUserReader")
+            .repository(userRepository)
+            .methodName("findAllByAlarmType")
+            .arguments(listOf(AlarmType.EVERY_MEAL))
             .pageSize(USER_BATCH_SIZE)
             .sorts(mapOf("id" to Sort.Direction.ASC))
             .build()
