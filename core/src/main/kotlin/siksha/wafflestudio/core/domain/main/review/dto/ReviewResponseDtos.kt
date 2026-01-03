@@ -102,7 +102,7 @@ data class MyReviewResponse(
     val userId: Int,
     val score: Int,
     val comment: String?,
-    val etc: String?,
+    val etc: JsonNode?,
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
     val keywordReviews: List<String?>,
