@@ -1,0 +1,50 @@
+name: Manual Deployment to AWS ECR dev
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY_K8S: siksha-dev/siksha-spring-server
+
+jobs:
+  build-and-deploy:
+    name: deploy dev
+    runs-on: ubuntu-24.04-arm
+    environment: dev
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # siksha-cicd
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get and save Auth Token for CodeArtifact
+        id: get-save-codeartifact-auth-token
+        run: |
+          aws codeartifact get-authorization-token --domain wafflestudio --domain-owner 405906814034 --query authorizationToken --region ap-northeast-1 --output text > .codeartifact-auth-token
+
+      - name: FOR K8S) Build, tag, and push image to Amazon ECR
+        id: build-image-k8s
+        env:
+          IMAGE_TAG: ${{ github.run_number }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build \
+          --platform linux/arm64 \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG \
+          --build-arg PROFILE="dev" \
+          --secret id=codeartifact,src=.codeartifact-auth-token \
+          --push \
+          .
+
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY_K8S:$IMAGE_TAG" >> $GITHUB_OUTPUT
