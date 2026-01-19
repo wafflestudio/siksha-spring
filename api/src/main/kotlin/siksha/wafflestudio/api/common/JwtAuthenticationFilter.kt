@@ -5,9 +5,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -21,34 +18,33 @@ class JwtAuthenticationFilter(
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
     companion object {
-        private const val USER_ID_CLAIM = "userId"
-        private const val REQ_ATTR_USER_ID = "userId"
-        private const val HDR_AUTHORIZATION = "Authorization"
+        private const val USER_ID = "userId"
+        private const val AUTHORIZATION = "Authorization"
         private const val BEARER_PREFIX = "Bearer "
-    }
 
-    private val permitAllMatchers =
-        listOf(
-            AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
-            AntPathRequestMatcher("/community/boards/{board_id}", HttpMethod.GET.name()),
-            AntPathRequestMatcher("/community/**/web"),
-            AntPathRequestMatcher("/menus/**/web"),
-            AntPathRequestMatcher("/reviews/**/web"),
-            AntPathRequestMatcher("/error"),
-            AntPathRequestMatcher("/swagger-ui/**"),
-            AntPathRequestMatcher("/v3/api-docs/**"),
-            AntPathRequestMatcher("/docs"),
-            AntPathRequestMatcher("/actuator/health"),
-            AntPathRequestMatcher("/restaurants"),
-            AntPathRequestMatcher("/auth/privacy-policy"),
-            AntPathRequestMatcher("/auth/login/**"),
-            AntPathRequestMatcher("/auth/nicknames/validate"),
-            AntPathRequestMatcher("/reviews/comments/recommendation"),
-            AntPathRequestMatcher("/reviews/dist"),
-            AntPathRequestMatcher("/reviews/keyword/dist"),
-            AntPathRequestMatcher("/voc"),
-            AntPathRequestMatcher("/ping"),
-        )
+        private val permitAllMatchers =
+            listOf(
+                AntPathRequestMatcher("/community/boards", HttpMethod.GET.name()),
+                AntPathRequestMatcher("/community/boards/{board_id}", HttpMethod.GET.name()),
+                AntPathRequestMatcher("/community/**/web"),
+                AntPathRequestMatcher("/menus/**/web"),
+                AntPathRequestMatcher("/reviews/**/web"),
+                AntPathRequestMatcher("/error"),
+                AntPathRequestMatcher("/swagger-ui/**"),
+                AntPathRequestMatcher("/v3/api-docs/**"),
+                AntPathRequestMatcher("/docs"),
+                AntPathRequestMatcher("/actuator/health"),
+                AntPathRequestMatcher("/restaurants"),
+                AntPathRequestMatcher("/auth/privacy-policy"),
+                AntPathRequestMatcher("/auth/login/**"),
+                AntPathRequestMatcher("/auth/nicknames/validate"),
+                AntPathRequestMatcher("/reviews/comments/recommendation"),
+                AntPathRequestMatcher("/reviews/dist"),
+                AntPathRequestMatcher("/reviews/keyword/dist"),
+                AntPathRequestMatcher("/voc"),
+                AntPathRequestMatcher("/ping"),
+            )
+    }
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -87,7 +83,7 @@ class JwtAuthenticationFilter(
     }
 
     private fun extractBearerToken(request: HttpServletRequest): String? =
-        request.getHeader(HDR_AUTHORIZATION)
+        request.getHeader(AUTHORIZATION)
             ?.takeIf { it.startsWith(BEARER_PREFIX, ignoreCase = true) }
             ?.substring(BEARER_PREFIX.length)
             ?.trim()
@@ -95,13 +91,13 @@ class JwtAuthenticationFilter(
 
     private fun verifyAndExtractUserId(token: String): Int {
         val claims = jwtProvider.verifyJwtGetClaims(token)
-        val value = claims[USER_ID_CLAIM] ?: error("no userId claim")
+        val value = claims[USER_ID] ?: throw UnauthorizedUserException()
         return when (value) {
             is Int -> value
             is Long -> value.toInt()
             is Number -> value.toInt()
-            is String -> value.toIntOrNull() ?: error("bad userId")
-            else -> error("bad userId type")
+            is String -> value.toIntOrNull() ?: throw UnauthorizedUserException()
+            else -> throw UnauthorizedUserException()
         }
     }
 
@@ -116,10 +112,7 @@ class JwtAuthenticationFilter(
         userId: Int,
         request: HttpServletRequest,
     ) {
-        val authorities = listOf(SimpleGrantedAuthority("ROLE_USER"))
-        val authentication = UsernamePasswordAuthenticationToken(userId, null, authorities)
-        SecurityContextHolder.getContext().authentication = authentication
-        request.setAttribute(REQ_ATTR_USER_ID, userId)
+        request.setAttribute(USER_ID, userId)
     }
 }
 
