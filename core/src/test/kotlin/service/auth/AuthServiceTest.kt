@@ -9,12 +9,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import siksha.wafflestudio.core.domain.auth.JwtProvider
 import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.user.service.UserService
+import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
 import kotlin.test.assertEquals
 
 @Testcontainers
@@ -24,6 +26,9 @@ class AuthServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var authService: AuthService
     private lateinit var userService: UserService
+
+    @MockBean
+    lateinit var fcmPushClient: FcmPushClient
 
     @BeforeEach
     internal fun setUp() {

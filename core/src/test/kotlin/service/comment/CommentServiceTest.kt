@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -27,6 +28,7 @@ import siksha.wafflestudio.core.domain.community.post.data.Post
 import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
 
 @SpringBootTest
 class CommentServiceTest {
@@ -36,6 +38,9 @@ class CommentServiceTest {
     private lateinit var commentLikeRepository: CommentLikeRepository
     private lateinit var commentReportRepository: CommentReportRepository
     private lateinit var service: CommentService
+
+    @MockBean
+    lateinit var fcmPushClient: FcmPushClient
 
     @BeforeEach
     internal fun setUp() {

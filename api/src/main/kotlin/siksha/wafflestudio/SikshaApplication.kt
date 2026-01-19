@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.servers.Server
 import jakarta.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 import java.util.TimeZone
 
 @OpenAPIDefinition(
     servers = [Server(url = "/")],
 )
 @SpringBootApplication
+@EnableScheduling
 class SikshaApplication {
     @PostConstruct
     fun init() {

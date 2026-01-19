@@ -333,4 +333,18 @@ class MenuService(
             throw MenuAlarmException()
         }
     }
+
+    @Transactional
+    fun menuAlarmOnAll(userId: Int) {
+        val userIdStr = userId.toString()
+        val targetIds = menuRepository.findAlarmAllMenuByUserId(userIdStr)
+
+        try {
+            targetIds.forEach { targetId ->
+                menuAlarmRepository.postMenuAlarm(userId, targetId)
+            }
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
 }

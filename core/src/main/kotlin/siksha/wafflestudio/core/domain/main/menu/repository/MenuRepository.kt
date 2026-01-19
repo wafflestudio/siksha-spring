@@ -7,6 +7,7 @@ import siksha.wafflestudio.core.domain.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuLikeSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuSummary
+import java.time.LocalDate
 
 interface MenuRepository : JpaRepository<Menu, Int> {
     @Query(
@@ -111,6 +112,21 @@ interface MenuRepository : JpaRepository<Menu, Int> {
 
     @Query(
         """
+        SELECT min(m.id)
+        FROM menu m
+        JOIN menu_like ml ON m.id = ml.menu_id AND ml.is_liked = 1
+        LEFT JOIN menu_alarm ma ON m.id = ma.menu_id
+        WHERE ml.user_id = :userId AND ma.id IS NULL
+        GROUP BY m.code, m.restaurant_id
+    """,
+        nativeQuery = true,
+    )
+    fun findAlarmAllMenuByUserId(
+        @Param("userId") userId: String,
+    ): List<Int>
+
+    @Query(
+        """
         SELECT m.id, m.restaurant_id AS restaurantId, m.code, m.date, m.type, m.name_kr AS nameKr, m.name_en AS nameEn, m.price, m.etc,
             CONVERT_TZ(m.created_at, '+00:00', '+09:00') AS createdAt,
             CONVERT_TZ(m.updated_at, '+00:00', '+09:00') AS updatedAt,
@@ -144,4 +160,27 @@ interface MenuRepository : JpaRepository<Menu, Int> {
     fun findMenuLikesByMenuIds(
         @Param("menuIds") menuIds: List<Int>,
     ): List<MenuLikeSummary>
+
+    @Query(
+        """
+        SELECT m.id, m.restaurant_id AS restaurantId, m.code
+        FROM menu m
+        WHERE m.date = :date
+    """,
+        nativeQuery = true,
+    )
+    fun findAllByDate(date: LocalDate): List<MenuPlainSummary>
+
+    @Query(
+        """
+        SELECT m.id, m.restaurant_id AS restaurantId, m.code
+        FROM menu m
+        WHERE m.date = :date AND m.type = :type
+    """,
+        nativeQuery = true,
+    )
+    fun findAllByDateAndType(
+        date: LocalDate,
+        type: String,
+    ): List<MenuPlainSummary>
 }

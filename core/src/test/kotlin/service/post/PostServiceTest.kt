@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -39,6 +40,7 @@ import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
 import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
 import siksha.wafflestudio.core.infrastructure.s3.S3Service
 import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
@@ -61,6 +63,9 @@ class PostServiceTest {
     private lateinit var imageRepository: ImageRepository
     private lateinit var s3Service: S3Service
     private lateinit var service: PostService
+
+    @MockBean
+    lateinit var fcmPushClient: FcmPushClient
 
     @BeforeEach
     internal fun setUp() {

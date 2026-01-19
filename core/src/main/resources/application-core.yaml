@@ -14,6 +14,9 @@ spring:
     property-naming-strategy: SNAKE_CASE
   cache:
     type: redis
+  batch:
+    jdbc:
+      initialize-schema: never
 
 server:
   forward-headers-strategy: framework

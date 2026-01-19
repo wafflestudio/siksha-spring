@@ -52,3 +52,17 @@ interface MenuLikeCount {
 
     fun getLikeCount(): Int
 }
+
+interface AlarmMenuSummary {
+    fun getId(): Int
+
+    fun getNameKr(): String?
+
+    fun getUserId(): Int
+
+    fun getRestaurantId(): Int
+
+    fun getRestaurantName(): String
+
+    fun getCode(): String
+}
