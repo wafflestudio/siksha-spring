@@ -35,10 +35,6 @@ import siksha.wafflestudio.core.domain.main.review.service.ReviewService
 class ReviewController(
     private val reviewService: ReviewService,
 ) {
-    // ============================================================================
-    // POST/PATCH/DELETE Endpoints (Always Require Authentication)
-    // ============================================================================
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "새 리뷰 작성", description = "메뉴에 대한 새로운 리뷰를 작성합니다")
