@@ -14,8 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
-import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
+import siksha.wafflestudio.core.domain.common.exception.community.CommentAlreadyReportedException
+import siksha.wafflestudio.core.domain.common.exception.community.InvalidCommentReportFormException
 import siksha.wafflestudio.core.domain.community.board.data.Board
 import siksha.wafflestudio.core.domain.community.comment.data.Comment
 import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
