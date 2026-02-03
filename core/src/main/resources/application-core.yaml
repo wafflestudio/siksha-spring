@@ -10,6 +10,7 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: 0
   jackson:
     property-naming-strategy: SNAKE_CASE
   cache:
