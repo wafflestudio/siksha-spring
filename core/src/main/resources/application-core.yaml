@@ -9,7 +9,7 @@ spring:
     show-sql: true
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    baseline-on-migrate: false
   jackson:
     property-naming-strategy: SNAKE_CASE
   cache:
