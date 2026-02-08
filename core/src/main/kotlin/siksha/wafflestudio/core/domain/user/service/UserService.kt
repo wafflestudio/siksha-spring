@@ -212,6 +212,6 @@ class UserService(
     fun getAlarm(userId: Int): UserAlarmResponseDto {
         val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException()
 
-        return UserAlarmResponseDto(alarmType = user.alarmType)
+        return UserAlarmResponseDto(alarmType = user.alarmType ?: AlarmType.DAILY)
     }
 }
