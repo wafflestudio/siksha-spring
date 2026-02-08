@@ -6,32 +6,32 @@ object KeywordReviewUtil {
     private val foodCompositionGrade = listOf("너무 빈약해요", "다소 단조로워요", "기본적이에요", "알찬 편이에요", "조화로워요")
 
     fun getTasteKeyword(tasteLevel: Int?): String {
-        if (tasteLevel == null || tasteLevel == -1 || tasteLevel > 4) return ""
+        if (tasteLevel == null || tasteLevel > 4) return ""
         return tasteGrade[tasteLevel]
     }
 
     fun getPriceKeyword(priceLevel: Int?): String {
-        if (priceLevel == null || priceLevel == -1 || priceLevel > 4) return ""
+        if (priceLevel == null || priceLevel > 4) return ""
         return priceGrade[priceLevel]
     }
 
     fun getFoodCompositionKeyword(foodLevel: Int?): String {
-        if (foodLevel == null || foodLevel == -1 || foodLevel > 4) return ""
+        if (foodLevel == null || foodLevel > 4) return ""
         return foodCompositionGrade[foodLevel]
     }
 
-    fun getTasteLevel(tasteKeyword: String?): Int {
-        if (tasteKeyword == null || !tasteGrade.contains(tasteKeyword)) return -1
+    fun getTasteLevel(tasteKeyword: String?): Int? {
+        if (tasteKeyword == null || tasteGrade.contains(tasteKeyword).not()) return null
         return tasteGrade.indexOf(tasteKeyword)
     }
 
-    fun getPriceLevel(priceKeyword: String?): Int {
-        if (priceKeyword == null || !priceGrade.contains(priceKeyword)) return -1
+    fun getPriceLevel(priceKeyword: String?): Int? {
+        if (priceKeyword == null || priceGrade.contains(priceKeyword).not()) return null
         return priceGrade.indexOf(priceKeyword)
     }
 
-    fun getFoodCompositionLevel(foodKeyword: String?): Int {
-        if (foodKeyword == null || !foodCompositionGrade.contains(foodKeyword)) return -1
+    fun getFoodCompositionLevel(foodKeyword: String?): Int? {
+        if (foodKeyword == null || foodCompositionGrade.contains(foodKeyword).not()) return null
         return foodCompositionGrade.indexOf(foodKeyword)
     }
 }

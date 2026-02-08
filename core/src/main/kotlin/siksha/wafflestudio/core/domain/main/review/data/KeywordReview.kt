@@ -15,9 +15,9 @@ import siksha.wafflestudio.core.domain.main.menu.data.Menu
 data class KeywordReview(
     @Id
     val id: Int = 0,
-    var taste: Int,
-    var price: Int,
-    var foodComposition: Int,
+    var taste: Int?,
+    var price: Int?,
+    var foodComposition: Int?,
     @OneToOne
     @MapsId
     @JoinColumn(name = "review_id")
