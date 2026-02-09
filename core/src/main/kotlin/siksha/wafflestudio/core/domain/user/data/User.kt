@@ -25,7 +25,7 @@ data class User(
     var profileUrl: String? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "alarm_type", length = 10)
-    var alarmType: AlarmType? = AlarmType.DAILY,
+    var alarmType: AlarmType = AlarmType.DAILY,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

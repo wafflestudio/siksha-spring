@@ -1,0 +1,3 @@
+UPDATE user SET alarm_type = 'DAILY' WHERE alarm_type IS NULL;
+
+ALTER TABLE user MODIFY alarm_type VARCHAR(10) NOT NULL DEFAULT 'DAILY';
