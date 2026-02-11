@@ -23,9 +23,9 @@ import siksha.wafflestudio.core.domain.auth.social.data.GoogleOauthProperties
 import siksha.wafflestudio.core.domain.auth.social.data.KakaoTokenInfo
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
-import siksha.wafflestudio.core.domain.common.exception.InvalidSSOTokenException
-import siksha.wafflestudio.core.domain.common.exception.SSOProviderException
-import siksha.wafflestudio.core.domain.common.exception.TokenParseException
+import siksha.wafflestudio.core.domain.common.exception.auth.InvalidSSOTokenException
+import siksha.wafflestudio.core.domain.common.exception.auth.SSOProviderException
+import siksha.wafflestudio.core.domain.common.exception.auth.TokenParseException
 import java.net.URI
 import java.net.URL
 import java.text.ParseException
