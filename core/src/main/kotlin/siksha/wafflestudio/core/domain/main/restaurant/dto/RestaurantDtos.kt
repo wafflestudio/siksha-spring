@@ -86,3 +86,15 @@ data class RestaurantLikeResponseDto(
     val restaurantId: Int,
     val liked: Boolean,
 )
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantOrderResponseDto(
+    @field:JsonProperty("order")
+    val restaurantOrder: List<Int>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantOrderRequestDto(
+    @field:JsonProperty("order")
+    val restaurantOrder: List<Int>,
+)

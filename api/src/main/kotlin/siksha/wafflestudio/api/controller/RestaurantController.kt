@@ -7,10 +7,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantLikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantListResponseDto
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderRequestDto
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.service.RestaurantService
 
 @RestController
@@ -39,5 +42,22 @@ class RestaurantController(
         @PathVariable restaurantId: Int?
     ): RestaurantLikeResponseDto {
         return restaurantService.likeRestaurant(request.userId, restaurantId)
+    }
+
+    @GetMapping("/restaurants/order")
+    @Operation(summary = "식당 순서 조회", description = "식당의 순서를 조회합니다")
+    fun getRestaurantOrder(
+        request: HttpServletRequest,
+    ): RestaurantOrderResponseDto {
+        return restaurantService.getRestaurantOrder(request.userId)
+    }
+
+    @PatchMapping("/restaurants/order")
+    @Operation(summary = "식당 순서 변경", description = "식당의 순서를 변경합니다")
+    fun changeRestaurantOrder(
+        request: HttpServletRequest,
+        @RequestBody requestedOrder: RestaurantOrderRequestDto,
+    ) {
+        restaurantService.changeRestaurantOrder(request.userId, requestedOrder)
     }
 }
