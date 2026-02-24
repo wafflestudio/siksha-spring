@@ -42,15 +42,28 @@ class RestaurantService(
         val restaurants = restaurantRepository.findAll()
         val restaurantOrder = restaurantOrderRepository.findRestaurantOrderByUserId(userId)?.orderId
 
-
-
-        return RestaurantListResponseDto(
-            count = restaurants.size,
-            result = restaurants.map { restaurant ->
-                val liked = restaurantLikeRepository.existsRestaurantLikeByUserIdAndRestaurantId(userId, restaurant.id)
-                RestaurantResponseDto.personalizedFrom(restaurant, liked)
-            },
-        )
+        // 사용자 정의 식당 순서
+        if(restaurantOrder != null) {
+            val restaurantMap = restaurants.associateBy { it.id }
+            val orderedRestaurants = restaurantOrder.mapNotNull { restaurantMap[it] }
+            val unorderedRestaurants = restaurants.filterNot { restaurantOrder.contains(it.id) }
+            return RestaurantListResponseDto(
+                count = restaurants.size,
+                result = (orderedRestaurants + unorderedRestaurants).map { restaurant ->
+                    val liked = restaurantLikeRepository.existsRestaurantLikeByUserIdAndRestaurantId(userId, restaurant.id)
+                    RestaurantResponseDto.personalizedFrom(restaurant, liked)
+                },
+            )
+        }
+        else { // 기본 순서 배치 (id 증가순)
+            return RestaurantListResponseDto(
+                count = restaurants.size,
+                result = restaurants.map { restaurant ->
+                    val liked = restaurantLikeRepository.existsRestaurantLikeByUserIdAndRestaurantId(userId, restaurant.id)
+                    RestaurantResponseDto.personalizedFrom(restaurant, liked)
+                },
+            )
+        }
     }
 
     fun likeRestaurant(userId: Int, restaurantId: Int?): RestaurantLikeResponseDto {
