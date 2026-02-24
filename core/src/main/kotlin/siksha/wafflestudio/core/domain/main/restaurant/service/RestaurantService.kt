@@ -31,6 +31,19 @@ class RestaurantService(
         )
     }
 
+    fun getAllPersonalizedRestaurants(
+        userId: Int,
+    ): RestaurantListResponseDto {
+        val restaurants = restaurantRepository.findAll()
+        return RestaurantListResponseDto(
+            count = restaurants.size,
+            result = restaurants.map { restaurant ->
+                val liked = restaurantLikeRepository.existsRestaurantLikeByUserIdAndRestaurantId(userId, restaurant.id)
+                RestaurantResponseDto.personalizedFrom(restaurant, liked)
+            },
+        )
+    }
+
     fun likeRestaurant(userId: Int, restaurantId: Int?): RestaurantLikeResponseDto {
         if(restaurantId == null) {
             throw RestaurantNotFoundException()

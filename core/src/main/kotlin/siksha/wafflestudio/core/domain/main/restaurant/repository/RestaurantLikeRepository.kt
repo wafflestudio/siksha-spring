@@ -8,4 +8,9 @@ interface RestaurantLikeRepository : JpaRepository<RestaurantLike, Int> {
         userId: Int,
         restaurantId: Int,
     ): RestaurantLike?
+
+    fun existsRestaurantLikeByUserIdAndRestaurantId(
+        userId: Int,
+        restaurantId: Int,
+    ): Boolean
 }

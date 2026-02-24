@@ -24,6 +24,14 @@ class RestaurantController(
         return restaurantService.getAllRestaurants()
     }
 
+    @GetMapping("/restaurants/personal")
+    @Operation(summary = "식당 목록 + 즐겨찾기, 순서 정렬에 따른 개인화된 응답 (로그인)", description = "개인화된 식당 목록을 조회합니다 (로그인)")
+    fun getPersonalizedRestaurants(
+        request: HttpServletRequest,
+    ): RestaurantListResponseDto {
+        return restaurantService.getAllPersonalizedRestaurants(request.userId)
+    }
+
     @PostMapping("/restaurants/like/{restaurantId}")
     @Operation(summary = "식당 좋아요 누르기", description = "특정 식당을 좋아요합니다")
     fun likeRestaurant(

@@ -28,6 +28,8 @@ data class RestaurantResponseDto
         val lat: Double?,
         @JsonProperty("lng")
         val lng: Double?,
+        @JsonProperty("liked")
+        val liked: Boolean?,
         @JsonProperty("etc")
         val etc: JsonNode,
         @JsonProperty("created_at")
@@ -45,6 +47,23 @@ data class RestaurantResponseDto
                     nameKr = restaurant.nameKr,
                     nameEn = restaurant.nameEn,
                     addr = restaurant.addr,
+                    liked = null,
+                    lat = restaurant.lat,
+                    lng = restaurant.lng,
+                    etc = EtcUtils.convertEtc(restaurant.etc),
+                    createdAt = restaurant.createdAt,
+                    updatedAt = restaurant.updatedAt,
+                )
+            }
+
+            fun personalizedFrom(restaurant: Restaurant, liked: Boolean): RestaurantResponseDto {
+                return RestaurantResponseDto(
+                    id = restaurant.id,
+                    code = restaurant.code,
+                    nameKr = restaurant.nameKr,
+                    nameEn = restaurant.nameEn,
+                    addr = restaurant.addr,
+                    liked = liked,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
                     etc = EtcUtils.convertEtc(restaurant.etc),
@@ -63,6 +82,7 @@ data class RestaurantListResponseDto(
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantLikeResponseDto(
+    @field:JsonProperty("id")
     val restaurantId: Int,
     val liked: Boolean,
 )
