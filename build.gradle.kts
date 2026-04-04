@@ -1,5 +1,3 @@
-import java.io.ByteArrayOutputStream
-
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
@@ -23,7 +21,23 @@ subprojects {
 allprojects {
     repositories {
         mavenCentral()
-        mavenCodeArtifact()
+        maven {
+            url = uri("https://maven.pkg.github.com/wafflestudio/spring-waffle")
+            credentials {
+                username = "wafflestudio"
+                password = findProperty("gpr.key") as String?
+                    ?: System.getenv("GITHUB_TOKEN")
+                    ?: runCatching {
+                        ProcessBuilder("gh", "auth", "token")
+                            .start()
+                            .inputStream
+                            .bufferedReader()
+                            .readText()
+                            .trim()
+                    }.getOrDefault("")
+            }
+        }
+        mavenLocal()
     }
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -63,30 +77,5 @@ allprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
-    }
-}
-
-fun RepositoryHandler.mavenCodeArtifact() {
-    maven {
-        val authToken =
-            properties["codeArtifactAuthToken"] as String? ?: ByteArrayOutputStream().use {
-                runCatching {
-                    exec {
-                        commandLine =
-                            listOf(
-                                "aws", "codeartifact", "get-authorization-token",
-                                "--domain", "wafflestudio", "--domain-owner", "405906814034",
-                                "--query", "authorizationToken", "--region", "ap-northeast-1", "--output", "text",
-                            )
-                        standardOutput = it
-                    }
-                }
-                it.toString()
-            }
-        url = uri("https://wafflestudio-405906814034.d.codeartifact.ap-northeast-1.amazonaws.com/maven/spring-waffle/")
-        credentials {
-            username = "aws"
-            password = authToken
-        }
     }
 }
