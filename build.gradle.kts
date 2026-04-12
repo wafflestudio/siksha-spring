@@ -1,11 +1,11 @@
 plugins {
-    kotlin("jvm") version "2.2.0"
-    kotlin("plugin.spring") version "2.2.0"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
     id("org.springframework.boot") version "3.3.4" apply false
     id("io.spring.dependency-management") version "1.1.6"
-    kotlin("plugin.jpa") version "2.2.0"
+    kotlin("plugin.jpa") version "1.9.25"
     id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
-    kotlin("plugin.serialization") version "2.2.0" apply false
+    kotlin("plugin.serialization") version "1.9.25" apply false
 }
 
 java {
