@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/_deploy-siksha.yml
+    uses: ./.github/workflows/_deploy.yml
     with:
       ocir_repository: siksha-dev/siksha-spring-server
       dockerfile: Dockerfile
