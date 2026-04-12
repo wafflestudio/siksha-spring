@@ -21,23 +21,21 @@ class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ord
         val resolvedDatasourceUsername = environment.getProperty(DATASOURCE_USERNAME_KEY)
         val resolvedDatasourcePassword = environment.getProperty(DATASOURCE_PASSWORD_KEY)
 
-        log.info(
-            "Startup environment diagnostics: activeProfiles={}, ociVaultSecretIdsPresent={}, ociVaultRegion={}, ociAuthType={}, vaultPropertySourcePresent={}",
-            activeProfiles,
-            environment.getProperty("oci.vault.secret-ids").isNullOrBlank().not(),
-            environment.getProperty("oci.vault.region"),
-            environment.getProperty("oci.auth.type", "auto"),
-            vaultSource != null,
+        emitInfo(
+            "Startup environment diagnostics: activeProfiles=$activeProfiles, " +
+                "ociVaultSecretIdsPresent=${environment.getProperty("oci.vault.secret-ids").isNullOrBlank().not()}, " +
+                "ociVaultRegion=${environment.getProperty("oci.vault.region")}, " +
+                "ociAuthType=${environment.getProperty("oci.auth.type", "auto")}, " +
+                "vaultPropertySourcePresent=${vaultSource != null}",
         )
 
-        log.info(
-            "Datasource diagnostics: resolvedUrl={}, usernamePresent={}, passwordPresent={}, urlPropertySources={}, usernamePropertySources={}, passwordPropertySources={}",
-            resolvedDatasourceUrl ?: "<missing>",
-            resolvedDatasourceUsername.isNullOrBlank().not(),
-            resolvedDatasourcePassword.isNullOrBlank().not(),
-            propertySourcesContaining(environment, DATASOURCE_URL_KEY),
-            propertySourcesContaining(environment, DATASOURCE_USERNAME_KEY),
-            propertySourcesContaining(environment, DATASOURCE_PASSWORD_KEY),
+        emitInfo(
+            "Datasource diagnostics: resolvedUrl=${resolvedDatasourceUrl ?: "<missing>"}, " +
+                "usernamePresent=${resolvedDatasourceUsername.isNullOrBlank().not()}, " +
+                "passwordPresent=${resolvedDatasourcePassword.isNullOrBlank().not()}, " +
+                "urlPropertySources=${propertySourcesContaining(environment, DATASOURCE_URL_KEY)}, " +
+                "usernamePropertySources=${propertySourcesContaining(environment, DATASOURCE_USERNAME_KEY)}, " +
+                "passwordPropertySources=${propertySourcesContaining(environment, DATASOURCE_PASSWORD_KEY)}",
         )
 
         if (vaultSource is EnumerablePropertySource<*>) {
@@ -49,32 +47,30 @@ class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ord
                         key.startsWith("slack.")
                 }.sorted()
 
-            log.info(
-                "OCI vault property source diagnostics: keyCount={}, relevantKeys={}",
-                vaultSource.propertyNames.size,
-                vaultKeys,
+            emitInfo(
+                "OCI vault property source diagnostics: keyCount=${vaultSource.propertyNames.size}, " +
+                    "relevantKeys=$vaultKeys",
             )
 
-            log.info(
-                "OCI vault datasource key presence: url={}, username={}, password={}",
-                vaultKeys.contains(DATASOURCE_URL_KEY),
-                vaultKeys.contains(DATASOURCE_USERNAME_KEY),
-                vaultKeys.contains(DATASOURCE_PASSWORD_KEY),
+            emitInfo(
+                "OCI vault datasource key presence: " +
+                    "url=${vaultKeys.contains(DATASOURCE_URL_KEY)}, " +
+                    "username=${vaultKeys.contains(DATASOURCE_USERNAME_KEY)}, " +
+                    "password=${vaultKeys.contains(DATASOURCE_PASSWORD_KEY)}",
             )
         } else {
-            log.warn(
-                "OCI vault property source '{}' is missing or not enumerable. Datasource URL is currently '{}'.",
-                OCI_VAULT_PROPERTY_SOURCE_NAME,
-                resolvedDatasourceUrl ?: "<missing>",
+            emitWarn(
+                "OCI vault property source '$OCI_VAULT_PROPERTY_SOURCE_NAME' is missing or not enumerable. " +
+                    "Datasource URL is currently '${resolvedDatasourceUrl ?: "<missing>"}'.",
             )
         }
 
         if (resolvedDatasourceUrl.isNullOrBlank()) {
-            log.error(
-                "Datasource URL is still missing after environment post-processing. activeProfiles={}, vaultPropertySourcePresent={}, urlPropertySources={}",
-                activeProfiles,
-                vaultSource != null,
-                propertySourcesContaining(environment, DATASOURCE_URL_KEY),
+            emitError(
+                "Datasource URL is still missing after environment post-processing. " +
+                    "activeProfiles=$activeProfiles, " +
+                    "vaultPropertySourcePresent=${vaultSource != null}, " +
+                    "urlPropertySources=${propertySourcesContaining(environment, DATASOURCE_URL_KEY)}",
             )
         }
     }
@@ -91,6 +87,29 @@ class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ord
                 else -> source.getProperty(key) != null
             }
         }.map(PropertySource<*>::getName)
+
+    private fun emitInfo(message: String) {
+        log.info(message)
+        emitStderr("INFO", message)
+    }
+
+    private fun emitWarn(message: String) {
+        log.warn(message)
+        emitStderr("WARN", message)
+    }
+
+    private fun emitError(message: String) {
+        log.error(message)
+        emitStderr("ERROR", message)
+    }
+
+    private fun emitStderr(
+        level: String,
+        message: String,
+    ) {
+        System.err.println("[startup-diagnostics][$level] $message")
+        System.err.flush()
+    }
 
     companion object {
         private const val OCI_VAULT_PROPERTY_SOURCE_NAME = "oci-vault-secrets"
