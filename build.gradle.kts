@@ -68,6 +68,8 @@ allprojects {
         }
     }
 
+    extra["kotlin.version"] = "2.2.10"
+
     dependencyManagement {
         imports {
             mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
