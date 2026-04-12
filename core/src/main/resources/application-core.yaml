@@ -28,6 +28,15 @@ siksha:
   firebase:
     service-account:
 
+oci:
+  vault:
+    secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqaei57kzdeagsdtu66oqxvqjreh3hort4k67tfzvvlb65q
+    region: ap-chuncheon-1
+
+logging:
+  level:
+    com.oracle.bmc: DEBUG
+
 ---
 spring:
   config:
@@ -98,13 +107,6 @@ spring:
 jwt:
   secret-key:
 
-oci:
-  vault:
-    secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqaei57kzdeagsdtu66oqxvqjreh3hort4k67tfzvvlb65q
-    region: ap-chuncheon-1
-  auth:
-    type: instance-principal
-
 siksha:
   oauth:
     google:
@@ -153,8 +155,6 @@ oci:
   vault:
     secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqazni6mmnbxjxj5wanooaxsggjl2unxtru33hplioigtkq
     region: ap-chuncheon-1
-  auth:
-    type: instance-principal
 
 siksha:
   oauth:
