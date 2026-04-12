@@ -41,7 +41,7 @@ jobs:
 
       - name: Docker build, tag, and push image to OCIR
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # ✅ Secret 마운트를 위해 환경변수로 먼저 빼주기
+          GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }} # ✅ Secret 마운트를 위해 환경변수로 먼저 빼주기
         run: |
           docker build \
             -f ${{ inputs.dockerfile }} \
