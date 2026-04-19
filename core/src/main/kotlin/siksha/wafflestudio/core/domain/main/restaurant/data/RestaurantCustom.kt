@@ -31,27 +31,21 @@ data class RestaurantCustom(
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var user: User,
-
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var restaurant: Restaurant,
-
     @Column(name = "like", nullable = false)
     var like: Boolean = false,
-
     @Column(name = "visible", nullable = false)
     var visible: Boolean = true,
-
     @Column(name = "order_index")
     var orderIndex: Int? = null,
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
-
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC"))
+    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )

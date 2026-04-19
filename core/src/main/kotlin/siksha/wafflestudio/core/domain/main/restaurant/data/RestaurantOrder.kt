@@ -6,9 +6,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.IdClass
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
@@ -27,20 +25,16 @@ data class RestaurantOrder(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int = 0,
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     val user: User,
-
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
     var orderId: List<Int> = mutableListOf(),
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
-
     @UpdateTimestamp
     @Column(nullable = false)
     val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

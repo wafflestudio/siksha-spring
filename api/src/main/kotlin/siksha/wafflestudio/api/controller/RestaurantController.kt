@@ -13,8 +13,8 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantLikeRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantLikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantListResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderUpdateRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderResponseDto
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderUpdateRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantOrderUpdateResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantVisibleRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantVisibleResponseDto
@@ -33,9 +33,7 @@ class RestaurantController(
 
     @GetMapping("/restaurants/personal")
     @Operation(summary = "식당 목록 + 즐겨찾기, 순서 정렬에 따른 개인화된 응답 (로그인)", description = "개인화된 식당 목록을 조회합니다 (로그인)")
-    fun getPersonalizedRestaurants(
-        request: HttpServletRequest,
-    ): RestaurantListResponseDto {
+    fun getPersonalizedRestaurants(request: HttpServletRequest): RestaurantListResponseDto {
         return restaurantService.getAllPersonalizedRestaurants(request.userId)
     }
 
@@ -61,9 +59,7 @@ class RestaurantController(
 
     @GetMapping("/restaurants/order")
     @Operation(summary = "식당 순서 조회", description = "식당의 순서를 조회합니다")
-    fun getRestaurantOrder(
-        request: HttpServletRequest,
-    ): RestaurantOrderResponseDto {
+    fun getRestaurantOrder(request: HttpServletRequest): RestaurantOrderResponseDto {
         return restaurantService.getRestaurantOrder(request.userId)
     }
 

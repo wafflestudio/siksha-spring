@@ -59,7 +59,11 @@ data class RestaurantResponseDto
                 )
             }
 
-            fun personalizedFrom(restaurant: Restaurant, liked: Boolean, visible: Boolean = true): RestaurantResponseDto {
+            fun personalizedFrom(
+                restaurant: Restaurant,
+                liked: Boolean,
+                visible: Boolean = true,
+            ): RestaurantResponseDto {
                 return RestaurantResponseDto(
                     id = restaurant.id,
                     code = restaurant.code,
