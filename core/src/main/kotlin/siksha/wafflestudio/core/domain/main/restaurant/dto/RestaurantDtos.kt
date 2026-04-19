@@ -30,6 +30,8 @@ data class RestaurantResponseDto
         val lng: Double?,
         @JsonProperty("liked")
         val liked: Boolean?,
+        @JsonProperty("visible")
+        val visible: Boolean?,
         @JsonProperty("etc")
         val etc: JsonNode,
         @JsonProperty("created_at")
@@ -48,6 +50,7 @@ data class RestaurantResponseDto
                     nameEn = restaurant.nameEn,
                     addr = restaurant.addr,
                     liked = null,
+                    visible = true,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
                     etc = EtcUtils.convertEtc(restaurant.etc),
@@ -56,7 +59,7 @@ data class RestaurantResponseDto
                 )
             }
 
-            fun personalizedFrom(restaurant: Restaurant, liked: Boolean): RestaurantResponseDto {
+            fun personalizedFrom(restaurant: Restaurant, liked: Boolean, visible: Boolean = true): RestaurantResponseDto {
                 return RestaurantResponseDto(
                     id = restaurant.id,
                     code = restaurant.code,
@@ -64,6 +67,7 @@ data class RestaurantResponseDto
                     nameEn = restaurant.nameEn,
                     addr = restaurant.addr,
                     liked = liked,
+                    visible = visible,
                     lat = restaurant.lat,
                     lng = restaurant.lng,
                     etc = EtcUtils.convertEtc(restaurant.etc),
@@ -88,13 +92,36 @@ data class RestaurantLikeResponseDto(
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantLikeRequestDto(
+    @field:JsonProperty("like")
+    val like: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantVisibleResponseDto(
+    @field:JsonProperty("id")
+    val restaurantId: Int,
+    val visible: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantVisibleRequestDto(
+    @field:JsonProperty("visible")
+    val visible: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantOrderResponseDto(
     @field:JsonProperty("order")
     val restaurantOrder: List<Int>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantOrderRequestDto(
-    @field:JsonProperty("order")
-    val restaurantOrder: List<Int>,
+data class RestaurantOrderUpdateResponseDto(
+    val order: List<Int>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantOrderUpdateRequestDto(
+    val order: List<Int>,
 )
