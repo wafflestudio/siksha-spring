@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.user.DuplicatedNicknameException
+import siksha.wafflestudio.core.domain.common.exception.user.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto

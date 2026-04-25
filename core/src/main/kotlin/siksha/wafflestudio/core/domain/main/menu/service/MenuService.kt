@@ -6,11 +6,11 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
-import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
-import siksha.wafflestudio.core.domain.common.exception.MenuLikeException
-import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
+import siksha.wafflestudio.core.domain.common.exception.main.MenuAlarmAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.main.MenuAlarmException
+import siksha.wafflestudio.core.domain.common.exception.main.MenuLikeException
+import siksha.wafflestudio.core.domain.common.exception.main.MenuNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.main.MenuNotLikedException
 import siksha.wafflestudio.core.domain.main.menu.dto.DateWithTypeInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuAlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
