@@ -210,6 +210,6 @@ class RestaurantService(
             restaurantCustomRepository.saveAll(toSave)
         }
 
-        return RestaurantOrderUpdateResponseDto(allRestaurants.map { it.value.id })
+        return RestaurantOrderUpdateResponseDto(requestedOrderIds)
     }
 }
