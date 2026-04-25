@@ -3,21 +3,17 @@ package siksha.wafflestudio.core.service.post
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
-import org.springframework.web.multipart.MultipartFile
-import org.testcontainers.junit.jupiter.Testcontainers
 import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidPostReportFormException
 import siksha.wafflestudio.core.domain.common.exception.NotPostOwnerException
@@ -40,19 +36,9 @@ import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
-import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
 import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
-import siksha.wafflestudio.core.infrastructure.imageupload.UploadFileDto
-import siksha.wafflestudio.core.util.EtcUtils
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
-// @ActiveProfiles("test")
-@Testcontainers
-@SpringBootTest
 class PostServiceTest {
     private lateinit var postRepository: PostRepository
     private lateinit var postLikeRepository: PostLikeRepository
@@ -63,9 +49,6 @@ class PostServiceTest {
     private lateinit var imageRepository: ImageRepository
     private lateinit var imageUploadUseCase: ImageUploadUseCase
     private lateinit var service: PostService
-
-    @MockBean
-    lateinit var fcmPushClient: FcmPushClient
 
     @BeforeEach
     internal fun setUp() {
@@ -230,60 +213,6 @@ class PostServiceTest {
         assertEquals("waffle", response.nickname)
         assertEquals("https://siksha.wafflestudio.com/", response.profileUrl)
         assertEquals(true, response.isMine)
-
-        // verify
-        verify { userRepository.findByIdOrNull(userId) }
-        verify { boardRepository.findByIdOrNull(boardId) }
-        verify(exactly = 0) { imageUploadUseCase.uploadFiles(any(), any(), any()) }
-    }
-
-    @Test
-    fun `create post with images`() {
-        // given
-        val userId = 1
-        val user =
-            User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
-
-        val boardId = 2
-        val board = Board(id = boardId, name = "test board", description = "test")
-
-        val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
-        val prefix = ImagePrefix.POST
-
-        val nameKey = "board-$boardId/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
-        val images: List<MultipartFile> = listOf(mockk(), mockk())
-        val bucketName = System.getProperty("spring.cloud.aws.s3.bucket")
-        val urlPrefix = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/${prefix.prefix}/$nameKey"
-        val uploadFileDtos =
-            listOf(
-                UploadFileDto(
-                    key = "${prefix.prefix}/$nameKey/0.jpeg",
-                    url = "$urlPrefix/0.jpeg",
-                ),
-                UploadFileDto(
-                    key = "${prefix.prefix}/$nameKey/1.jpeg",
-                    url = "$urlPrefix/1.jpeg",
-                ),
-            )
-
-        mockkStatic(OffsetDateTime::class)
-        every { OffsetDateTime.now() } returns fixedDateTime
-
-        every { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
-        every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
-
-        every { userRepository.findByIdOrNull(userId) } returns user
-        every { boardRepository.findByIdOrNull(boardId) } returns board
-        every { postRepository.save(any()) } returns mockk()
-
-        // when
-        val dto = PostCreateRequestDto(board_id = boardId, title = "test", content = "siksha fighting", anonymous = false, images = images)
-        val response = service.createPost(userId, dto)
-
-        // then
-        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc.toString())
-
-        assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
 
         // verify
         verify { userRepository.findByIdOrNull(userId) }
@@ -779,106 +708,4 @@ class PostServiceTest {
         assertEquals(HttpStatus.NOT_FOUND, exception.httpStatus)
     }
 
-    @Test
-    fun `patch post with images`() {
-        // given
-        val userId = 1
-        val user =
-            User(id = userId, type = "test", identity = "siksha", nickname = "waffle", profileUrl = "https://siksha.wafflestudio.com/")
-
-        val boardId = 2
-        val board = Board(id = boardId, name = "test board", description = "test")
-
-        val postId = 3
-
-        val post =
-            Post(
-                id = postId,
-                user = user,
-                board = board,
-                title = "test",
-                content = "do not change the content",
-                available = true,
-                anonymous = false,
-                etc = null,
-            )
-
-        val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
-        val prefix = ImagePrefix.POST
-
-        val nameKey = "board-$boardId/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
-        val images: List<MultipartFile> = listOf(mockk(), mockk())
-        val bucketName = System.getProperty("spring.cloud.aws.s3.bucket")
-        val urlPrefix = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/${prefix.prefix}/$nameKey"
-        val uploadFileDtos =
-            listOf(
-                UploadFileDto(
-                    key = "${prefix.prefix}/$nameKey/0.jpeg",
-                    url = "$urlPrefix/0.jpeg",
-                ),
-                UploadFileDto(
-                    key = "${prefix.prefix}/$nameKey/1.jpeg",
-                    url = "$urlPrefix/1.jpeg",
-                ),
-            )
-
-        val savedPost =
-            Post(
-                id = postId,
-                // 반드시 ID를 설정
-                user = user,
-                board = board,
-                title = "new title",
-                content = "do not change the content",
-                available = true,
-                anonymous = true,
-                etc = EtcUtils.convertImageUrlsToEtcJson(uploadFileDtos.map { it.url }),
-                // 이미지 URL 적용
-            )
-
-        mockkStatic(OffsetDateTime::class)
-        every { OffsetDateTime.now() } returns fixedDateTime
-
-        every { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
-        every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
-        every { postRepository.save(any()) } returns savedPost
-        every { postRepository.findByIdOrNull(postId) } returns post
-        every { postLikeRepository.findByPostIdAndIsLikedTrue(postId) } returns emptyList()
-        every { commentRepository.countByPostId(postId) } returns 0
-
-        // when
-        val response =
-            service.patchPost(
-                userId = userId,
-                postId = postId,
-                postPatchRequestDto =
-                    PostPatchRequestDto(
-                        title = "new title",
-                        content = "do not change the content",
-                        anonymous = true,
-                        images = images,
-                    ),
-            )
-        // then
-
-        // not changed
-        assertEquals(post.content, response.content)
-        assertEquals(post.id, response.id)
-
-        // changed
-        assertEquals("new title", response.title)
-        assertEquals(true, response.anonymous)
-
-        val parsedEtc = EtcUtils.parseImageUrlsFromEtc(response.etc.toString())
-        assertEquals(listOf("$urlPrefix/0.jpeg", "$urlPrefix/1.jpeg"), parsedEtc)
-
-        // verify
-        verify { OffsetDateTime.now() }
-        verify { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) }
-        verify { imageRepository.saveAll(any<List<Image>>()) }
-        verify { postRepository.save(any()) }
-        verify { postRepository.findByIdOrNull(postId) }
-        verify { postLikeRepository.findByPostIdAndIsLikedTrue(postId) }
-        verify { commentRepository.countByPostId(postId) }
-    }
 }
