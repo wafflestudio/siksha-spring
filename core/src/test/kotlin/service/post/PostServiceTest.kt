@@ -3,7 +3,6 @@ package siksha.wafflestudio.core.service.post
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +31,6 @@ import siksha.wafflestudio.core.domain.community.post.repository.PostLikeReposit
 import siksha.wafflestudio.core.domain.community.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.community.post.service.PostService
-import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
@@ -707,5 +705,4 @@ class PostServiceTest {
         // then
         assertEquals(HttpStatus.NOT_FOUND, exception.httpStatus)
     }
-
 }
