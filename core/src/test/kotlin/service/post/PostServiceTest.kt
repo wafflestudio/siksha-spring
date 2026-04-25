@@ -41,9 +41,9 @@ import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.firebase.FcmPushClient
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
+import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
+import siksha.wafflestudio.core.infrastructure.imageupload.UploadFileDto
 import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -61,7 +61,7 @@ class PostServiceTest {
     private lateinit var boardRepository: BoardRepository
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
-    private lateinit var s3Service: S3Service
+    private lateinit var imageUploadUseCase: ImageUploadUseCase
     private lateinit var service: PostService
 
     @MockBean
@@ -76,7 +76,7 @@ class PostServiceTest {
         boardRepository = mockk()
         userRepository = mockk()
         imageRepository = mockk()
-        s3Service = mockk()
+        imageUploadUseCase = mockk()
         service =
             PostService(
                 postRepository,
@@ -86,7 +86,7 @@ class PostServiceTest {
                 boardRepository,
                 userRepository,
                 imageRepository,
-                s3Service,
+                imageUploadUseCase,
             )
         clearAllMocks()
     }
@@ -234,7 +234,7 @@ class PostServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(userId) }
         verify { boardRepository.findByIdOrNull(boardId) }
-        verify(exactly = 0) { s3Service.uploadFiles(any(), any(), any()) }
+        verify(exactly = 0) { imageUploadUseCase.uploadFiles(any(), any(), any()) }
     }
 
     @Test
@@ -248,7 +248,7 @@ class PostServiceTest {
         val board = Board(id = boardId, name = "test board", description = "test")
 
         val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
-        val prefix = S3ImagePrefix.POST
+        val prefix = ImagePrefix.POST
 
         val nameKey = "board-$boardId/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
         val images: List<MultipartFile> = listOf(mockk(), mockk())
@@ -269,7 +269,7 @@ class PostServiceTest {
         mockkStatic(OffsetDateTime::class)
         every { OffsetDateTime.now() } returns fixedDateTime
 
-        every { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
+        every { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
         every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
 
         every { userRepository.findByIdOrNull(userId) } returns user
@@ -804,7 +804,7 @@ class PostServiceTest {
             )
 
         val fixedDateTime = OffsetDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneOffset.of("+09:00"))
-        val prefix = S3ImagePrefix.POST
+        val prefix = ImagePrefix.POST
 
         val nameKey = "board-$boardId/user-$userId/${fixedDateTime.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}"
         val images: List<MultipartFile> = listOf(mockk(), mockk())
@@ -839,7 +839,7 @@ class PostServiceTest {
         mockkStatic(OffsetDateTime::class)
         every { OffsetDateTime.now() } returns fixedDateTime
 
-        every { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
+        every { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) } returns uploadFileDtos
         every { imageRepository.saveAll(any<List<Image>>()) } returns mockk()
         every { postRepository.save(any()) } returns savedPost
         every { postRepository.findByIdOrNull(postId) } returns post
@@ -874,7 +874,7 @@ class PostServiceTest {
 
         // verify
         verify { OffsetDateTime.now() }
-        verify { s3Service.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) }
+        verify { imageUploadUseCase.uploadFiles(files = images, prefix = prefix, nameKey = nameKey) }
         verify { imageRepository.saveAll(any<List<Image>>()) }
         verify { postRepository.save(any()) }
         verify { postRepository.findByIdOrNull(postId) }

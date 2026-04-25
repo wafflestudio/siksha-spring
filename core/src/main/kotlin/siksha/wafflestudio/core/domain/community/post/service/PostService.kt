@@ -36,8 +36,8 @@ import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import siksha.wafflestudio.core.util.EtcUtils
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -51,7 +51,7 @@ class PostService(
     private val boardRepository: BoardRepository,
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
-    private val s3Service: S3Service,
+    private val imageUploadUseCase: ImageUploadUseCase,
 ) {
     fun getPosts(
         boardId: Int,
@@ -335,7 +335,7 @@ class PostService(
         images: List<MultipartFile>,
     ): List<String> {
         val nameKey = generateImageNameKey(boardId, userId)
-        val uploadFiles = s3Service.uploadFiles(images, S3ImagePrefix.POST, nameKey)
+        val uploadFiles = imageUploadUseCase.uploadFiles(images, ImagePrefix.POST, nameKey)
 
         imageRepository.saveAll(
             uploadFiles.map {

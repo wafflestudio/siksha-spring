@@ -20,9 +20,9 @@ import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.user.service.UserService
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
+import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
+import siksha.wafflestudio.core.infrastructure.imageupload.UploadFileDto
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -30,7 +30,7 @@ class UserServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
     private lateinit var userDeviceRepository: UserDeviceRepository
-    private lateinit var s3Service: S3Service
+    private lateinit var imageUploadUseCase: ImageUploadUseCase
     private lateinit var userService: UserService
 
     @BeforeEach
@@ -38,8 +38,8 @@ class UserServiceTest {
         userRepository = mockk()
         imageRepository = mockk()
         userDeviceRepository = mockk()
-        s3Service = mockk()
-        userService = UserService(userRepository, imageRepository, userDeviceRepository, s3Service, listOf())
+        imageUploadUseCase = mockk()
+        userService = UserService(userRepository, imageRepository, userDeviceRepository, imageUploadUseCase, listOf())
         clearAllMocks()
     }
 
@@ -174,7 +174,7 @@ class UserServiceTest {
         val uploadFileDto = UploadFileDto(key = "some-key", url = "some-url")
 
         every { userRepository.findByIdOrNull(userId) } returns user
-        every { s3Service.uploadFile(image, S3ImagePrefix.PROFILE, any()) } returns uploadFileDto
+        every { imageUploadUseCase.uploadFile(image, ImagePrefix.PROFILE, any()) } returns uploadFileDto
         every { imageRepository.save(any()) } returns mockk()
         every { userRepository.save(any()) } returns user.apply { profileUrl = uploadFileDto.url }
 
@@ -186,7 +186,7 @@ class UserServiceTest {
 
         // verify
         verify { userRepository.findByIdOrNull(userId) }
-        verify { s3Service.uploadFile(image, S3ImagePrefix.PROFILE, any()) }
+        verify { imageUploadUseCase.uploadFile(image, ImagePrefix.PROFILE, any()) }
         verify { imageRepository.save(any()) }
         verify { userRepository.save(any()) }
     }
@@ -200,7 +200,7 @@ class UserServiceTest {
         val savedUser = user.copy().apply { profileUrl = null }
 
         every { userRepository.findByIdOrNull(userId) } returns user
-        every { s3Service.getKeyFromUrl("some-url") } returns "some-key"
+        every { imageUploadUseCase.getKeyFromUrl("some-url") } returns "some-key"
         every { imageRepository.softDeleteByKeyIn(listOf("some-key")) } returns 1
         every { userRepository.save(any()) } returns savedUser
 
@@ -212,7 +212,7 @@ class UserServiceTest {
 
         // verify
         verify { userRepository.findByIdOrNull(userId) }
-        verify { s3Service.getKeyFromUrl("some-url") }
+        verify { imageUploadUseCase.getKeyFromUrl("some-url") }
         verify { imageRepository.softDeleteByKeyIn(listOf("some-key")) }
         verify { userRepository.save(any()) }
     }

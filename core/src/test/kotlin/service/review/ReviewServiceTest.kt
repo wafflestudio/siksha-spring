@@ -46,7 +46,7 @@ import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.main.review.service.ReviewService
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -73,7 +73,7 @@ class ReviewServiceTest {
     private lateinit var imageRepository: ImageRepository
 
     @Mock
-    private lateinit var s3Service: S3Service
+    private lateinit var imageUploadUseCase: ImageUploadUseCase
 
     private lateinit var objectMapper: ObjectMapper
     private lateinit var reviewService: ReviewService
@@ -89,7 +89,7 @@ class ReviewServiceTest {
                 imageRepository = imageRepository,
                 keywordReviewRepository = keywordReviewRepository,
                 reviewLikeRepository = reviewLikeRepository,
-                s3Service = s3Service,
+                imageUploadUseCase = imageUploadUseCase,
             )
         // objectMapper는 private이므로 리플렉션을 사용하거나 다른 방법으로 설정
         val field = ReviewService::class.java.getDeclaredField("objectMapper")

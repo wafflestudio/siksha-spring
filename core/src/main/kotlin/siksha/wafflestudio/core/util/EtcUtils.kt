@@ -12,11 +12,12 @@ object EtcUtils {
     private val jsonEncoder = Json { encodeDefaults = true }
 
     fun getImageKeysFromUrlList(urls: List<String>): List<String> {
-        val pattern = Pattern.compile("https://.*\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(.*)")
-        val keys = mutableListOf<String>()
+        val pattern = Pattern.compile("https://objectstorage\\.[^/]+\\.oraclecloud\\.com/n/[^/]+/b/[^/]+/o/(.*)")
 
         return urls.mapNotNull { url ->
-            pattern.matcher(url).takeIf { it.find() }?.group(1)
+            pattern.matcher(url).takeIf { it.find() }?.group(1)?.let {
+                java.net.URLDecoder.decode(it, "UTF-8")
+            }
         }
     }
 

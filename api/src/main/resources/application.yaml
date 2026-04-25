@@ -2,3 +2,9 @@ spring:
   config:
     import:
       - application-core.yaml
+
+oci:
+  vault:
+    secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqaei57kzdeagsdtu66oqxvqjreh3hort4k67tfzvvlb65q
+    region: ap-chuncheon-1
+
