@@ -138,14 +138,12 @@ oci:
     namespace: ax1dvc8vmenm
     region: ap-chuncheon-1
     bucket: siksha
-
-jwt:
-  secret-key:
-
-oci:
   vault:
     secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqazni6mmnbxjxj5wanooaxsggjl2unxtru33hplioigtkq
     region: ap-chuncheon-1
+
+jwt:
+  secret-key:
 
 siksha:
   oauth:
