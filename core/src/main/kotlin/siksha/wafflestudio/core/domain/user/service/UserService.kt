@@ -21,8 +21,8 @@ import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.dto.UserResponseDto
 import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -35,7 +35,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val imageRepository: ImageRepository,
     private val userDeviceRepository: UserDeviceRepository,
-    private val s3Service: S3Service,
+    private val imageUploadUseCase: ImageUploadUseCase,
     @Value("\${siksha.banned.words:}") private val bannedWords: List<String>,
 ) {
     fun getUser(userId: Int): UserResponseDto {
@@ -49,7 +49,8 @@ class UserService(
         val identity = socialProfile.externalId
 
         // return if exists
-        userRepository.findByTypeAndIdentity(type, identity)
+        userRepository
+            .findByTypeAndIdentity(type, identity)
             ?.let { return UserResponseDto.from(it) }
 
         // insert if not exists
@@ -134,7 +135,7 @@ class UserService(
         image: MultipartFile,
     ): String {
         val nameKey = generateImageNameKey(userId)
-        val uploadFile = s3Service.uploadFile(image, S3ImagePrefix.PROFILE, nameKey)
+        val uploadFile = imageUploadUseCase.uploadFile(image, ImagePrefix.PROFILE, nameKey)
 
         val imageEntity =
             Image(
@@ -156,7 +157,7 @@ class UserService(
      */
     private fun deleteProfileImage(user: User) {
         user.profileUrl?.let {
-            val oldKey = s3Service.getKeyFromUrl(it)
+            val oldKey = imageUploadUseCase.getKeyFromUrl(it)
             oldKey?.let { key ->
                 imageRepository.softDeleteByKeyIn(listOf(key))
             }

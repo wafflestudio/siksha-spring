@@ -46,7 +46,7 @@ import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.main.review.service.ReviewService
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -73,7 +73,7 @@ class ReviewServiceTest {
     private lateinit var imageRepository: ImageRepository
 
     @Mock
-    private lateinit var s3Service: S3Service
+    private lateinit var imageUploadUseCase: ImageUploadUseCase
 
     private lateinit var objectMapper: ObjectMapper
     private lateinit var reviewService: ReviewService
@@ -89,7 +89,7 @@ class ReviewServiceTest {
                 imageRepository = imageRepository,
                 keywordReviewRepository = keywordReviewRepository,
                 reviewLikeRepository = reviewLikeRepository,
-                s3Service = s3Service,
+                imageUploadUseCase = imageUploadUseCase,
             )
         // objectMapper는 private이므로 리플렉션을 사용하거나 다른 방법으로 설정
         val field = ReviewService::class.java.getDeclaredField("objectMapper")
@@ -615,8 +615,11 @@ class ReviewServiceTest {
                 nameKr = "식당1",
                 nameEn = "R1",
                 addr = "서울",
-                lat = 0.0, lng = 0.0, etc = null,
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                lat = 0.0,
+                lng = 0.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
         val rest2 =
             Restaurant(
@@ -625,8 +628,11 @@ class ReviewServiceTest {
                 nameKr = "식당2",
                 nameEn = "R2",
                 addr = "서울",
-                lat = 0.0, lng = 0.0, etc = null,
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                lat = 0.0,
+                lng = 0.0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
 
         val menu1 =
@@ -640,7 +646,8 @@ class ReviewServiceTest {
                 nameEn = "Menu1",
                 price = 5000,
                 etc = "[]",
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
         val menu2 =
             Menu(
@@ -653,7 +660,8 @@ class ReviewServiceTest {
                 nameEn = "Menu2",
                 price = 6000,
                 etc = "[]",
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
 
         val r1 =
@@ -730,8 +738,18 @@ class ReviewServiceTest {
         assertEquals(false, result.hasNext)
         assertEquals(100, result.result[0].restaurantId) // 첫 그룹이 식당1(100), 두 번째가 식당2(200)인지 확인
         assertEquals(200, result.result[1].restaurantId)
-        assertEquals(3, result.result[0].reviews[0].keywordReviews.size)
-        assertEquals(3, result.result[1].reviews[0].keywordReviews.size)
+        assertEquals(
+            3,
+            result.result[0]
+                .reviews[0]
+                .keywordReviews.size,
+        )
+        assertEquals(
+            3,
+            result.result[1]
+                .reviews[0]
+                .keywordReviews.size,
+        )
 
         // 4) 호출 검증
         val pageCaptor = argumentCaptor<PageRequest>()
@@ -773,16 +791,30 @@ class ReviewServiceTest {
             )
         val restaurant =
             Restaurant(
-                id = 100, code = "R100", nameKr = "식당", nameEn = "R",
-                addr = "서울", lat = .0, lng = .0, etc = null,
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                id = 100,
+                code = "R100",
+                nameKr = "식당",
+                nameEn = "R",
+                addr = "서울",
+                lat = .0,
+                lng = .0,
+                etc = null,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
         val menu =
             Menu(
-                id = 11, restaurant = restaurant, code = "M11",
-                date = LocalDate.now(), type = "LU",
-                nameKr = "메뉴", nameEn = "Menu", price = 5000, etc = "[]",
-                createdAt = OffsetDateTime.now(), updatedAt = OffsetDateTime.now(),
+                id = 11,
+                restaurant = restaurant,
+                code = "M11",
+                date = LocalDate.now(),
+                type = "LU",
+                nameKr = "메뉴",
+                nameEn = "Menu",
+                price = 5000,
+                etc = "[]",
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
             )
         val review =
             Review(

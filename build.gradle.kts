@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "3.3.4" apply false
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "2.2.10"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
     kotlin("plugin.serialization") version "2.2.10" apply false
 }
 
@@ -16,6 +16,12 @@ java {
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+}
+
+allprojects {
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set("1.5.0")
+    }
 }
 
 allprojects {
@@ -55,7 +61,8 @@ allprojects {
         implementation("io.jsonwebtoken:jjwt-impl:0.12.6")
         implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
-        implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
+        implementation("com.oracle.oci.sdk:oci-java-sdk-objectstorage:3.80.1")
+        implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3:3.80.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
         implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -73,7 +80,6 @@ allprojects {
     dependencyManagement {
         imports {
             mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-            mavenBom("software.amazon.awssdk:bom:2.25.70")
         }
     }
 

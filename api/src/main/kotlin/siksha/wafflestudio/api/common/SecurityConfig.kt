@@ -41,8 +41,10 @@ class SecurityConfig(
 
     private fun configureAuthorization(auth: AuthorizationRegistry) {
         auth
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/community/boards", "/community/boards/{board_id}").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS, "/**")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/community/boards", "/community/boards/{board_id}")
+            .permitAll()
             .requestMatchers(
                 AntPathRequestMatcher.antMatcher("/community/**/web"),
                 AntPathRequestMatcher.antMatcher("/menus/**/web"),
@@ -64,15 +66,15 @@ class SecurityConfig(
                 "/voc",
                 "/ping",
             ).permitAll()
-            .anyRequest().authenticated()
+            .anyRequest()
+            .authenticated()
     }
 
     private fun configureExceptionHandling(handler: ExceptionHandlingConfigurer<HttpSecurity>) {
         handler
             .authenticationEntryPoint { request, response, _ ->
                 resolver.resolveException(request, response, null, UnauthorizedUserException())
-            }
-            .accessDeniedHandler { request, response, _ ->
+            }.accessDeniedHandler { request, response, _ ->
                 resolver.resolveException(request, response, null, UnauthorizedUserException())
             }
     }

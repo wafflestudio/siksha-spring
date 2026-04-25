@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Profile
 @Profile("local", "dev")
 class SwaggerConfig {
     @Bean
-    fun openApi(): OpenAPI {
-        return OpenAPI()
+    fun openApi(): OpenAPI =
+        OpenAPI()
             .components(
                 Components().addSecuritySchemes(
                     "bearerAuth",
@@ -23,17 +23,13 @@ class SwaggerConfig {
                         .scheme("bearer")
                         .bearerFormat("JWT"),
                 ),
-            )
-            .addSecurityItem(
+            ).addSecurityItem(
                 SecurityRequirement().addList("bearerAuth"),
-            )
-            .info(configurationInfo())
-    }
+            ).info(configurationInfo())
 
-    private fun configurationInfo(): Info {
-        return Info()
+    private fun configurationInfo(): Info =
+        Info()
             .title("Siksha Spring")
             .version("v1.0.0")
             .description("식샤 스프링 API Docs")
-    }
 }

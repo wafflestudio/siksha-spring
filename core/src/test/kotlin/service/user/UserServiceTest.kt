@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
@@ -20,17 +19,14 @@ import siksha.wafflestudio.core.domain.user.dto.UserProfilePatchDto
 import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.user.service.UserService
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
-import siksha.wafflestudio.core.infrastructure.s3.UploadFileDto
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 class UserServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var imageRepository: ImageRepository
     private lateinit var userDeviceRepository: UserDeviceRepository
-    private lateinit var s3Service: S3Service
+    private lateinit var imageUploadUseCase: ImageUploadUseCase
     private lateinit var userService: UserService
 
     @BeforeEach
@@ -38,8 +34,8 @@ class UserServiceTest {
         userRepository = mockk()
         imageRepository = mockk()
         userDeviceRepository = mockk()
-        s3Service = mockk()
-        userService = UserService(userRepository, imageRepository, userDeviceRepository, s3Service, listOf())
+        imageUploadUseCase = mockk()
+        userService = UserService(userRepository, imageRepository, userDeviceRepository, imageUploadUseCase, listOf())
         clearAllMocks()
     }
 
@@ -162,59 +158,6 @@ class UserServiceTest {
         // verify
         verify { userRepository.findByIdOrNull(userId) }
         verify { userRepository.existsByNickname("duplicated-nickname") }
-    }
-
-    @Test
-    fun `patchUser - profile image updated`() {
-        // given
-        val userId = 1
-        val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity")
-        val image = mockk<MultipartFile>()
-        val request = UserProfilePatchDto(nickname = null, image = image, change_to_default_image = false)
-        val uploadFileDto = UploadFileDto(key = "some-key", url = "some-url")
-
-        every { userRepository.findByIdOrNull(userId) } returns user
-        every { s3Service.uploadFile(image, S3ImagePrefix.PROFILE, any()) } returns uploadFileDto
-        every { imageRepository.save(any()) } returns mockk()
-        every { userRepository.save(any()) } returns user.apply { profileUrl = uploadFileDto.url }
-
-        // when
-        val result = userService.patchUser(userId, request)
-
-        // then
-        assertEquals("some-url", result.profileUrl)
-
-        // verify
-        verify { userRepository.findByIdOrNull(userId) }
-        verify { s3Service.uploadFile(image, S3ImagePrefix.PROFILE, any()) }
-        verify { imageRepository.save(any()) }
-        verify { userRepository.save(any()) }
-    }
-
-    @Test
-    fun `patchUser - change to default image`() {
-        // given
-        val userId = 1
-        val user = User(id = userId, nickname = "test-user", type = "test", identity = "test-identity", profileUrl = "some-url")
-        val request = UserProfilePatchDto(nickname = null, image = null, change_to_default_image = true)
-        val savedUser = user.copy().apply { profileUrl = null }
-
-        every { userRepository.findByIdOrNull(userId) } returns user
-        every { s3Service.getKeyFromUrl("some-url") } returns "some-key"
-        every { imageRepository.softDeleteByKeyIn(listOf("some-key")) } returns 1
-        every { userRepository.save(any()) } returns savedUser
-
-        // when
-        val result = userService.patchUser(userId, request)
-
-        // then
-        assertNull(result.profileUrl)
-
-        // verify
-        verify { userRepository.findByIdOrNull(userId) }
-        verify { s3Service.getKeyFromUrl("some-url") }
-        verify { imageRepository.softDeleteByKeyIn(listOf("some-key")) }
-        verify { userRepository.save(any()) }
     }
 
     @Test

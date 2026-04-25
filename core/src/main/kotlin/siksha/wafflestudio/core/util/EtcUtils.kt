@@ -12,21 +12,21 @@ object EtcUtils {
     private val jsonEncoder = Json { encodeDefaults = true }
 
     fun getImageKeysFromUrlList(urls: List<String>): List<String> {
-        val pattern = Pattern.compile("https://.*\\.s3\\.ap-northeast-2\\.amazonaws\\.com/(.*)")
-        val keys = mutableListOf<String>()
+        val pattern = Pattern.compile("https://objectstorage\\.[^/]+\\.oraclecloud\\.com/n/[^/]+/b/[^/]+/o/(.*)")
 
         return urls.mapNotNull { url ->
-            pattern.matcher(url).takeIf { it.find() }?.group(1)
+            pattern.matcher(url).takeIf { it.find() }?.group(1)?.let {
+                java.net.URLDecoder.decode(it, "UTF-8")
+            }
         }
     }
 
-    fun parseImageUrlsFromEtc(etcJson: String?): List<String> {
-        return etcJson?.let {
+    fun parseImageUrlsFromEtc(etcJson: String?): List<String> =
+        etcJson?.let {
             runCatching {
                 jsonParser.decodeFromString<Etc>(it).images
             }.getOrDefault(emptyList())
         } ?: emptyList()
-    }
 
     fun convertImageUrlsToEtcJson(imageUrls: List<String>): String? {
         val etc = Etc(images = imageUrls)
@@ -34,13 +34,12 @@ object EtcUtils {
     }
 
     // etc 필드가 JSON 형태로 저장되어 있을 때, 이를 JsonNode로 변환
-    fun convertEtc(etc: String?): JsonNode {
-        return if (etc.isNullOrBlank()) {
+    fun convertEtc(etc: String?): JsonNode =
+        if (etc.isNullOrBlank()) {
             jacksonObjectMapper().createObjectNode()
         } else {
             jacksonObjectMapper().readTree(etc)
         }
-    }
 
     // menu의 etc 필드가 JSON 형태로 저장되어 있을 때, 이를 List<String>으로 변환
     fun convertMenuEtc(etc: String?): List<String> {

@@ -2,7 +2,10 @@ package siksha.wafflestudio.core.domain.common.exception
 
 import org.springframework.http.HttpStatus
 
-sealed class MainException(httpStatus: HttpStatus, errorMessage: String) : SikshaException(httpStatus, errorMessage)
+sealed class MainException(
+    httpStatus: HttpStatus,
+    errorMessage: String,
+) : SikshaException(httpStatus, errorMessage)
 
 class RestaurantNotFound : MainException(HttpStatus.NOT_FOUND, "Restaurant not found")
 

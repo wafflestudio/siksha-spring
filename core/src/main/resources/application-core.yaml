@@ -33,9 +33,6 @@ oci:
     secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqaei57kzdeagsdtu66oqxvqjreh3hort4k67tfzvvlb65q
     region: ap-chuncheon-1
 
-logging:
-  level:
-    com.oracle.bmc: DEBUG
 
 ---
 spring:
@@ -47,18 +44,16 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: dev
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha-dev
 
 jwt:
   secret-key:
@@ -91,18 +86,16 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: dev
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha-dev
 
 jwt:
   secret-key:
@@ -135,18 +128,16 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: prod
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha
 
 jwt:
   secret-key:

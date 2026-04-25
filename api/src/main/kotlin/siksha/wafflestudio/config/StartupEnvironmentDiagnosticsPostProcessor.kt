@@ -8,7 +8,9 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.EnumerablePropertySource
 import org.springframework.core.env.PropertySource
 
-class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ordered {
+class StartupEnvironmentDiagnosticsPostProcessor :
+    EnvironmentPostProcessor,
+    Ordered {
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun postProcessEnvironment(
@@ -39,13 +41,14 @@ class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ord
         )
 
         if (vaultSource is EnumerablePropertySource<*>) {
-            val vaultKeys = vaultSource.propertyNames
-                .filter { key ->
-                    key.startsWith("spring.datasource.") ||
-                        key == "jwt.secret-key" ||
-                        key.startsWith("siksha.oauth.") ||
-                        key.startsWith("slack.")
-                }.sorted()
+            val vaultKeys =
+                vaultSource.propertyNames
+                    .filter { key ->
+                        key.startsWith("spring.datasource.") ||
+                            key == "jwt.secret-key" ||
+                            key.startsWith("siksha.oauth.") ||
+                            key.startsWith("slack.")
+                    }.sorted()
 
             emitInfo(
                 "OCI vault property source diagnostics: keyCount=${vaultSource.propertyNames.size}, " +
@@ -80,13 +83,14 @@ class StartupEnvironmentDiagnosticsPostProcessor : EnvironmentPostProcessor, Ord
     private fun propertySourcesContaining(
         environment: ConfigurableEnvironment,
         key: String,
-    ): List<String> = environment.propertySources
-        .filter { source ->
-            when (source) {
-                is EnumerablePropertySource<*> -> source.propertyNames.contains(key)
-                else -> source.getProperty(key) != null
-            }
-        }.map(PropertySource<*>::getName)
+    ): List<String> =
+        environment.propertySources
+            .filter { source ->
+                when (source) {
+                    is EnumerablePropertySource<*> -> source.propertyNames.contains(key)
+                    else -> source.getProperty(key) != null
+                }
+            }.map(PropertySource<*>::getName)
 
     private fun emitInfo(message: String) {
         log.info(message)

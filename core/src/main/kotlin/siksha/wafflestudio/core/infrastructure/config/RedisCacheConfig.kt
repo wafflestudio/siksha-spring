@@ -30,22 +30,24 @@ class RedisCacheConfig {
                 "restaurantCache" to createCacheConfiguration(Duration.ofDays(1)),
             )
 
-        return RedisCacheManager.builder(redisConnectionFactory)
+        return RedisCacheManager
+            .builder(redisConnectionFactory)
             .withInitialCacheConfigurations(cacheConfigurations)
             .build()
     }
 
-    private fun createCacheConfiguration(ttl: Duration): RedisCacheConfiguration {
-        return RedisCacheConfiguration.defaultCacheConfig(Thread.currentThread().contextClassLoader)
+    private fun createCacheConfiguration(ttl: Duration): RedisCacheConfiguration =
+        RedisCacheConfiguration
+            .defaultCacheConfig(Thread.currentThread().contextClassLoader)
             .entryTtl(ttl)
             .serializeValuesWith(
                 RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer()),
             )
-    }
 
     private fun jsonSerializer(): RedisSerializer<Any> {
         val polymorphismResolver =
-            BasicPolymorphicTypeValidator.builder()
+            BasicPolymorphicTypeValidator
+                .builder()
                 .allowIfBaseType(Any::class.java)
                 .build()
 

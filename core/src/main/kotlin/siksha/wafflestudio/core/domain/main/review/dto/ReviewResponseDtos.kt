@@ -20,8 +20,8 @@ data class ReviewResponse(
     val updatedAt: OffsetDateTime,
 ) {
     companion object {
-        fun from(review: ReviewSummary): ReviewResponse {
-            return ReviewResponse(
+        fun from(review: ReviewSummary): ReviewResponse =
+            ReviewResponse(
                 id = review.getId(),
                 menuId = review.getMenuId(),
                 userId = review.getUserId(),
@@ -39,7 +39,6 @@ data class ReviewResponse(
                 createdAt = review.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                 updatedAt = review.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
             )
-        }
     }
 }
 
@@ -69,8 +68,8 @@ data class KeywordScoreDistributionResponse(
     val foodCompositionTotal: Int = 0,
 ) {
     companion object {
-        fun from(keywordReviewSummary: KeywordReviewSummary): KeywordScoreDistributionResponse {
-            return KeywordScoreDistributionResponse(
+        fun from(keywordReviewSummary: KeywordReviewSummary): KeywordScoreDistributionResponse =
+            KeywordScoreDistributionResponse(
                 tasteKeyword =
                     KeywordReviewUtil.getTasteKeyword(
                         keywordReviewSummary.getTasteKeyword(),
@@ -90,7 +89,6 @@ data class KeywordScoreDistributionResponse(
                 foodCompositionCnt = keywordReviewSummary.getFoodCompositionCnt() ?: 0,
                 foodCompositionTotal = keywordReviewSummary.getFoodCompositionTotal(),
             )
-        }
     }
 }
 
