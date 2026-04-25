@@ -28,10 +28,14 @@ class OciObjectStorageService(
         ObjectStorageClient.builder().region(region).build(authProvider)
     }
 
-    private fun objectUrl(key: String) =
-        "https://objectstorage.$region.oraclecloud.com/n/$namespace/b/$bucketName/o/${encodeKey(key)}"
+    private fun objectUrl(key: String) = "https://objectstorage.$region.oraclecloud.com/n/$namespace/b/$bucketName/o/${encodeKey(key)}"
 
-    private fun encodeKey(key: String) = key.split("/").joinToString("/") { java.net.URLEncoder.encode(it, "UTF-8").replace("+", "%20") }
+    private fun encodeKey(key: String) =
+        key.split("/").joinToString("/") {
+            java.net.URLEncoder
+                .encode(it, "UTF-8")
+                .replace("+", "%20")
+        }
 
     override fun uploadFile(
         file: MultipartFile,
@@ -41,7 +45,8 @@ class OciObjectStorageService(
         val key = "${prefix.prefix}/$nameKey.jpeg"
         return runCatching {
             val request =
-                PutObjectRequest.builder()
+                PutObjectRequest
+                    .builder()
                     .namespaceName(namespace)
                     .bucketName(bucketName)
                     .objectName(key)
@@ -67,7 +72,8 @@ class OciObjectStorageService(
             val key = "${prefix.prefix}/$nameKey/$idx.jpeg"
             runCatching {
                 val request =
-                    PutObjectRequest.builder()
+                    PutObjectRequest
+                        .builder()
                         .namespaceName(namespace)
                         .bucketName(bucketName)
                         .objectName(key)

@@ -23,7 +23,9 @@ data class UploadFileDto(
     val url: String,
 )
 
-enum class ImagePrefix(val prefix: String) {
+enum class ImagePrefix(
+    val prefix: String,
+) {
     POST("post-images"),
     PROFILE("profile-images"),
     REVIEW("review-images"),

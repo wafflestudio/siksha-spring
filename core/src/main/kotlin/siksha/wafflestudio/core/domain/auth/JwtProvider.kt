@@ -28,18 +28,19 @@ class JwtProvider(
     ): String {
         val exp = Date.from(Instant.now().plus(lifetime))
 
-        return Jwts.builder()
+        return Jwts
+            .builder()
             .expiration(exp)
             .claim("userId", userId)
             .signWith(encodedJwtSecretKey, Jwts.SIG.HS256)
             .compact()
     }
 
-    fun verifyJwtGetClaims(token: String): Claims {
-        return Jwts.parser()
+    fun verifyJwtGetClaims(token: String): Claims =
+        Jwts
+            .parser()
             .verifyWith(encodedJwtSecretKey)
             .build()
             .parseSignedClaims(token)
             .payload
-    }
 }

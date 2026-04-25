@@ -49,7 +49,8 @@ class UserService(
         val identity = socialProfile.externalId
 
         // return if exists
-        userRepository.findByTypeAndIdentity(type, identity)
+        userRepository
+            .findByTypeAndIdentity(type, identity)
             ?.let { return UserResponseDto.from(it) }
 
         // insert if not exists

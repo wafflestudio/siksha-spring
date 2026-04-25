@@ -14,7 +14,5 @@ class RestaurantController(
 ) {
     @GetMapping("/restaurants")
     @Operation(summary = "식당 목록 조회", description = "모든 식당 목록을 조회합니다")
-    fun getRestaurants(): RestaurantListResponseDto {
-        return restaurantService.getAllRestaurants()
-    }
+    fun getRestaurants(): RestaurantListResponseDto = restaurantService.getAllRestaurants()
 }

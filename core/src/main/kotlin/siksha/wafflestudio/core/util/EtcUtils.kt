@@ -21,13 +21,12 @@ object EtcUtils {
         }
     }
 
-    fun parseImageUrlsFromEtc(etcJson: String?): List<String> {
-        return etcJson?.let {
+    fun parseImageUrlsFromEtc(etcJson: String?): List<String> =
+        etcJson?.let {
             runCatching {
                 jsonParser.decodeFromString<Etc>(it).images
             }.getOrDefault(emptyList())
         } ?: emptyList()
-    }
 
     fun convertImageUrlsToEtcJson(imageUrls: List<String>): String? {
         val etc = Etc(images = imageUrls)
@@ -35,13 +34,12 @@ object EtcUtils {
     }
 
     // etc 필드가 JSON 형태로 저장되어 있을 때, 이를 JsonNode로 변환
-    fun convertEtc(etc: String?): JsonNode {
-        return if (etc.isNullOrBlank()) {
+    fun convertEtc(etc: String?): JsonNode =
+        if (etc.isNullOrBlank()) {
             jacksonObjectMapper().createObjectNode()
         } else {
             jacksonObjectMapper().readTree(etc)
         }
-    }
 
     // menu의 etc 필드가 JSON 형태로 저장되어 있을 때, 이를 List<String>으로 변환
     fun convertMenuEtc(etc: String?): List<String> {

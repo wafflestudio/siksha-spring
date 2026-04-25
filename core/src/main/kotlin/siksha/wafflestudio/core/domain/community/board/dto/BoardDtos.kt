@@ -13,13 +13,12 @@ data class BoardCreateDto(
     val description: String?,
     val type: Int = 1,
 ) {
-    fun toEntity(): Board {
-        return Board(
+    fun toEntity(): Board =
+        Board(
             name = name ?: "",
             description = description ?: "",
             type = type,
         )
-    }
 }
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -42,8 +41,8 @@ data class BoardDto
         val updatedAt: OffsetDateTime,
     ) {
         companion object {
-            fun from(board: Board): BoardDto {
-                return BoardDto(
+            fun from(board: Board): BoardDto =
+                BoardDto(
                     id = board.id,
                     name = board.name,
                     description = board.description,
@@ -51,6 +50,5 @@ data class BoardDto
                     createdAt = board.createdAt,
                     updatedAt = board.updatedAt,
                 )
-            }
         }
     }

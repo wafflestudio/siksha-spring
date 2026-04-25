@@ -52,18 +52,15 @@ class MenuService(
             .toSet()
     }
 
-    private fun isHoliday(date: LocalDate): Boolean {
-        return holidays.contains(date)
-    }
+    private fun isHoliday(date: LocalDate): Boolean = holidays.contains(date)
 
-    private fun getDateType(date: LocalDate): String {
-        return when {
+    private fun getDateType(date: LocalDate): String =
+        when {
             isHoliday(date) -> "HOLIDAY"
             date.dayOfWeek == DayOfWeek.SUNDAY -> "HOLIDAY"
             date.dayOfWeek == DayOfWeek.SATURDAY -> "SATURDAY"
             else -> "WEEKDAY"
         }
-    }
 
     fun getMenusWhereDate(
         startDate: LocalDate,

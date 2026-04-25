@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "3.3.4" apply false
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("plugin.jpa") version "2.2.10"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
     kotlin("plugin.serialization") version "2.2.10" apply false
 }
 
@@ -16,6 +16,12 @@ java {
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+}
+
+allprojects {
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set("1.5.0")
+    }
 }
 
 allprojects {

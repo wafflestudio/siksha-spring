@@ -71,8 +71,8 @@ data class PostResponseDto
                 userPostLiked: Boolean,
                 likeCnt: Int,
                 commentCnt: Int,
-            ): PostResponseDto {
-                return PostResponseDto(
+            ): PostResponseDto =
+                PostResponseDto(
                     id = post.id,
                     boardId = post.board.id,
                     title = post.title,
@@ -89,7 +89,6 @@ data class PostResponseDto
                     commentCnt = commentCnt,
                     isLiked = userPostLiked,
                 )
-            }
         }
 
         init {

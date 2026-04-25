@@ -87,7 +87,8 @@ class JwtAuthenticationFilter(
     }
 
     private fun extractBearerToken(request: HttpServletRequest): String? =
-        request.getHeader(HDR_AUTHORIZATION)
+        request
+            .getHeader(HDR_AUTHORIZATION)
             ?.takeIf { it.startsWith(BEARER_PREFIX, ignoreCase = true) }
             ?.substring(BEARER_PREFIX.length)
             ?.trim()

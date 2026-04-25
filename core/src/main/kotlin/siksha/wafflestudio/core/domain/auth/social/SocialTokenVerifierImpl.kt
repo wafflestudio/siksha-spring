@@ -77,10 +77,13 @@ class SocialTokenVerifierImpl(
             val entity = HttpEntity<Void>(headers)
 
             val info =
-                rest.exchange(
-                    URI("https://kapi.kakao.com/v1/user/access_token_info"),
-                    HttpMethod.GET, entity, KakaoTokenInfo::class.java,
-                ).body ?: throw SSOProviderException()
+                rest
+                    .exchange(
+                        URI("https://kapi.kakao.com/v1/user/access_token_info"),
+                        HttpMethod.GET,
+                        entity,
+                        KakaoTokenInfo::class.java,
+                    ).body ?: throw SSOProviderException()
 
             if (info.app_id != kakaoAppId) {
                 logger.error("[KAKAO] app id mismatch")

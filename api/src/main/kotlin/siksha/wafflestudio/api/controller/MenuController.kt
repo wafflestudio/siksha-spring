@@ -36,14 +36,13 @@ class MenuController(
         @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
         @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
         request: HttpServletRequest,
-    ): MenuListResponseDto {
-        return menuService.getMenusWhereDate(
+    ): MenuListResponseDto =
+        menuService.getMenusWhereDate(
             startDate = startDate,
             endDate = endDate,
             exceptEmpty = exceptEmpty,
             userId = request.userId,
         )
-    }
 
     // GET /menus/web
     @GetMapping("/web")
@@ -53,14 +52,13 @@ class MenuController(
         @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
         @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
-    ): MenuListResponseDto {
-        return menuService.getMenusWhereDate(
+    ): MenuListResponseDto =
+        menuService.getMenusWhereDate(
             startDate = startDate,
             endDate = endDate,
             exceptEmpty = exceptEmpty,
             userId = null,
         )
-    }
 
     // GET /menus/{menu_id}
     @GetMapping("/{menu_id}")
@@ -70,12 +68,11 @@ class MenuController(
     fun getMenuById(
         @PathVariable("menu_id") menuId: Int,
         request: HttpServletRequest,
-    ): MenuDetailsDto {
-        return menuService.getMenuById(
+    ): MenuDetailsDto =
+        menuService.getMenuById(
             menuId = menuId,
             userId = request.userId,
         )
-    }
 
     // GET /menus/{menu_id}/web
     @GetMapping("/{menu_id}/web")
@@ -83,12 +80,11 @@ class MenuController(
     @Operation(summary = "메뉴 상세 조회 (비로그인)", description = "특정 메뉴의 상세 정보를 조회합니다 (비로그인)")
     fun getMenuByIdWithoutAuth(
         @PathVariable("menu_id") menuId: Int,
-    ): MenuDetailsDto {
-        return menuService.getMenuById(
+    ): MenuDetailsDto =
+        menuService.getMenuById(
             menuId = menuId,
             userId = null,
         )
-    }
 
     // POST /menus/{menu_id}/like
     @PostMapping("/{menu_id}/like")
@@ -121,11 +117,10 @@ class MenuController(
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "내가 좋아요한 메뉴 조회", description = "인증된 사용자가 좋아요한 메뉴 목록을 조회합니다")
     @SecurityRequirement(name = "bearerAuth")
-    fun getMyMenus(request: HttpServletRequest): MyMenuListResponseDto {
-        return menuService.getMyMenus(
+    fun getMyMenus(request: HttpServletRequest): MyMenuListResponseDto =
+        menuService.getMyMenus(
             userId = request.userId,
         )
-    }
 
     @PostMapping("/{menu_id}/alarm/on")
     fun menuAlarmOn(

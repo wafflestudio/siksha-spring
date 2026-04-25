@@ -18,8 +18,8 @@ data class UserResponseDto(
     val updatedAt: OffsetDateTime,
 ) {
     companion object {
-        fun from(user: User): UserResponseDto {
-            return UserResponseDto(
+        fun from(user: User): UserResponseDto =
+            UserResponseDto(
                 id = user.id,
                 type = user.type,
                 identity = user.identity,
@@ -29,7 +29,6 @@ data class UserResponseDto(
                 createdAt = user.createdAt,
                 updatedAt = user.updatedAt,
             )
-        }
     }
 }
 

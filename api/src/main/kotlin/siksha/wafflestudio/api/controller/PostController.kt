@@ -45,9 +45,7 @@ class PostController(
         @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): PaginatedPostsResponseDto? {
-        return postService.getPosts(boardId, page, perPage, null)
-    }
+    ): PaginatedPostsResponseDto? = postService.getPosts(boardId, page, perPage, null)
 
     @GetMapping
     @Operation(summary = "게시글 목록 조회 (로그인)", description = "특정 게시판의 게시글 목록을 조회합니다 (로그인)")
@@ -57,9 +55,7 @@ class PostController(
         @RequestParam(name = "board_id") boardId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): PaginatedPostsResponseDto? {
-        return postService.getPosts(boardId, page, perPage, request.userId)
-    }
+    ): PaginatedPostsResponseDto? = postService.getPosts(boardId, page, perPage, request.userId)
 
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
@@ -85,17 +81,13 @@ class PostController(
         request: HttpServletRequest,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): PaginatedPostsResponseDto? {
-        return postService.getMyPosts(page, perPage, request.userId)
-    }
+    ): PaginatedPostsResponseDto? = postService.getMyPosts(page, perPage, request.userId)
 
     @GetMapping("/{post_id}/web")
     @Operation(summary = "게시글 상세 조회 (비로그인)", description = "특정 게시글의 상세 정보를 조회합니다 (비로그인)")
     fun getPostWithoutAuth(
         @PathVariable("post_id") postId: Int,
-    ): PostResponseDto? {
-        return postService.getPost(postId, null)
-    }
+    ): PostResponseDto? = postService.getPost(postId, null)
 
     @GetMapping("/{post_id}")
     @Operation(summary = "게시글 상세 조회 (로그인)", description = "특정 게시글의 상세 정보를 조회합니다 (로그인)")
@@ -103,9 +95,7 @@ class PostController(
     fun getPostWithAuth(
         request: HttpServletRequest,
         @PathVariable("post_id") postId: Int,
-    ): PostResponseDto? {
-        return postService.getPost(postId, request.userId)
-    }
+    ): PostResponseDto? = postService.getPost(postId, request.userId)
 
     @PatchMapping("/{post_id}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @Operation(summary = "게시글 수정", description = "기존 게시글을 수정합니다")
@@ -139,9 +129,7 @@ class PostController(
     fun createPostLike(
         request: HttpServletRequest,
         @PathVariable postId: Int,
-    ): PostResponseDto {
-        return postService.createOrUpdatePostLike(request.userId, postId, true)
-    }
+    ): PostResponseDto = postService.createOrUpdatePostLike(request.userId, postId, true)
 
     // TODO: delete 방식으로 수정
     @PostMapping("/{postId}/unlike")
@@ -151,9 +139,7 @@ class PostController(
     fun createPostUnlike(
         request: HttpServletRequest,
         @PathVariable postId: Int,
-    ): PostResponseDto {
-        return postService.createOrUpdatePostLike(request.userId, postId, false)
-    }
+    ): PostResponseDto = postService.createOrUpdatePostLike(request.userId, postId, false)
 
     @PostMapping("/{postId}/report")
     @ResponseStatus(HttpStatus.CREATED)
@@ -163,9 +149,7 @@ class PostController(
         request: HttpServletRequest,
         @PathVariable postId: Int,
         @RequestBody createDto: CreatePostReportRequestDto,
-    ): PostsReportResponseDto {
-        return postService.createPostReport(request.userId, postId, createDto.reason)
-    }
+    ): PostsReportResponseDto = postService.createPostReport(request.userId, postId, createDto.reason)
 
     @GetMapping("/popular/trending")
     @Operation(summary = "인기 게시글 조회 (트렌딩, 로그인)", description = "최근 인기있는 게시글을 조회합니다 (로그인)")
@@ -174,18 +158,14 @@ class PostController(
         request: HttpServletRequest,
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
         @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
-    ): PostsResponseDto? {
-        return postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = request.userId)
-    }
+    ): PostsResponseDto? = postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = request.userId)
 
     @GetMapping("/popular/trending/web")
     @Operation(summary = "인기 게시글 조회 (트렌딩, 비로그인)", description = "최근 인기있는 게시글을 조회합니다 (비로그인)")
     fun getTrendingPostsWithoutAuth(
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
         @RequestParam(name = "created_before", defaultValue = "7") @Min(1) createdBefore: Int,
-    ): PostsResponseDto? {
-        return postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = null)
-    }
+    ): PostsResponseDto? = postService.getTrendingPosts(likes = likes, createdBefore = createdBefore, userId = null)
 
     @GetMapping("/popular/best")
     @Operation(summary = "인기 게시글 조회 (베스트, 로그인)", description = "베스트 게시글을 조회합니다 (로그인)")
@@ -193,15 +173,11 @@ class PostController(
     fun getBestPosts(
         request: HttpServletRequest,
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
-    ): PostsResponseDto? {
-        return postService.getBestPosts(likes = likes, userId = request.userId)
-    }
+    ): PostsResponseDto? = postService.getBestPosts(likes = likes, userId = request.userId)
 
     @GetMapping("/popular/best/web")
     @Operation(summary = "인기 게시글 조회 (베스트, 비로그인)", description = "베스트 게시글을 조회합니다 (비로그인)")
     fun getBestPostsWithoutAuth(
         @RequestParam(name = "likes", defaultValue = "10") @Min(1) likes: Int,
-    ): PostsResponseDto? {
-        return postService.getBestPosts(likes = likes, userId = null)
-    }
+    ): PostsResponseDto? = postService.getBestPosts(likes = likes, userId = null)
 }

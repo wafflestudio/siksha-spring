@@ -48,7 +48,8 @@ class FcmPushClient(
 
     init {
         val options =
-            FirebaseOptions.builder()
+            FirebaseOptions
+                .builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccountJson.byteInputStream()))
                 .setDatabaseUrl("https://siksha-dev.firebaseio.com/")
                 .build()
@@ -77,7 +78,8 @@ class FcmPushClient(
 
     private fun PushMessage.toFcmMessage(fcmToken: String): Message {
         val notification =
-            Notification.builder()
+            Notification
+                .builder()
                 .setTitle(title)
                 .setBody(body)
                 .apply { image?.let { setImage(it) } }
@@ -85,26 +87,33 @@ class FcmPushClient(
 
         val androidConfig =
             collapseKey?.let {
-                AndroidConfig.builder().setCollapseKey(it).setPriority(AndroidConfig.Priority.HIGH).setTtl(collapseTtl)
+                AndroidConfig
+                    .builder()
+                    .setCollapseKey(it)
+                    .setPriority(AndroidConfig.Priority.HIGH)
+                    .setTtl(collapseTtl)
                     .build()
             }
 
         val apnsConfig =
             collapseKey?.let {
                 val aps = Aps.builder().setThreadId(it).build()
-                ApnsConfig.builder().putHeader("apns-priority", "5").setAps(aps)
+                ApnsConfig
+                    .builder()
+                    .putHeader("apns-priority", "5")
+                    .setAps(aps)
                     .build()
             }
 
         val fcmMessage =
-            Message.builder()
+            Message
+                .builder()
                 .setToken(fcmToken)
                 .setNotification(notification)
                 .apply {
                     androidConfig?.let { setAndroidConfig(it) }
                     apnsConfig?.let { setApnsConfig(it) }
-                }
-                .build()
+                }.build()
 
         return fcmMessage
     }
