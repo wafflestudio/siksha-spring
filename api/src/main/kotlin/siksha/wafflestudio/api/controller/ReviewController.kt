@@ -124,36 +124,28 @@ class ReviewController(
     @Operation(summary = "댓글 추천 조회", description = "점수 기반 추천 댓글을 조회합니다")
     fun getCommentRecommendation(
         @RequestParam score: Int,
-    ): CommentRecommendationResponse {
-        return reviewService.getCommentRecommendation(score)
-    }
+    ): CommentRecommendationResponse = reviewService.getCommentRecommendation(score)
 
     @GetMapping("/dist")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "리뷰 점수 분포 조회", description = "메뉴의 점수 분포를 조회합니다")
     fun getReviewScoreDistribution(
         @RequestParam("menu_id") menuId: Int,
-    ): ReviewScoreDistributionResponse {
-        return reviewService.getScoreDistribution(menuId)
-    }
+    ): ReviewScoreDistributionResponse = reviewService.getScoreDistribution(menuId)
 
     @GetMapping("/keyword/dist")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "키워드 점수 분포 조회", description = "메뉴의 키워드 기반 점수 분포를 조회합니다")
     fun getKeywordScoreDistribution(
         @RequestParam("menu_id") menuId: Int,
-    ): KeywordScoreDistributionResponse {
-        return reviewService.getKeywordScoreDistribution(menuId)
-    }
+    ): KeywordScoreDistributionResponse = reviewService.getKeywordScoreDistribution(menuId)
 
     @GetMapping("/{review_id}/web")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "리뷰 상세 조회 (비로그인)", description = "특정 리뷰의 상세 정보를 조회합니다 (비로그인)")
     fun getReviewWithoutAuth(
         @PathVariable("review_id") reviewId: Int,
-    ): MyReviewResponse {
-        return reviewService.getReview(reviewId = reviewId, userId = null)
-    }
+    ): MyReviewResponse = reviewService.getReview(reviewId = reviewId, userId = null)
 
     @GetMapping("/{review_id}")
     @ResponseStatus(HttpStatus.OK)

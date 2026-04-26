@@ -28,6 +28,12 @@ siksha:
   firebase:
     service-account:
 
+oci:
+  vault:
+    secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqaei57kzdeagsdtu66oqxvqjreh3hort4k67tfzvvlb65q
+    region: ap-chuncheon-1
+
+
 ---
 spring:
   config:
@@ -38,18 +44,16 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: dev
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha-dev
 
 jwt:
   secret-key:
@@ -72,7 +76,6 @@ slack:
   channel:
   token:
 
-secret-names: dev/siksha-api-server
 ---
 spring:
   config:
@@ -83,18 +86,16 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: dev
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha-dev
 
 jwt:
   secret-key:
@@ -117,7 +118,6 @@ slack:
   channel:
   token:
 
-secret-names: dev/siksha-api-server
 ---
 spring:
   config:
@@ -128,18 +128,19 @@ spring:
     username:
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      credentials:
-        profile-name: prod
-      s3:
-        bucket:
   data:
     redis:
       host:
       port:
+
+oci:
+  object-storage:
+    namespace: ax1dvc8vmenm
+    region: ap-chuncheon-1
+    bucket: siksha
+  vault:
+    secret-ids: ocid1.vaultsecret.oc1.ap-chuncheon-1.amaaaaaat2m5lbqazni6mmnbxjxj5wanooaxsggjl2unxtru33hplioigtkq
+    region: ap-chuncheon-1
 
 jwt:
   secret-key:
@@ -161,5 +162,3 @@ siksha:
 slack:
   channel:
   token:
-
-secret-names: prod/siksha-api-server

@@ -20,11 +20,11 @@ class EveryMealAlarmProcessor(
     @Value("#{jobParameters['type']}") private val type: String,
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
-        menuRepository.findAllByDateAndType(
-            LocalDate.now(),
-            type,
-        )
-            .map { it.getCode() to it.getRestaurantId() }
+        menuRepository
+            .findAllByDateAndType(
+                LocalDate.now(),
+                type,
+            ).map { it.getCode() to it.getRestaurantId() }
             .toSet()
     }
 
@@ -35,7 +35,8 @@ class EveryMealAlarmProcessor(
         if (devices.isEmpty()) return null
 
         val menus =
-            chunkPrefetchListener.userMenuAlarmsMap[user.id].orEmpty()
+            chunkPrefetchListener.userMenuAlarmsMap[user.id]
+                .orEmpty()
                 .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
                 .mapNotNull {
                     it.getNameKr()?.let { nameKr ->
@@ -44,8 +45,7 @@ class EveryMealAlarmProcessor(
                             restaurantName = it.getRestaurantName(),
                         )
                     }
-                }
-                .sortedBy { it.restaurantName }
+                }.sortedBy { it.restaurantName }
 
         if (menus.isEmpty()) return null
 

@@ -1,0 +1,54 @@
+name: deploy-template-siksha
+
+on:
+  workflow_call:
+    inputs:
+      ocir_repository:
+        required: true
+        type: string
+        description: 'OCIR repository name (e.g., siksha-dev/siksha-spring-server)'
+      dockerfile:
+        required: false
+        type: string
+        default: 'Dockerfile'
+        description: 'Dockerfile path'
+      profile:
+        required: true
+        type: string
+        description: 'Spring build profile (dev or prod)'
+    secrets:
+      OCI_AUTH_TOKEN:
+        required: true
+      GH_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-24.04-arm
+
+    env:
+      IMAGE_TAG: ${{ github.run_number }}
+      OCIR_REGISTRY: yny.ocir.io
+      OCIR_NAMESPACE: ax1dvc8vmenm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to OCIR
+        run: echo "${{ secrets.OCI_AUTH_TOKEN }}" | docker login $OCIR_REGISTRY -u $OCIR_NAMESPACE/members/waffle-deployer --password-stdin
+
+      - name: Docker build, tag, and push image to OCIR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} # ✅ Secret 마운트를 위해 환경변수로 먼저 빼주기
+        run: |
+          docker build \
+            -f ${{ inputs.dockerfile }} \
+            -t $OCIR_REGISTRY/$OCIR_NAMESPACE/${{ inputs.ocir_repository }}:$IMAGE_TAG \
+            --build-arg PROFILE="${{ inputs.profile }}" \
+            --secret id=github_token,env=GITHUB_TOKEN \
+            . \
+            --platform linux/arm64
+          
+          docker push $OCIR_REGISTRY/$OCIR_NAMESPACE/${{ inputs.ocir_repository }}:$IMAGE_TAG

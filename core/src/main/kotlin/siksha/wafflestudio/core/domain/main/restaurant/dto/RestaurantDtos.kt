@@ -42,8 +42,8 @@ data class RestaurantResponseDto
         val updatedAt: OffsetDateTime,
     ) {
         companion object {
-            fun from(restaurant: Restaurant): RestaurantResponseDto {
-                return RestaurantResponseDto(
+            fun from(restaurant: Restaurant): RestaurantResponseDto =
+                RestaurantResponseDto(
                     id = restaurant.id,
                     code = restaurant.code,
                     nameKr = restaurant.nameKr,
@@ -78,7 +78,6 @@ data class RestaurantResponseDto
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
-            }
         }
     }
 

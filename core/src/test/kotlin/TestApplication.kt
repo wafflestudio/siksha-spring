@@ -47,10 +47,16 @@ class TestApplication(
             runCatching { FileSystems.newFileSystem(dmlDir.uri, emptyMap<String, Any>()) }
         }
 
-        val dmls = dmlDir.uri.toPath().listDirectoryEntries("*.sql").sortedBy { it.name }
+        val dmls =
+            dmlDir.uri
+                .toPath()
+                .listDirectoryEntries("*.sql")
+                .sortedBy { it.name }
 
         for (dml in dmls) {
-            dml.readText().split(";")
+            dml
+                .readText()
+                .split(";")
                 .filter { it.isNotBlank() }
                 .forEach { sql -> jdbcTemplate.execute(sql) }
         }

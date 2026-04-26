@@ -3,9 +3,9 @@
 FROM bellsoft/liberica-openjdk-alpine:17 AS build
 WORKDIR /app
 COPY . .
-RUN --mount=type=secret,id=codeartifact \
-    TOKEN="$(cat /run/secrets/codeartifact)" && \
-    ./gradlew clean bootJar --no-daemon -PcodeArtifactAuthToken="$TOKEN"
+RUN --mount=type=secret,id=github_token \
+    export GITHUB_TOKEN="$(cat /run/secrets/github_token)" && \
+    ./gradlew clean bootJar --no-daemon
 
 FROM bellsoft/liberica-openjdk-alpine:17
 WORKDIR /app

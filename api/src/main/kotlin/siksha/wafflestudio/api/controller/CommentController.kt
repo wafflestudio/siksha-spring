@@ -38,9 +38,7 @@ class CommentController(
         @RequestParam(name = "post_id") postId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): GetCommentsResponseDto? {
-        return commentService.getCommentsWithoutAuth(postId, page, perPage)
-    }
+    ): GetCommentsResponseDto? = commentService.getCommentsWithoutAuth(postId, page, perPage)
 
     @GetMapping("/community/comments")
     @Operation(summary = "댓글 목록 조회 (로그인)", description = "특정 게시글의 댓글 목록을 조회합니다 (로그인)")
@@ -50,9 +48,7 @@ class CommentController(
         @RequestParam(name = "post_id") postId: Int,
         @RequestParam(name = "page", defaultValue = "1") @Min(1) page: Int,
         @RequestParam(name = "per_page", defaultValue = "10") @Min(1) perPage: Int,
-    ): GetCommentsResponseDto? {
-        return commentService.getComments(request.userId, postId, page, perPage)
-    }
+    ): GetCommentsResponseDto? = commentService.getComments(request.userId, postId, page, perPage)
 
     @PostMapping("/community/comments")
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,9 +57,7 @@ class CommentController(
     fun createComment(
         request: HttpServletRequest,
         @RequestBody createDto: CreateCommentRequestDto,
-    ): CommentResponseDto? {
-        return commentService.createComment(request.userId, createDto)
-    }
+    ): CommentResponseDto? = commentService.createComment(request.userId, createDto)
 
     @PatchMapping("/community/comments/{commentId}")
     @Operation(summary = "댓글 수정", description = "기존 댓글을 수정합니다")
@@ -72,9 +66,7 @@ class CommentController(
         request: HttpServletRequest,
         @PathVariable commentId: Int,
         @RequestBody patchDto: PatchCommentRequestDto,
-    ): CommentResponseDto {
-        return commentService.patchComment(request.userId, commentId, patchDto)
-    }
+    ): CommentResponseDto = commentService.patchComment(request.userId, commentId, patchDto)
 
     @DeleteMapping("/community/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -94,9 +86,7 @@ class CommentController(
     fun createCommentLike(
         request: HttpServletRequest,
         @PathVariable commentId: Int,
-    ): CommentResponseDto {
-        return commentService.createOrUpdateCommentLike(request.userId, commentId, true)
-    }
+    ): CommentResponseDto = commentService.createOrUpdateCommentLike(request.userId, commentId, true)
 
     // TODO: delete 방식으로 수정
     @PostMapping("/community/comments/{commentId}/unlike")
@@ -106,9 +96,7 @@ class CommentController(
     fun createCommentUnlike(
         request: HttpServletRequest,
         @PathVariable commentId: Int,
-    ): CommentResponseDto {
-        return commentService.createOrUpdateCommentLike(request.userId, commentId, false)
-    }
+    ): CommentResponseDto = commentService.createOrUpdateCommentLike(request.userId, commentId, false)
 
     @PostMapping("/community/comments/{commentId}/report")
     @ResponseStatus(HttpStatus.CREATED)
@@ -118,7 +106,5 @@ class CommentController(
         request: HttpServletRequest,
         @PathVariable commentId: Int,
         @RequestBody createDto: CreateCommentReportRequestDto,
-    ): CommentsReportResponseDto {
-        return commentService.createCommentReport(request.userId, commentId, createDto.reason)
-    }
+    ): CommentsReportResponseDto = commentService.createCommentReport(request.userId, commentId, createDto.reason)
 }

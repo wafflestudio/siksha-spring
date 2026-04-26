@@ -46,9 +46,7 @@ class AuthController(
     @PostMapping("/refresh")
     @Operation(summary = "액세스 토큰 재발급", description = "인증된 사용자의 액세스 토큰을 재발급합니다")
     @SecurityRequirement(name = "bearerAuth")
-    fun refreshAccessToken(request: HttpServletRequest): AuthResponseDto {
-        return authService.getAccessTokenByUserId(request.userId)
-    }
+    fun refreshAccessToken(request: HttpServletRequest): AuthResponseDto = authService.getAccessTokenByUserId(request.userId)
 
     @GetMapping("/privacy-policy", produces = [MediaType.TEXT_HTML_VALUE])
     @Operation(summary = "개인정보 처리방침 조회", description = "서비스의 개인정보 처리방침을 HTML 형식으로 조회합니다")
@@ -69,11 +67,10 @@ class AuthController(
     @Operation(summary = "테스트 로그인", description = "테스트 환경에서 사용하는 로그인입니다")
     fun loginTypeTest(
         @RequestBody body: LoginTypeTestRequestDto,
-    ): AuthResponseDto {
-        return authService.getOrCreateAccessTokenBySocialProfile(
+    ): AuthResponseDto =
+        authService.getOrCreateAccessTokenBySocialProfile(
             SocialProfile(provider = SocialProvider.TEST, externalId = body.identity),
         )
-    }
 
     @PostMapping("/login/apple")
     @Operation(summary = "Apple 로그인", description = "Apple 소셜 로그인을 통해 인증합니다")
@@ -102,9 +99,7 @@ class AuthController(
     @GetMapping("/me")
     @Operation(summary = "내 정보 조회", description = "인증된 사용자의 프로필 정보를 조회합니다")
     @SecurityRequirement(name = "bearerAuth")
-    fun getMyInfo(request: HttpServletRequest): UserResponseDto {
-        return userService.getUser(request.userId)
-    }
+    fun getMyInfo(request: HttpServletRequest): UserResponseDto = userService.getUser(request.userId)
 
     @PatchMapping("/me/profile", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     @Operation(summary = "내 프로필 수정", description = "인증된 사용자의 프로필 정보를 수정합니다")
@@ -112,9 +107,7 @@ class AuthController(
     fun updateUserProfile(
         request: HttpServletRequest,
         @ModelAttribute userProfilePatchDto: UserProfilePatchDto,
-    ): UserResponseDto {
-        return userService.patchUser(request.userId, userProfilePatchDto)
-    }
+    ): UserResponseDto = userService.patchUser(request.userId, userProfilePatchDto)
 
     @GetMapping("/nicknames/validate")
     @ResponseStatus(HttpStatus.OK)
@@ -178,9 +171,7 @@ class AuthController(
     }
 
     @GetMapping("/alarm")
-    fun getAlarm(request: HttpServletRequest): UserAlarmResponseDto {
-        return userService.getAlarm(request.userId)
-    }
+    fun getAlarm(request: HttpServletRequest): UserAlarmResponseDto = userService.getAlarm(request.userId)
 
     companion object {
         private const val APPLE_AUTHORIZATION_HEADER_NAME = "apple-token"

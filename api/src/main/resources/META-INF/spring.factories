@@ -1,0 +1,2 @@
+org.springframework.boot.EnvironmentPostProcessor=\
+  siksha.wafflestudio.config.StartupEnvironmentDiagnosticsPostProcessor

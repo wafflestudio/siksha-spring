@@ -17,7 +17,9 @@ import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 class ChunkPrefetchListener(
     private val userDeviceRepository: UserDeviceRepository,
     private val menuAlarmRepository: MenuAlarmRepository,
-) : ItemReadListener<User>, ItemProcessListener<User, Any>, ChunkListener {
+) : ItemReadListener<User>,
+    ItemProcessListener<User, Any>,
+    ChunkListener {
     private val currentChunkUsers = mutableListOf<User>()
     var userDevicesMap: Map<Int, List<UserDevice>> = emptyMap()
     var userMenuAlarmsMap: Map<Int, List<AlarmMenuSummary>> = emptyMap()
@@ -33,11 +35,13 @@ class ChunkPrefetchListener(
         val userIds = currentChunkUsers.map { it.id }
 
         userDevicesMap =
-            userDeviceRepository.findAllByUserIds(userIds)
+            userDeviceRepository
+                .findAllByUserIds(userIds)
                 .groupBy { it.userId.toInt() }
 
         userMenuAlarmsMap =
-            menuAlarmRepository.findMenuAlarmByUserIds(userIds)
+            menuAlarmRepository
+                .findMenuAlarmByUserIds(userIds)
                 .groupBy { it.getUserId() }
 
         prefetched = true

@@ -12,7 +12,5 @@ class OffsetDateTimeDeserializer : JsonDeserializer<OffsetDateTime>() {
     override fun deserialize(
         parser: JsonParser,
         context: DeserializationContext,
-    ): OffsetDateTime {
-        return OffsetDateTime.parse(parser.text, formatter)
-    }
+    ): OffsetDateTime = OffsetDateTime.parse(parser.text, formatter)
 }

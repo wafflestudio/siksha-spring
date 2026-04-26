@@ -48,8 +48,8 @@ data class MenuInListDto
             fun from(
                 menu: MenuSummary,
                 likeInfo: MenuLikeSummary?,
-            ): MenuInListDto {
-                return MenuInListDto(
+            ): MenuInListDto =
+                MenuInListDto(
                     createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
@@ -63,7 +63,6 @@ data class MenuInListDto
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
                     isLiked = likeInfo?.getIsLiked() == 1,
                 )
-            }
         }
     }
 
@@ -101,8 +100,8 @@ data class RestaurantInListDto
             fun from(
                 restaurant: Restaurant,
                 menus: List<MenuInListDto>,
-            ): RestaurantInListDto {
-                return RestaurantInListDto(
+            ): RestaurantInListDto =
+                RestaurantInListDto(
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                     id = restaurant.id,
@@ -115,7 +114,6 @@ data class RestaurantInListDto
                     etc = EtcUtils.convertEtc(restaurant.etc),
                     menus = menus,
                 )
-            }
         }
     }
 
@@ -187,8 +185,8 @@ data class MyMenuInListDto
                 menu: MenuSummary,
                 likeInfo: MenuLikeSummary?,
                 alarm: Boolean,
-            ): MyMenuInListDto {
-                return MyMenuInListDto(
+            ): MyMenuInListDto =
+                MyMenuInListDto(
                     createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
@@ -203,7 +201,6 @@ data class MyMenuInListDto
                     isLiked = likeInfo?.getIsLiked() == 1,
                     alarm = alarm,
                 )
-            }
         }
     }
 
@@ -241,8 +238,8 @@ data class MyRestaurantInListDto
             fun from(
                 restaurant: Restaurant,
                 menus: List<MyMenuInListDto>,
-            ): MyRestaurantInListDto {
-                return MyRestaurantInListDto(
+            ): MyRestaurantInListDto =
+                MyRestaurantInListDto(
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                     id = restaurant.id,
@@ -255,7 +252,6 @@ data class MyRestaurantInListDto
                     etc = EtcUtils.convertEtc(restaurant.etc),
                     menus = menus,
                 )
-            }
         }
     }
 
@@ -314,8 +310,8 @@ data class MenuDetailsDto
             fun from(
                 menu: MenuSummary,
                 likeInfo: MenuLikeSummary?,
-            ): MenuDetailsDto {
-                return MenuDetailsDto(
+            ): MenuDetailsDto =
+                MenuDetailsDto(
                     createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
@@ -332,7 +328,6 @@ data class MenuDetailsDto
                     isLiked = likeInfo?.getIsLiked() == 1,
                     likeCnt = likeInfo?.getLikeCnt() ?: 0,
                 )
-            }
         }
     }
 
@@ -376,8 +371,8 @@ data class MenuAlarmDto
                 menu: MenuSummary,
                 isLiked: Int,
                 alarm: Boolean,
-            ): MenuAlarmDto {
-                return MenuAlarmDto(
+            ): MenuAlarmDto =
+                MenuAlarmDto(
                     createdAt = menu.getCreatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     updatedAt = menu.getUpdatedAt().toLocalDateTime().atOffset(ZoneOffset.UTC),
                     id = menu.getId(),
@@ -392,6 +387,5 @@ data class MenuAlarmDto
                     isLiked = isLiked == 1,
                     alarm = alarm,
                 )
-            }
         }
     }

@@ -1,13 +1,11 @@
-import java.io.ByteArrayOutputStream
-
 plugins {
-    kotlin("jvm") version "1.9.25"
-    kotlin("plugin.spring") version "1.9.25"
+    kotlin("jvm") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
     id("org.springframework.boot") version "3.3.4" apply false
     id("io.spring.dependency-management") version "1.1.6"
-    kotlin("plugin.jpa") version "1.9.25"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
-    kotlin("plugin.serialization") version "1.9.25" apply false
+    kotlin("plugin.jpa") version "2.2.10"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
+    kotlin("plugin.serialization") version "2.2.10" apply false
 }
 
 java {
@@ -21,9 +19,31 @@ subprojects {
 }
 
 allprojects {
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set("1.5.0")
+    }
+}
+
+allprojects {
     repositories {
         mavenCentral()
-        mavenCodeArtifact()
+        maven {
+            url = uri("https://maven.pkg.github.com/wafflestudio/spring-waffle")
+            credentials {
+                username = "wafflestudio"
+                password = findProperty("gpr.key") as String?
+                    ?: System.getenv("GITHUB_TOKEN")
+                    ?: runCatching {
+                        ProcessBuilder("gh", "auth", "token")
+                            .start()
+                            .inputStream
+                            .bufferedReader()
+                            .readText()
+                            .trim()
+                    }.getOrDefault("")
+            }
+        }
+        mavenLocal()
     }
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -41,11 +61,12 @@ allprojects {
         implementation("io.jsonwebtoken:jjwt-impl:0.12.6")
         implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
-        implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1")
+        implementation("com.oracle.oci.sdk:oci-java-sdk-objectstorage:3.80.1")
+        implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3:3.80.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
         implementation("org.flywaydb:flyway-mysql")
         implementation("org.springframework.boot:spring-boot-starter-validation")
-        implementation("com.wafflestudio.spring:spring-boot-starter-waffle-secret-manager:1.0.2")
+        implementation("com.wafflestudio.spring:spring-boot-starter-waffle-oci-vault:1.1.0")
     }
 
     kotlin {
@@ -54,39 +75,15 @@ allprojects {
         }
     }
 
+    extra["kotlin.version"] = "2.2.10"
+
     dependencyManagement {
         imports {
             mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-            mavenBom("software.amazon.awssdk:bom:2.25.70")
         }
     }
 
     tasks.withType<Test> {
         useJUnitPlatform()
-    }
-}
-
-fun RepositoryHandler.mavenCodeArtifact() {
-    maven {
-        val authToken =
-            properties["codeArtifactAuthToken"] as String? ?: ByteArrayOutputStream().use {
-                runCatching {
-                    exec {
-                        commandLine =
-                            listOf(
-                                "aws", "codeartifact", "get-authorization-token",
-                                "--domain", "wafflestudio", "--domain-owner", "405906814034",
-                                "--query", "authorizationToken", "--region", "ap-northeast-1", "--output", "text",
-                            )
-                        standardOutput = it
-                    }
-                }
-                it.toString()
-            }
-        url = uri("https://wafflestudio-405906814034.d.codeartifact.ap-northeast-1.amazonaws.com/maven/spring-waffle/")
-        credentials {
-            username = "aws"
-            password = authToken
-        }
     }
 }

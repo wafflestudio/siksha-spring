@@ -44,8 +44,8 @@ import siksha.wafflestudio.core.domain.main.review.repository.KeywordReviewRepos
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewLikeRepository
 import siksha.wafflestudio.core.domain.main.review.repository.ReviewRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import siksha.wafflestudio.core.infrastructure.s3.S3ImagePrefix
-import siksha.wafflestudio.core.infrastructure.s3.S3Service
+import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
+import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import siksha.wafflestudio.core.util.EtcUtils
 import siksha.wafflestudio.core.util.KeywordReviewUtil
 import siksha.wafflestudio.core.util.KeywordReviewUtil.getFoodCompositionKeyword
@@ -62,7 +62,7 @@ class ReviewService(
     private val imageRepository: ImageRepository,
     private val keywordReviewRepository: KeywordReviewRepository,
     private val reviewLikeRepository: ReviewLikeRepository,
-    private val s3Service: S3Service,
+    private val imageUploadUseCase: ImageUploadUseCase,
 ) {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
@@ -92,9 +92,9 @@ class ReviewService(
 
         val uploadedFiles =
             images?.takeIf { it.isNotEmpty() }?.let {
-                s3Service.uploadFiles(
+                imageUploadUseCase.uploadFiles(
                     it,
-                    S3ImagePrefix.REVIEW,
+                    ImagePrefix.REVIEW,
                     "menu-$menuId/user-$userId/review-${OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}",
                 )
             } ?: emptyList()
@@ -240,9 +240,9 @@ class ReviewService(
 
         val uploadedFiles =
             images?.takeIf { it.isNotEmpty() }?.let {
-                s3Service.uploadFiles(
+                imageUploadUseCase.uploadFiles(
                     it,
-                    S3ImagePrefix.REVIEW,
+                    ImagePrefix.REVIEW,
                     "menu-$menuId/user-$userId/review-${OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyMMddHHmmss"))}",
                 )
             } ?: emptyList()

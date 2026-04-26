@@ -18,7 +18,8 @@ class DailyAlarmProcessor(
     private val chunkPrefetchListener: ChunkPrefetchListener,
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
-        menuRepository.findAllByDate(LocalDate.now())
+        menuRepository
+            .findAllByDate(LocalDate.now())
             .map { it.getCode() to it.getRestaurantId() }
             .toSet()
     }
@@ -30,7 +31,8 @@ class DailyAlarmProcessor(
         if (devices.isEmpty()) return null
 
         val menus =
-            chunkPrefetchListener.userMenuAlarmsMap[user.id].orEmpty()
+            chunkPrefetchListener.userMenuAlarmsMap[user.id]
+                .orEmpty()
                 .filter { (it.getCode() to it.getRestaurantId()) in todayMenusSet }
                 .mapNotNull {
                     it.getNameKr()?.let { nameKr ->
@@ -39,8 +41,7 @@ class DailyAlarmProcessor(
                             restaurantName = it.getRestaurantName(),
                         )
                     }
-                }
-                .sortedBy { it.restaurantName }
+                }.sortedBy { it.restaurantName }
 
         if (menus.isEmpty()) return null
 
