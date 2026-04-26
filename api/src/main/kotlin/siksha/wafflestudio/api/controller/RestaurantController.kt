@@ -27,15 +27,12 @@ class RestaurantController(
 ) {
     @GetMapping("/restaurants")
     @Operation(summary = "식당 목록 조회", description = "모든 식당 목록을 조회합니다")
-    fun getRestaurants(): RestaurantListResponseDto {
-        return restaurantService.getAllRestaurants()
-    }
+    fun getRestaurants(): RestaurantListResponseDto = restaurantService.getAllRestaurants()
 
     @GetMapping("/restaurants/personal")
     @Operation(summary = "식당 목록 + 즐겨찾기, 순서 정렬에 따른 개인화된 응답 (로그인)", description = "개인화된 식당 목록을 조회합니다 (로그인)")
-    fun getPersonalizedRestaurants(request: HttpServletRequest): RestaurantListResponseDto {
-        return restaurantService.getAllPersonalizedRestaurants(request.userId)
-    }
+    fun getPersonalizedRestaurants(request: HttpServletRequest): RestaurantListResponseDto =
+        restaurantService.getAllPersonalizedRestaurants(request.userId)
 
     @PostMapping("/restaurants/like/{restaurantId}")
     @Operation(summary = "식당 좋아요 누르기/취소", description = "특정 식당을 좋아요하거나 취소합니다")
@@ -43,9 +40,7 @@ class RestaurantController(
         request: HttpServletRequest,
         @PathVariable restaurantId: Int?,
         @RequestBody requestBody: RestaurantLikeRequestDto,
-    ): RestaurantLikeResponseDto {
-        return restaurantService.setRestaurantLike(request.userId, restaurantId, requestBody.like)
-    }
+    ): RestaurantLikeResponseDto = restaurantService.setRestaurantLike(request.userId, restaurantId, requestBody.like)
 
     @PostMapping("/restaurants/visible/{restaurantId}")
     @Operation(summary = "식당 보이기/숨기기", description = "특정 식당을 보이거나 숨깁니다")
@@ -53,22 +48,16 @@ class RestaurantController(
         request: HttpServletRequest,
         @PathVariable restaurantId: Int?,
         @RequestBody requestBody: RestaurantVisibleRequestDto,
-    ): RestaurantVisibleResponseDto {
-        return restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
-    }
+    ): RestaurantVisibleResponseDto = restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
 
     @GetMapping("/restaurants/order")
     @Operation(summary = "식당 순서 조회", description = "식당의 순서를 조회합니다")
-    fun getRestaurantOrder(request: HttpServletRequest): RestaurantOrderResponseDto {
-        return restaurantService.getRestaurantOrder(request.userId)
-    }
+    fun getRestaurantOrder(request: HttpServletRequest): RestaurantOrderResponseDto = restaurantService.getRestaurantOrder(request.userId)
 
     @PatchMapping("/restaurants/order")
     @Operation(summary = "식당 순서 변경", description = "식당의 순서를 변경합니다")
     fun changeRestaurantOrder(
         request: HttpServletRequest,
         @RequestBody requestBody: RestaurantOrderUpdateRequestDto,
-    ): RestaurantOrderUpdateResponseDto {
-        return restaurantService.changeRestaurantOrder(request.userId, requestBody)
-    }
+    ): RestaurantOrderUpdateResponseDto = restaurantService.changeRestaurantOrder(request.userId, requestBody)
 }

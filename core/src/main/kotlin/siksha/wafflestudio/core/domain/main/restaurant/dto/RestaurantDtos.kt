@@ -57,14 +57,13 @@ data class RestaurantResponseDto
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
-            }
 
             fun personalizedFrom(
                 restaurant: Restaurant,
                 liked: Boolean,
                 visible: Boolean = true,
-            ): RestaurantResponseDto {
-                return RestaurantResponseDto(
+            ): RestaurantResponseDto =
+                RestaurantResponseDto(
                     id = restaurant.id,
                     code = restaurant.code,
                     nameKr = restaurant.nameKr,

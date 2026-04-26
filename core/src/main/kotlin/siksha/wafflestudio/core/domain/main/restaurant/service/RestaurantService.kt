@@ -41,11 +41,12 @@ class RestaurantService(
         val customMap = customs.associateBy { it.restaurant.id }
 
         val (orderedRestaurants, unorderedRestaurants) =
-            restaurants.partition {
-                customMap[it.id]?.orderIndex != null
-            }.let { (ordered, unordered) ->
-                ordered.sortedBy { customMap[it.id]!!.orderIndex!! } to unordered
-            }
+            restaurants
+                .partition {
+                    customMap[it.id]?.orderIndex != null
+                }.let { (ordered, unordered) ->
+                    ordered.sortedBy { customMap[it.id]!!.orderIndex!! } to unordered
+                }
 
         val resultRestaurants = orderedRestaurants + unorderedRestaurants
 
@@ -72,10 +73,12 @@ class RestaurantService(
         }
 
         val restaurant =
-            restaurantRepository.findById(restaurantId)
+            restaurantRepository
+                .findById(restaurantId)
                 .orElseThrow { RestaurantNotFoundException() }
         val user =
-            userRepository.findById(userId)
+            userRepository
+                .findById(userId)
                 .orElseThrow { UserNotFoundException() }
 
         val custom =
@@ -102,10 +105,12 @@ class RestaurantService(
         }
 
         val restaurant =
-            restaurantRepository.findById(restaurantId)
+            restaurantRepository
+                .findById(restaurantId)
                 .orElseThrow { RestaurantNotFoundException() }
         val user =
-            userRepository.findById(userId)
+            userRepository
+                .findById(userId)
                 .orElseThrow { UserNotFoundException() }
 
         val custom =
@@ -125,7 +130,8 @@ class RestaurantService(
     fun getRestaurantOrder(userId: Int): RestaurantOrderResponseDto {
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
         val orderedCustoms =
-            restaurantCustomRepository.findAllByUserId(userId)
+            restaurantCustomRepository
+                .findAllByUserId(userId)
                 .filter { it.orderIndex != null }
                 .sortedBy { it.orderIndex!! }
 
