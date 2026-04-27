@@ -10,4 +10,6 @@ interface RestaurantCustomRepository : JpaRepository<RestaurantCustom, Int> {
     ): RestaurantCustom?
 
     fun findAllByUserId(userId: Int): List<RestaurantCustom>
+
+    fun findAllByUserIdAndOrderIndexIsNotNullOrderByOrderIndexAsc(userId: Int): List<RestaurantCustom>
 }
