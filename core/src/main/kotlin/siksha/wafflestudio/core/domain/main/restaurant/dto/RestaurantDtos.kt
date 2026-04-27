@@ -42,9 +42,25 @@ data class RestaurantResponseDto
         val updatedAt: OffsetDateTime,
     ) {
         companion object {
-            fun from(
+            fun from(restaurant: Restaurant): RestaurantResponseDto =
+                RestaurantResponseDto(
+                    id = restaurant.id,
+                    code = restaurant.code,
+                    nameKr = restaurant.nameKr,
+                    nameEn = restaurant.nameEn,
+                    addr = restaurant.addr,
+                    liked = null,
+                    visible = true,
+                    lat = restaurant.lat,
+                    lng = restaurant.lng,
+                    etc = EtcUtils.convertEtc(restaurant.etc),
+                    createdAt = restaurant.createdAt,
+                    updatedAt = restaurant.updatedAt,
+                )
+
+            fun personalizedFrom(
                 restaurant: Restaurant,
-                liked: Boolean = false,
+                liked: Boolean,
                 visible: Boolean = true,
             ): RestaurantResponseDto =
                 RestaurantResponseDto(
