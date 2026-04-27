@@ -63,6 +63,7 @@ class SecurityConfig(
                 "/reviews/comments/recommendation",
                 "/reviews/dist",
                 "/reviews/keyword/dist",
+                "/versions/**",
                 "/voc",
                 "/ping",
             ).permitAll()

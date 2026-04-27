@@ -28,6 +28,7 @@ class RedisCacheConfig {
                 "popularPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
                 "bestPostCache" to createCacheConfiguration(Duration.ofMinutes(10)),
                 "restaurantCache" to createCacheConfiguration(Duration.ofDays(1)),
+                "appVersionCache" to createCacheConfiguration(Duration.ofMinutes(10)),
             )
 
         return RedisCacheManager
