@@ -12,10 +12,7 @@ create table if not exists restaurant_v2
     updated_at      timestamp not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '변경 시간',
     primary key (id),
     constraint uk_restaurant_v2_name
-        unique (name),
-    constraint fk_restaurant_v2_owner
-        foreign key (owner_id) references admin_user (id)
-            on delete set null
+        unique (name)
 ) engine = InnoDB
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci;
@@ -25,6 +22,32 @@ create index idx_restaurant_v2_building
 
 create index idx_restaurant_v2_owner_id
     on restaurant_v2 (owner_id);
+
+set @admin_user_table_exists = (
+    select count(*)
+    from information_schema.tables
+    where table_schema = database()
+      and table_name = 'admin_user'
+);
+
+set @restaurant_v2_owner_fk_exists = (
+    select count(*)
+    from information_schema.table_constraints
+    where table_schema = database()
+      and table_name = 'restaurant_v2'
+      and constraint_name = 'fk_restaurant_v2_owner'
+      and constraint_type = 'FOREIGN KEY'
+);
+
+set @add_restaurant_v2_owner_fk_sql = if(
+    @admin_user_table_exists > 0 and @restaurant_v2_owner_fk_exists = 0,
+    'alter table `restaurant_v2` add constraint `fk_restaurant_v2_owner` foreign key (`owner_id`) references `admin_user` (`id`) on delete set null',
+    'select 1'
+);
+
+prepare stmt from @add_restaurant_v2_owner_fk_sql;
+execute stmt;
+deallocate prepare stmt;
 
 create table if not exists menu_v2
 (

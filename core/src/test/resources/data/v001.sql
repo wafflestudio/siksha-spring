@@ -14,6 +14,7 @@ DELETE FROM comment_report;
 DELETE FROM review;
 DELETE FROM keyword_review;
 DELETE FROM review_like;
+DELETE FROM version;
 SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `restaurant` (`id`, `code`, `name_kr`, `name_en`, `addr`, `lat`, `lng`, `etc`, `created_at`, `updated_at`)
