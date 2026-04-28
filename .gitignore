@@ -7,3 +7,4 @@ mermaid
 mermaid_svg
 package-lock.json
 .codex
+.env.local
