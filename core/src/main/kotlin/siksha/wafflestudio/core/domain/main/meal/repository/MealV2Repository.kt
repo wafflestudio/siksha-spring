@@ -7,5 +7,9 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import java.time.LocalDate
 
 interface MealV2Repository : JpaRepository<MealV2, Long> {
-    fun deleteAllByRestaurantAndDateAndType(restaurant: RestaurantV2, date: LocalDate, type: MealType)
+    fun deleteAllByRestaurantAndDateAndType(
+        restaurant: RestaurantV2,
+        date: LocalDate,
+        type: MealType,
+    )
 }
