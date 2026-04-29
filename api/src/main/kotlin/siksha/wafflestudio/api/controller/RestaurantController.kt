@@ -38,7 +38,7 @@ class RestaurantController(
     @Operation(summary = "식당 좋아요 누르기/취소", description = "특정 식당을 좋아요하거나 취소합니다")
     fun setRestaurantLike(
         request: HttpServletRequest,
-        @PathVariable restaurantId: Int?,
+        @PathVariable restaurantId: Int,
         @RequestBody requestBody: RestaurantLikeRequestDto,
     ): RestaurantLikeResponseDto = restaurantService.setRestaurantLike(request.userId, restaurantId, requestBody.like)
 
