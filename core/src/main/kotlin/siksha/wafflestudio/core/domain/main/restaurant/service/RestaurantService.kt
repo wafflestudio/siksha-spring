@@ -128,7 +128,8 @@ class RestaurantService(
 
     fun getRestaurantOrder(userId: Int): RestaurantOrderResponseDto {
         val orderedCustoms =
-            restaurantCustomRepository.findAllByUserId(userId)
+            restaurantCustomRepository
+                .findAllByUserId(userId)
                 .filter { it.orderIndex != null }
                 .sortedBy { it.orderIndex }
 
