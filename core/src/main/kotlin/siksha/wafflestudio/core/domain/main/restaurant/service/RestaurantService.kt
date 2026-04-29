@@ -65,7 +65,7 @@ class RestaurantService(
     @Transactional
     fun setRestaurantLike(
         userId: Int,
-        restaurantId: Int?,
+        restaurantId: Int,
         like: Boolean,
     ): RestaurantLikeResponseDto {
         if (restaurantId == null) {
@@ -126,45 +126,14 @@ class RestaurantService(
         )
     }
 
-    @Transactional
     fun getRestaurantOrder(userId: Int): RestaurantOrderResponseDto {
         val orderedCustoms =
-            restaurantCustomRepository.findAllByUserIdAndOrderIndexIsNotNullOrderByOrderIndexAsc(userId)
-
-        if (orderedCustoms.isEmpty()) {
-            return createDefaultRestaurantOrder(userId)
-        } else {
-            return RestaurantOrderResponseDto(
-                restaurantOrder = orderedCustoms.map { it.restaurant.id },
-            )
-        }
-    }
-
-    private fun createDefaultRestaurantOrder(userId: Int): RestaurantOrderResponseDto {
-        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
-        val restaurants = restaurantRepository.findAll()
-        val customsToSave = mutableListOf<RestaurantCustom>()
-        val existingCustomsMap = restaurantCustomRepository.findAllByUserId(userId).associateBy { it.restaurant.id }
-
-        restaurants.forEachIndexed { index, restaurant ->
-            val custom = existingCustomsMap[restaurant.id]
-            if (custom != null) {
-                custom.orderIndex = index + 1
-                customsToSave.add(custom)
-            } else {
-                customsToSave.add(
-                    RestaurantCustom(
-                        user = user,
-                        restaurant = restaurant,
-                        orderIndex = index + 1,
-                    ),
-                )
-            }
-        }
-        restaurantCustomRepository.saveAll(customsToSave)
+            restaurantCustomRepository.findAllByUserId(userId)
+                .filter { it.orderIndex != null }
+                .sortedBy { it.orderIndex }
 
         return RestaurantOrderResponseDto(
-            restaurantOrder = restaurants.map { it.id },
+            restaurantOrder = orderedCustoms.map { it.restaurant.id },
         )
     }
 
