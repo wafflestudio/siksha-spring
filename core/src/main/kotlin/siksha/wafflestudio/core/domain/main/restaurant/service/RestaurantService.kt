@@ -68,10 +68,6 @@ class RestaurantService(
         restaurantId: Int,
         like: Boolean,
     ): RestaurantLikeResponseDto {
-        if (restaurantId == null) {
-            throw RestaurantNotFoundException()
-        }
-
         val restaurant =
             restaurantRepository
                 .findById(restaurantId)
@@ -97,13 +93,9 @@ class RestaurantService(
     @Transactional
     fun setRestaurantVisible(
         userId: Int,
-        restaurantId: Int?,
+        restaurantId: Int,
         visible: Boolean,
     ): RestaurantVisibleResponseDto {
-        if (restaurantId == null) {
-            throw RestaurantNotFoundException()
-        }
-
         val restaurant =
             restaurantRepository
                 .findById(restaurantId)
@@ -146,45 +138,39 @@ class RestaurantService(
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
         val requestedOrderIds = request.order
 
-        val allRestaurants = restaurantRepository.findAll().associateBy { it.id }
+        val restaurantMap =
+            restaurantRepository
+                .findAllById(requestedOrderIds)
+                .associateBy { it.id }
 
-        val missingIds = requestedOrderIds.filterNot { allRestaurants.keys.contains(it) }
-        if (missingIds.isNotEmpty()) {
+        if (restaurantMap.size != requestedOrderIds.toSet().size) {
             throw RestaurantNotFoundException()
         }
 
         val existingCustoms = restaurantCustomRepository.findAllByUserId(userId)
         val customMap = existingCustoms.associateBy { it.restaurant.id }
-        val toSave = mutableListOf<RestaurantCustom>()
 
-        val requestedOrderIdsSet = requestedOrderIds.toSet()
+        val customsToSave = mutableListOf<RestaurantCustom>()
+
+        existingCustoms
+            .filter { it.orderIndex != null && it.restaurant.id !in requestedOrderIds }
+            .forEach { custom ->
+                custom.orderIndex = null
+                customsToSave.add(custom)
+            }
 
         requestedOrderIds.forEachIndexed { index, restaurantId ->
-            val custom = customMap[restaurantId]
             val newOrderIndex = index + 1
+            val custom = customMap[restaurantId] ?: RestaurantCustom(user = user, restaurant = restaurantMap[restaurantId]!!)
 
-            if (custom != null) {
-                if (custom.orderIndex != newOrderIndex) {
-                    custom.orderIndex = newOrderIndex
-                    toSave.add(custom)
-                }
-            } else {
-                val restaurant = allRestaurants[restaurantId]!!
-                toSave.add(
-                    RestaurantCustom(user = user, restaurant = restaurant, orderIndex = newOrderIndex),
-                )
+            if (custom.orderIndex != newOrderIndex) {
+                custom.orderIndex = newOrderIndex
+                customsToSave.add(custom)
             }
         }
 
-        existingCustoms.forEach { custom ->
-            if (custom.orderIndex != null && !requestedOrderIdsSet.contains(custom.restaurant.id)) {
-                custom.orderIndex = null
-                toSave.add(custom)
-            }
-        }
-
-        if (toSave.isNotEmpty()) {
-            restaurantCustomRepository.saveAll(toSave)
+        if (customsToSave.isNotEmpty()) {
+            restaurantCustomRepository.saveAll(customsToSave)
         }
 
         return RestaurantOrderUpdateResponseDto(requestedOrderIds)

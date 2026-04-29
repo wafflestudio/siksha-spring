@@ -46,7 +46,7 @@ class RestaurantController(
     @Operation(summary = "식당 보이기/숨기기", description = "특정 식당을 보이거나 숨깁니다")
     fun setRestaurantVisible(
         request: HttpServletRequest,
-        @PathVariable restaurantId: Int?,
+        @PathVariable restaurantId: Int,
         @RequestBody requestBody: RestaurantVisibleRequestDto,
     ): RestaurantVisibleResponseDto = restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
 
