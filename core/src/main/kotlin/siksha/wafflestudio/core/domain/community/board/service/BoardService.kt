@@ -1,6 +1,7 @@
 package siksha.wafflestudio.core.domain.community.board.service
 
 import jakarta.transaction.Transactional
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
@@ -26,6 +27,7 @@ class BoardService(
 
     // TODO: only admin can create board
     @Transactional
+    @CacheEvict(value = ["boardCache"], allEntries = true)
     fun addBoard(
         userId: Int,
         boardCreateDTO: BoardCreateDto,
