@@ -24,6 +24,7 @@ private typealias AuthorizationRegistry = AuthorizeHttpRequestsConfigurer<HttpSe
 @EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val crawlerApiKeyFilter: CrawlerApiKeyFilter,
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) {
     @Bean
@@ -36,6 +37,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { configureAuthorization(it) }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(crawlerApiKeyFilter, JwtAuthenticationFilter::class.java)
             .exceptionHandling { configureExceptionHandling(it) }
             .build()
 
@@ -66,6 +68,7 @@ class SecurityConfig(
                 "/versions/**",
                 "/voc",
                 "/ping",
+                "/crawler/**",
             ).permitAll()
             .anyRequest()
             .authenticated()

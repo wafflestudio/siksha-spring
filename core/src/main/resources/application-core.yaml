@@ -27,6 +27,8 @@ siksha:
     words:
   firebase:
     service-account:
+  crawler:
+    api-key:
 
 oci:
   vault:
