@@ -69,6 +69,7 @@ class SecurityConfig(
                 "/voc",
                 "/ping",
                 "/crawler/**",
+                "/festival/**",
             ).permitAll()
             .anyRequest()
             .authenticated()
