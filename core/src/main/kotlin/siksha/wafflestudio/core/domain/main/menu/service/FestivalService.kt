@@ -11,6 +11,7 @@ class FestivalService {
         listOf(
             LocalDate.of(2026, 5, 12),
             LocalDate.of(2026, 5, 13),
+            LocalDate.of(2026, 5, 14),
         )
 
     fun getFestival(): FestivalDatesResponseDto = FestivalDatesResponseDto(festivalDates = festivalDates)
