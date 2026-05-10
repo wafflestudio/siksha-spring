@@ -49,7 +49,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/voc"),
             AntPathRequestMatcher("/ping"),
             AntPathRequestMatcher("/crawler/**"),
-            AntPathRequestMatcher("/festival/**"),
+            AntPathRequestMatcher("/menus/festival/**"),
         )
 
     override fun doFilterInternal(
