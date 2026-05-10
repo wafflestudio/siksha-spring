@@ -7,12 +7,14 @@ import java.time.LocalDate
 
 @Service
 class FestivalService {
-    private val festivalDates: List<LocalDate> =
-        listOf(
-            LocalDate.of(2026, 5, 12),
-            LocalDate.of(2026, 5, 13),
-            LocalDate.of(2026, 5, 14),
-        )
+    companion object {
+        private val festivalDates: List<LocalDate> =
+            listOf(
+                LocalDate.of(2026, 5, 12),
+                LocalDate.of(2026, 5, 13),
+                LocalDate.of(2026, 5, 14),
+            )
+    }
 
     fun getFestival(): FestivalDatesResponseDto = FestivalDatesResponseDto(festivalDates = festivalDates)
 
