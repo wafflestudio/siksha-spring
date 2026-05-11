@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.core.domain.main.menu.dto.FestivalDatesResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.IsFestivalResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MyMenuListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.service.FestivalService
 import siksha.wafflestudio.core.domain.main.menu.service.MenuService
 import java.time.LocalDate
 
@@ -25,6 +28,7 @@ import java.time.LocalDate
 @Tag(name = "Menus", description = "메뉴 관리 엔드포인트")
 class MenuController(
     private val menuService: MenuService,
+    private val festivalService: FestivalService,
 ) {
     // GET /menus
     @GetMapping
@@ -59,6 +63,20 @@ class MenuController(
             exceptEmpty = exceptEmpty,
             userId = null,
         )
+
+    // GET /menus/festival/dates
+    @GetMapping("/festival/dates")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "축제 일정 조회", description = "축제 기간에 해당하는 날짜 목록을 조회합니다")
+    fun getFestival(): FestivalDatesResponseDto = festivalService.getFestival()
+
+    // GET /menus/festival/{input_date}
+    @GetMapping("/festival/{input_date}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "축제 여부 조회", description = "특정 날짜가 축제 기간에 해당하는지 조회합니다")
+    fun getIsFestivalWhereDate(
+        @PathVariable("input_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) inputDate: LocalDate,
+    ): IsFestivalResponseDto = festivalService.getIsFestivalWhereDate(inputDate)
 
     // GET /menus/{menu_id}
     @GetMapping("/{menu_id}")
