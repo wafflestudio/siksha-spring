@@ -17,7 +17,7 @@ import java.io.Serializable
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
-data class RestaurantCustomPk(
+class RestaurantCustomPk(
     var user: Int = 0,
     var restaurant: Int = 0,
 ) : Serializable
@@ -36,7 +36,7 @@ data class RestaurantCustom(
     @JoinColumn(name = "restaurant_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var restaurant: Restaurant,
-    @Column(name = "`like`", nullable = false)
+    @Column(name = "like", nullable = false)
     var like: Boolean = false,
     @Column(name = "visible", nullable = false)
     var visible: Boolean = true,
