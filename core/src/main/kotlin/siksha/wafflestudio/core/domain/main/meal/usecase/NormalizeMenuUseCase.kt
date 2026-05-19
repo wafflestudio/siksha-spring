@@ -16,7 +16,8 @@ class NormalizeMenuUseCase(
         originalName: String,
         restaurant: RestaurantV2,
     ): MenuV2 {
-        val normalizedName = menuAliasV2Repository.findByAlias(originalName)?.menuName ?: normalizeName(originalName)
+        val alias = menuAliasV2Repository.findByAlias(originalName)
+        val normalizedName = alias?.menuName ?: normalizeName(originalName)
 
         val menu =
             menuV2Repository.findByRestaurantAndName(restaurant, normalizedName)
@@ -27,7 +28,7 @@ class NormalizeMenuUseCase(
                     ),
                 )
 
-        if (originalName != menu.name && menuAliasV2Repository.findByAlias(originalName) == null) {
+        if (alias == null && originalName != menu.name) {
             menuAliasV2Repository.save(
                 MenuAliasV2(
                     alias = originalName,

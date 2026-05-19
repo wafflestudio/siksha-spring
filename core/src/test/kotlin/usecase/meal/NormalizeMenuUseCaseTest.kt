@@ -40,7 +40,7 @@ class NormalizeMenuUseCaseTest {
         val result = useCase("치즈 돈까스", restaurant)
 
         assertEquals(menu, result)
-        verify(exactly = 2) { menuAliasV2Repository.findByAlias("치즈 돈까스") }
+        verify(exactly = 1) { menuAliasV2Repository.findByAlias("치즈 돈까스") }
         verify(exactly = 1) { menuV2Repository.findByRestaurantAndName(restaurant, "치즈돈까스") }
         verify(exactly = 0) { menuAliasV2Repository.save(any()) }
         verify(exactly = 0) { menuV2Repository.save(any()) }
@@ -61,7 +61,7 @@ class NormalizeMenuUseCaseTest {
         assertEquals(menu, result)
         assertEquals("추천 치즈 돈까스 (추천)", aliasSlot.captured.alias)
         assertEquals("치즈돈까스", aliasSlot.captured.menuName)
-        verify(exactly = 2) { menuAliasV2Repository.findByAlias("추천 치즈 돈까스 (추천)") }
+        verify(exactly = 1) { menuAliasV2Repository.findByAlias("추천 치즈 돈까스 (추천)") }
         verify(exactly = 1) { menuV2Repository.findByRestaurantAndName(restaurant, "치즈돈까스") }
         verify(exactly = 0) { menuV2Repository.save(any()) }
     }
@@ -84,7 +84,7 @@ class NormalizeMenuUseCaseTest {
         assertEquals("김치찌개", menuSlot.captured.name)
         assertEquals("HOT 김치찌개 / 밥 포함", aliasSlot.captured.alias)
         assertEquals("김치찌개", aliasSlot.captured.menuName)
-        verify(exactly = 2) { menuAliasV2Repository.findByAlias("HOT 김치찌개 / 밥 포함") }
+        verify(exactly = 1) { menuAliasV2Repository.findByAlias("HOT 김치찌개 / 밥 포함") }
         verify(exactly = 1) { menuV2Repository.findByRestaurantAndName(restaurant, "김치찌개") }
     }
 }
