@@ -47,5 +47,5 @@ data class RestaurantCustom(
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
     @UpdateTimestamp
     @Column(nullable = false)
-    val updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
+    var updatedAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
 )

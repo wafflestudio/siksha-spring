@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
@@ -34,7 +33,7 @@ class RestaurantController(
     fun getPersonalizedRestaurants(request: HttpServletRequest): RestaurantListResponseDto =
         restaurantService.getAllPersonalizedRestaurants(request.userId)
 
-    @PostMapping("/restaurants/like/{restaurantId}")
+    @PatchMapping("/restaurants/like/{restaurantId}")
     @Operation(summary = "식당 좋아요 누르기/취소", description = "특정 식당을 좋아요하거나 취소합니다")
     fun setRestaurantLike(
         request: HttpServletRequest,
@@ -42,7 +41,7 @@ class RestaurantController(
         @RequestBody requestBody: RestaurantLikeRequestDto,
     ): RestaurantLikeResponseDto = restaurantService.setRestaurantLike(request.userId, restaurantId, requestBody.like)
 
-    @PostMapping("/restaurants/visible/{restaurantId}")
+    @PatchMapping("/restaurants/visible/{restaurantId}")
     @Operation(summary = "식당 보이기/숨기기", description = "특정 식당을 보이거나 숨깁니다")
     fun setRestaurantVisible(
         request: HttpServletRequest,
