@@ -36,7 +36,7 @@ data class RestaurantCustom(
     @JoinColumn(name = "restaurant_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var restaurant: Restaurant,
-    @Column(name = "like", nullable = false)
+    @Column(name = "`like`", nullable = false)
     var like: Boolean = false,
     @Column(name = "visible", nullable = false)
     var visible: Boolean = true,
