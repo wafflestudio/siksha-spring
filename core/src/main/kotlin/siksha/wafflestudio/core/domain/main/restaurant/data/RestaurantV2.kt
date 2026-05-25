@@ -17,7 +17,7 @@ import java.time.ZoneId
 class RestaurantV2(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Int = 0,
     @Column(nullable = false, unique = true, length = 100)
     val name: String,
     @Column(length = 50)
