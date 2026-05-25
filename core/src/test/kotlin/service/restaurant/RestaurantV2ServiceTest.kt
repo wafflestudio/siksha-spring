@@ -41,7 +41,7 @@ class RestaurantV2ServiceTest {
                 latitude = BigDecimal(0.0),
                 longitude = BigDecimal(0.0),
                 operatingHours = null,
-                ownerId = null
+                ownerId = null,
             )
         every { restaurantRepository.findAll() } returns listOf(restaurant)
 
