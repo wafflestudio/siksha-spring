@@ -19,7 +19,11 @@ class SyncMealUseCase(
 ) {
     @Transactional
     operator fun invoke(request: CrawlerMealRequestDto) {
-        val restaurant = restaurantV2Repository.findByName(request.restaurant) ?: throw RestaurantNotFound()
+        val restaurant =
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                buildingNumber = request.buildingNumber,
+                name = request.restaurant,
+            ) ?: throw RestaurantNotFound()
 
         mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, request.date, request.type)
 

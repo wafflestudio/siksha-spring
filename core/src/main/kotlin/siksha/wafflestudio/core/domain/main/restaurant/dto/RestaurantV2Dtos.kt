@@ -25,6 +25,12 @@ data class RestaurantV2ResponseDto
         val nameEn: String?,
         @JsonProperty("building")
         val building: String?,
+        @JsonProperty("buildingNumber")
+        val buildingNumber: String,
+        @JsonProperty("buildingName")
+        val buildingName: String?,
+        @JsonProperty("restaurantName")
+        val restaurantName: String,
         @JsonProperty("addr")
         val addr: String?,
         @JsonProperty("lat")
@@ -51,13 +57,18 @@ data class RestaurantV2ResponseDto
                 restaurant: RestaurantV2,
                 liked: Boolean = false,
                 visible: Boolean = true,
-            ): RestaurantV2ResponseDto =
-                RestaurantV2ResponseDto(
+            ): RestaurantV2ResponseDto {
+                val building = restaurant.building
+
+                return RestaurantV2ResponseDto(
                     id = restaurant.id,
                     code = restaurant.name,
                     nameKr = restaurant.name,
                     nameEn = null,
-                    building = restaurant.building,
+                    building = building.number,
+                    buildingNumber = building.number,
+                    buildingName = building.name,
+                    restaurantName = restaurant.name,
                     addr = restaurant.address,
                     liked = liked,
                     visible = visible,
@@ -68,6 +79,7 @@ data class RestaurantV2ResponseDto
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
+            }
         }
     }
 

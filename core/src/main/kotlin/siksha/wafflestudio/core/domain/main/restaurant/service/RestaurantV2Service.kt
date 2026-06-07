@@ -25,7 +25,7 @@ class RestaurantV2Service(
 ) {
     @Cacheable(value = ["restaurantCache"])
     fun getAllRestaurants(): RestaurantV2ListResponseDto {
-        val restaurants = restaurantRepository.findAll()
+        val restaurants = restaurantRepository.findAllActiveForList()
         return RestaurantV2ListResponseDto(
             count = restaurants.size,
             result =
@@ -36,7 +36,7 @@ class RestaurantV2Service(
     }
 
     fun getAllPersonalizedRestaurants(userId: Int): RestaurantV2ListResponseDto {
-        val restaurants = restaurantRepository.findAll()
+        val restaurants = restaurantRepository.findAllActiveForList()
         val customs = restaurantCustomRepository.findAllByUserId(userId)
         val customMap = customs.associateBy { it.restaurant.id }
 

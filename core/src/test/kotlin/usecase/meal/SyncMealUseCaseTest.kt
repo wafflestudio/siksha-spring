@@ -20,6 +20,7 @@ import siksha.wafflestudio.core.domain.main.meal.repository.MealV2Repository
 import siksha.wafflestudio.core.domain.main.meal.usecase.NormalizeMenuUseCase
 import siksha.wafflestudio.core.domain.main.meal.usecase.SyncMealUseCase
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import java.time.LocalDate
@@ -51,11 +52,17 @@ class SyncMealUseCaseTest {
     @Test
     fun `restaurant가 존재하지 않으면 RestaurantNotFound 던짐`() {
         // given
-        every { restaurantV2Repository.findByName("없는식당") } returns null
+        every {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "109동",
+                "없는식당",
+            )
+        } returns null
 
         // when & then
         val request =
             CrawlerMealRequestDto(
+                buildingNumber = "109동",
                 restaurant = "없는식당",
                 date = LocalDate.of(2026, 4, 1),
                 type = MealType.LUNCH,
@@ -71,7 +78,12 @@ class SyncMealUseCaseTest {
         assertThrows<RestaurantNotFound> { useCase(request) }
 
         // verify
-        verify { restaurantV2Repository.findByName("없는식당") }
+        verify {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "109동",
+                "없는식당",
+            )
+        }
         verify(exactly = 0) { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) }
         verify(exactly = 0) { mealV2Repository.save(any()) }
     }
@@ -79,13 +91,14 @@ class SyncMealUseCaseTest {
     @Test
     fun `정상 흐름 - 단일 meal과 단일 menu 동기화`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
-        val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type, price = 12000, noMeat = false)
+        val savedMeal =
+            MealV2(id = 100, restaurant = restaurant, date = date, type = type, price = 12000, noMeat = false)
         val normalizedMenu = MenuV2(id = 10, restaurant = restaurant, name = "뚝배기순두부")
 
-        every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
+        everyDefaultRestaurant(restaurant)
         every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke("뚝배기순두부", restaurant) } returns normalizedMenu
@@ -94,6 +107,7 @@ class SyncMealUseCaseTest {
         // when
         val request =
             CrawlerMealRequestDto(
+                buildingNumber = "109동",
                 restaurant = "자하연식당 3층",
                 date = date,
                 type = type,
@@ -109,7 +123,7 @@ class SyncMealUseCaseTest {
         useCase(request)
 
         // then
-        verify { restaurantV2Repository.findByName("자하연식당 3층") }
+        verifyDefaultRestaurantLookup()
         verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
         verify(exactly = 1) { mealV2Repository.save(any()) }
         verify(exactly = 1) { normalizeMenuUseCase.invoke("뚝배기순두부", restaurant) }
@@ -119,7 +133,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `정상 흐름 - 여러 meal과 묶음 메뉴 동기화`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
@@ -127,7 +141,7 @@ class SyncMealUseCaseTest {
         val menuSalad = MenuV2(id = 2, restaurant = restaurant, name = "그린샐러드")
         val menuSoup = MenuV2(id = 3, restaurant = restaurant, name = "열무된장국")
 
-        every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
+        everyDefaultRestaurant(restaurant)
         every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke("닭갈비", restaurant) } returns menuChicken
@@ -138,6 +152,7 @@ class SyncMealUseCaseTest {
         // when
         val request =
             CrawlerMealRequestDto(
+                buildingNumber = "109동",
                 restaurant = "자하연식당 3층",
                 date = date,
                 type = type,
@@ -164,16 +179,65 @@ class SyncMealUseCaseTest {
     }
 
     @Test
+    fun `기존 세부 식당 단위는 restaurant 이름으로 동기화`() {
+        // given
+        val restaurant = testRestaurant(buildingNumber = "301동", name = "301동식당 1층 교직원전용식당")
+        val date = LocalDate.of(2026, 4, 1)
+        val type = MealType.BREAKFAST
+        val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
+        val menu = MenuV2(id = 10, restaurant = restaurant, name = "삼각김밥")
+
+        every {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "301동",
+                "301동식당 1층 교직원전용식당",
+            )
+        } returns restaurant
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
+        every { mealV2Repository.save(any()) } returns savedMeal
+        every { normalizeMenuUseCase.invoke("삼각김밥", restaurant) } returns menu
+        every { mealMenuV2Repository.save(any()) } answers { firstArg() }
+
+        // when
+        useCase(
+            CrawlerMealRequestDto(
+                buildingNumber = "301동",
+                restaurant = "301동식당 1층 교직원전용식당",
+                date = date,
+                type = type,
+                meals =
+                    listOf(
+                        CrawlerMealRequestDto.MealItem(
+                            price = 1000,
+                            noMeat = false,
+                            menus = listOf("삼각김밥"),
+                        ),
+                    ),
+            ),
+        )
+
+        // then
+        verify {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "301동",
+                "301동식당 1층 교직원전용식당",
+            )
+        }
+        verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
+        verify { normalizeMenuUseCase.invoke("삼각김밥", restaurant) }
+    }
+
+    @Test
     fun `meal_menu_v2에 original_name이 정확히 저장됨`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
         val normalizedMenu = MenuV2(id = 10, restaurant = restaurant, name = "치즈돈까스")
         val mealMenuSlot = slot<MealMenuV2>()
 
-        every { restaurantV2Repository.findByName(any()) } returns restaurant
+        everyDefaultRestaurant(restaurant)
         every { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke(any(), restaurant) } returns normalizedMenu
@@ -182,6 +246,7 @@ class SyncMealUseCaseTest {
         // when
         val request =
             CrawlerMealRequestDto(
+                buildingNumber = "109동",
                 restaurant = "자하연식당 3층",
                 date = date,
                 type = type,
@@ -205,16 +270,17 @@ class SyncMealUseCaseTest {
     @Test
     fun `meals가 빈 배열이면 delete만 수행하고 새로 저장하지 않음`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
 
-        every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
+        everyDefaultRestaurant(restaurant)
         every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
 
         // when
         val request =
             CrawlerMealRequestDto(
+                buildingNumber = "109동",
                 restaurant = "자하연식당 3층",
                 date = date,
                 type = type,
@@ -227,5 +293,32 @@ class SyncMealUseCaseTest {
         verify(exactly = 0) { mealV2Repository.save(any()) }
         verify(exactly = 0) { mealMenuV2Repository.save(any()) }
         verify(exactly = 0) { normalizeMenuUseCase.invoke(any(), any()) }
+    }
+
+    private fun testRestaurant(
+        buildingNumber: String = "109동",
+        buildingName: String? = "농협",
+        name: String = "자하연식당 3층",
+    ): RestaurantV2 {
+        val building = BuildingV2(id = 1, number = buildingNumber, name = buildingName)
+        return RestaurantV2(id = 1, building = building, name = name)
+    }
+
+    private fun everyDefaultRestaurant(restaurant: RestaurantV2) {
+        every {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "109동",
+                "자하연식당 3층",
+            )
+        } returns restaurant
+    }
+
+    private fun verifyDefaultRestaurantLookup() {
+        verify {
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
+                "109동",
+                "자하연식당 3층",
+            )
+        }
     }
 }

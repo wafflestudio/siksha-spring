@@ -12,6 +12,7 @@ import siksha.wafflestudio.core.domain.main.menu.data.MenuAliasV2
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAliasV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import kotlin.test.assertEquals
 
@@ -30,7 +31,7 @@ class NormalizeMenuUseCaseTest {
 
     @Test
     fun `alias exact hit이면 alias menu name으로 menu 조회 후 반환`() {
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val alias = MenuAliasV2(id = 1, alias = "치즈 돈까스", menuName = "치즈돈까스")
         val menu = MenuV2(id = 10, restaurant = restaurant, name = "치즈돈까스")
 
@@ -48,7 +49,7 @@ class NormalizeMenuUseCaseTest {
 
     @Test
     fun `alias miss이면 정규화된 menu 이름으로 기존 menu를 조회하고 alias를 저장한다`() {
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val menu = MenuV2(id = 10, restaurant = restaurant, name = "치즈돈까스")
         val aliasSlot = slot<MenuAliasV2>()
 
@@ -68,7 +69,7 @@ class NormalizeMenuUseCaseTest {
 
     @Test
     fun `기존 menu가 없으면 정규화된 이름으로 새 menu를 만들고 alias를 저장한다`() {
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant()
         val createdMenu = MenuV2(id = 10, restaurant = restaurant, name = "김치찌개")
         val menuSlot = slot<MenuV2>()
         val aliasSlot = slot<MenuAliasV2>()
@@ -86,5 +87,10 @@ class NormalizeMenuUseCaseTest {
         assertEquals("김치찌개", aliasSlot.captured.menuName)
         verify(exactly = 1) { menuAliasV2Repository.findByAlias("HOT 김치찌개 / 밥 포함") }
         verify(exactly = 1) { menuV2Repository.findByRestaurantAndName(restaurant, "김치찌개") }
+    }
+
+    private fun testRestaurant(): RestaurantV2 {
+        val building = BuildingV2(id = 1, number = "109동", name = "농협")
+        return RestaurantV2(id = 1, building = building, name = "자하연식당 3층")
     }
 }

@@ -6,6 +6,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
@@ -32,18 +33,19 @@ class RestaurantV2ServiceTest {
     @Test
     fun `get restaurants`() {
         // given
+        val building = BuildingV2(id = 1, number = "109동", name = "농협")
         val restaurant =
             RestaurantV2(
                 id = 1,
-                name = "test",
-                building = "test",
+                building = building,
+                name = "자하연식당 3층",
                 address = "test",
                 latitude = BigDecimal(0.0),
                 longitude = BigDecimal(0.0),
                 operatingHours = null,
                 ownerId = null,
             )
-        every { restaurantRepository.findAll() } returns listOf(restaurant)
+        every { restaurantRepository.findAllActiveForList() } returns listOf(restaurant)
 
         // when
         val result = service.getAllRestaurants()
@@ -52,5 +54,8 @@ class RestaurantV2ServiceTest {
         assertNotNull(result)
         Assertions.assertEquals(result.result.size, result.count)
         Assertions.assertEquals(1, result.result[0].id)
+        Assertions.assertEquals("109동", result.result[0].buildingNumber)
+        Assertions.assertEquals("농협", result.result[0].buildingName)
+        Assertions.assertEquals("자하연식당 3층", result.result[0].restaurantName)
     }
 }
