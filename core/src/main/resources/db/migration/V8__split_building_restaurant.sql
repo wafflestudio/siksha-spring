@@ -70,20 +70,22 @@ select b.id, x.name, x.display_order
 from building_v2 b
 join (
     select '63동' building_number, '학생회관식당' name, 1 display_order union all
-    select '75-1동', '3식당', 1 union all
-    select '75-1동', '4층 푸드코드 서가앤쿡', 2 union all
-    select '75-1동', '4층 푸드코드 토끼정', 3 union all
-    select '75-1동', '4층 푸드코드 숨쉬는순두부', 4 union all
-    select '75-1동', '4층 푸드코드 이공오 돈까스와 우동', 5 union all
-    select '75-1동', '두레미담 셀프코너', 6 union all
-    select '75-1동', '두레미담 식당', 7 union all
+    select '75-1동', '3식당 일반', 1 union all
+    select '75-1동', '3식당 든든한끼샐러드코너', 2 union all
+    select '75-1동', '4층 푸드코드 서가앤쿡', 3 union all
+    select '75-1동', '4층 푸드코드 토끼정', 4 union all
+    select '75-1동', '4층 푸드코드 숨쉬는순두부', 5 union all
+    select '75-1동', '4층 푸드코드 이공오 돈까스와 우동', 6 union all
+    select '75-1동', '두레미담 셀프코너', 7 union all
+    select '75-1동', '두레미담 식당', 8 union all
     select '919동', '생협기숙사', 1 union all
     select '901동', '아워홈', 1 union all
     select '302동', '302동식당', 1 union all
-    select '301동', '301동식당 일반', 1 union all
-    select '301동', '301동식당 TAKE-OUT', 2 union all
-    select '301동', '301동식당 1층 교직원전용식당', 3 union all
-    select '301동', '301동식당 카페 301동', 4 union all
+    select '301동', '301동식당 천원의아침밥', 1 union all
+    select '301동', '301동식당 일반', 2 union all
+    select '301동', '301동식당 TAKE-OUT', 3 union all
+    select '301동', '301동식당 1층 교직원전용식당', 4 union all
+    select '301동', '301동식당 카페 301동', 5 union all
     select '113동', '동원관식당', 1 union all
     select '109동', '자하연식당 2층', 1 union all
     select '109동', '자하연식당 3층', 2 union all
@@ -96,6 +98,7 @@ join (
     select '220동', '220동식당 바비든든', 2 union all
     select '220동', '220동식당 포포420', 3 union all
     select '220동', '220동식당 값찌개', 4 union all
+    select '220동', '220동식당 키친101', 5 union all
     select '85동', '수의대식당', 1
 ) x on x.building_number = b.number;
 
