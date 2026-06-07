@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.CornerV2
 import siksha.wafflestudio.core.util.EtcUtils
 import java.math.BigDecimal
 import java.time.OffsetDateTime
@@ -25,6 +25,14 @@ data class RestaurantV2ResponseDto
         val nameEn: String?,
         @JsonProperty("building")
         val building: String?,
+        @JsonProperty("buildingNumber")
+        val buildingNumber: String,
+        @JsonProperty("buildingName")
+        val buildingName: String?,
+        @JsonProperty("restaurantName")
+        val restaurantName: String,
+        @JsonProperty("cornerName")
+        val cornerName: String?,
         @JsonProperty("addr")
         val addr: String?,
         @JsonProperty("lat")
@@ -48,16 +56,24 @@ data class RestaurantV2ResponseDto
     ) {
         companion object {
             fun from(
-                restaurant: RestaurantV2,
+                corner: CornerV2,
                 liked: Boolean = false,
                 visible: Boolean = true,
-            ): RestaurantV2ResponseDto =
-                RestaurantV2ResponseDto(
-                    id = restaurant.id,
-                    code = restaurant.name,
-                    nameKr = restaurant.name,
+            ): RestaurantV2ResponseDto {
+                val restaurant = corner.restaurant
+                val building = restaurant.building
+                val displayName = listOfNotNull(restaurant.name, corner.name).joinToString(" - ")
+
+                return RestaurantV2ResponseDto(
+                    id = corner.id,
+                    code = displayName,
+                    nameKr = displayName,
                     nameEn = null,
-                    building = restaurant.building,
+                    building = building.number,
+                    buildingNumber = building.number,
+                    buildingName = building.name,
+                    restaurantName = restaurant.name,
+                    cornerName = corner.name,
                     addr = restaurant.address,
                     liked = liked,
                     visible = visible,
@@ -68,6 +84,7 @@ data class RestaurantV2ResponseDto
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
+            }
         }
     }
 

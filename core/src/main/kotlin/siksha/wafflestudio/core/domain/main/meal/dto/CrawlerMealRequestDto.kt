@@ -5,7 +5,10 @@ import siksha.wafflestudio.core.domain.main.meal.data.MealType
 import java.time.LocalDate
 
 data class CrawlerMealRequestDto(
+    @JsonProperty("buildingNumber") val buildingNumber: String,
+    @JsonProperty("buildingName") val buildingName: String? = null,
     val restaurant: String,
+    val corner: String? = null,
     val date: LocalDate,
     val type: MealType,
     val meals: List<MealItem>,
