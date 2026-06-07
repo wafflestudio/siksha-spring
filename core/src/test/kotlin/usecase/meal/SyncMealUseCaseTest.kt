@@ -181,7 +181,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `기존 세부 식당 단위는 restaurant 이름으로 동기화`() {
         // given
-        val restaurant = testRestaurant(buildingNumber = "301동", name = "1층 교직원전용식당")
+        val restaurant = testRestaurant(buildingNumber = "301동", name = "301동식당 1층 교직원전용식당")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.BREAKFAST
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
@@ -190,7 +190,7 @@ class SyncMealUseCaseTest {
         every {
             restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "301동",
-                "1층 교직원전용식당",
+                "301동식당 1층 교직원전용식당",
             )
         } returns restaurant
         every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
@@ -202,7 +202,7 @@ class SyncMealUseCaseTest {
         useCase(
             CrawlerMealRequestDto(
                 buildingNumber = "301동",
-                restaurant = "1층 교직원전용식당",
+                restaurant = "301동식당 1층 교직원전용식당",
                 date = date,
                 type = type,
                 meals =
@@ -220,7 +220,7 @@ class SyncMealUseCaseTest {
         verify {
             restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "301동",
-                "1층 교직원전용식당",
+                "301동식당 1층 교직원전용식당",
             )
         }
         verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
