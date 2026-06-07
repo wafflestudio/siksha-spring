@@ -13,23 +13,21 @@ interface RestaurantV2Repository : JpaRepository<RestaurantV2, Int> {
         select r
         from restaurant_v2 r
         join fetch r.building b
-        where r.active = true
         order by b.sortOrder asc, r.displayOrder asc, r.id asc
         """,
     )
-    fun findAllActiveForList(): List<RestaurantV2>
+    fun findAllForList(): List<RestaurantV2>
 
     @Query(
         """
         select r
         from restaurant_v2 r
         join fetch r.building b
-        where r.active = true
-          and b.number = :buildingNumber
+        where b.number = :buildingNumber
           and r.name = :name
         """,
     )
-    fun findActiveByBuildingNumberAndName(
+    fun findByBuildingNumberAndName(
         @Param("buildingNumber") buildingNumber: String,
         @Param("name") name: String,
     ): RestaurantV2?

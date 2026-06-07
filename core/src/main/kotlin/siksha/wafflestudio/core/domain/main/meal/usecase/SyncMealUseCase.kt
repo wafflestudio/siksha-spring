@@ -20,7 +20,7 @@ class SyncMealUseCase(
     @Transactional
     operator fun invoke(request: CrawlerMealRequestDto) {
         val restaurant =
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 buildingNumber = request.buildingNumber,
                 name = request.restaurant,
             ) ?: throw RestaurantNotFound()

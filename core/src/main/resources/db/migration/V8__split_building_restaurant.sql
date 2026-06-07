@@ -36,8 +36,7 @@ create table if not exists building_v2
 
 alter table restaurant_v2
     add column building_id int null after id,
-    add column display_order int not null default 0 after owner_id,
-    add column active tinyint(1) not null default 1 after display_order;
+    add column display_order int not null default 0 after owner_id;
 
 alter table restaurant_v2
     drop index idx_restaurant_v2_building;
@@ -66,8 +65,8 @@ on duplicate key update
     name = values(name),
     sort_order = values(sort_order);
 
-insert into restaurant_v2 (building_id, name, display_order, active)
-select b.id, x.name, x.display_order, 1
+insert into restaurant_v2 (building_id, name, display_order)
+select b.id, x.name, x.display_order
 from building_v2 b
 join (
     select '63동' building_number, '학생회관식당' name, 1 display_order union all
@@ -107,5 +106,5 @@ alter table restaurant_v2
         foreign key (building_id) references building_v2 (id)
             on delete restrict;
 
-create index idx_restaurant_v2_building_active
-    on restaurant_v2 (building_id, active, display_order);
+create index idx_restaurant_v2_building_order
+    on restaurant_v2 (building_id, display_order);

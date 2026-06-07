@@ -53,7 +53,7 @@ class SyncMealUseCaseTest {
     fun `restaurant가 존재하지 않으면 RestaurantNotFound 던짐`() {
         // given
         every {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "109동",
                 "없는식당",
             )
@@ -79,7 +79,7 @@ class SyncMealUseCaseTest {
 
         // verify
         verify {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "109동",
                 "없는식당",
             )
@@ -188,7 +188,7 @@ class SyncMealUseCaseTest {
         val menu = MenuV2(id = 10, restaurant = restaurant, name = "삼각김밥")
 
         every {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "301동",
                 "301동식당 1층 교직원전용식당",
             )
@@ -218,7 +218,7 @@ class SyncMealUseCaseTest {
 
         // then
         verify {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "301동",
                 "301동식당 1층 교직원전용식당",
             )
@@ -306,7 +306,7 @@ class SyncMealUseCaseTest {
 
     private fun everyDefaultRestaurant(restaurant: RestaurantV2) {
         every {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "109동",
                 "자하연식당 3층",
             )
@@ -315,7 +315,7 @@ class SyncMealUseCaseTest {
 
     private fun verifyDefaultRestaurantLookup() {
         verify {
-            restaurantV2Repository.findActiveByBuildingNumberAndName(
+            restaurantV2Repository.findByBuildingNumberAndName(
                 "109동",
                 "자하연식당 3층",
             )

@@ -45,7 +45,7 @@ class RestaurantV2ServiceTest {
                 operatingHours = null,
                 ownerId = null,
             )
-        every { restaurantRepository.findAllActiveForList() } returns listOf(restaurant)
+        every { restaurantRepository.findAllForList() } returns listOf(restaurant)
 
         // when
         val result = service.getAllRestaurants()
