@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.CreationTimestamp
-import siksha.wafflestudio.core.domain.main.restaurant.data.CornerV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -27,8 +27,8 @@ class MenuV2(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "corner_id", nullable = false)
-    val corner: CornerV2,
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    val restaurant: RestaurantV2,
     @Column(nullable = false, length = 200)
     val name: String,
     @CreationTimestamp

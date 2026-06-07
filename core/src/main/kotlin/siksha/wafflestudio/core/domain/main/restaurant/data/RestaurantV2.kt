@@ -38,6 +38,8 @@ class RestaurantV2(
     val ownerId: Int? = null,
     @Column(nullable = false)
     val displayOrder: Int = 0,
+    @Column(nullable = false)
+    val active: Boolean = true,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

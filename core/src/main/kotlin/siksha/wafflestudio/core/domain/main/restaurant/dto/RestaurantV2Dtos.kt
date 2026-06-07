@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
-import siksha.wafflestudio.core.domain.main.restaurant.data.CornerV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.util.EtcUtils
 import java.math.BigDecimal
 import java.time.OffsetDateTime
@@ -31,8 +31,6 @@ data class RestaurantV2ResponseDto
         val buildingName: String?,
         @JsonProperty("restaurantName")
         val restaurantName: String,
-        @JsonProperty("cornerName")
-        val cornerName: String?,
         @JsonProperty("addr")
         val addr: String?,
         @JsonProperty("lat")
@@ -56,24 +54,21 @@ data class RestaurantV2ResponseDto
     ) {
         companion object {
             fun from(
-                corner: CornerV2,
+                restaurant: RestaurantV2,
                 liked: Boolean = false,
                 visible: Boolean = true,
             ): RestaurantV2ResponseDto {
-                val restaurant = corner.restaurant
                 val building = restaurant.building
-                val displayName = listOfNotNull(restaurant.name, corner.name).joinToString(" - ")
 
                 return RestaurantV2ResponseDto(
-                    id = corner.id,
-                    code = displayName,
-                    nameKr = displayName,
+                    id = restaurant.id,
+                    code = restaurant.name,
+                    nameKr = restaurant.name,
                     nameEn = null,
                     building = building.number,
                     buildingNumber = building.number,
                     buildingName = building.name,
                     restaurantName = restaurant.name,
-                    cornerName = corner.name,
                     addr = restaurant.address,
                     liked = liked,
                     visible = visible,

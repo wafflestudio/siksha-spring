@@ -5,7 +5,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
-import siksha.wafflestudio.core.domain.main.restaurant.data.CornerCustomV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ListResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderResponseDto
@@ -13,51 +13,51 @@ import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpda
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpdateResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.repository.CornerCustomV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.CornerV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
 class RestaurantV2Service(
-    private val cornerRepository: CornerV2Repository,
+    private val restaurantRepository: RestaurantV2Repository,
     private val userRepository: UserRepository,
-    private val cornerCustomRepository: CornerCustomV2Repository,
+    private val restaurantCustomRepository: RestaurantCustomV2Repository,
 ) {
     @Cacheable(value = ["restaurantCache"])
     fun getAllRestaurants(): RestaurantV2ListResponseDto {
-        val corners = cornerRepository.findAllActiveForList()
+        val restaurants = restaurantRepository.findAllActiveForList()
         return RestaurantV2ListResponseDto(
-            count = corners.size,
+            count = restaurants.size,
             result =
-                corners.map { corner ->
-                    RestaurantV2ResponseDto.from(corner)
+                restaurants.map { restaurant ->
+                    RestaurantV2ResponseDto.from(restaurant)
                 },
         )
     }
 
     fun getAllPersonalizedRestaurants(userId: Int): RestaurantV2ListResponseDto {
-        val corners = cornerRepository.findAllActiveForList()
-        val customs = cornerCustomRepository.findAllByUserId(userId)
-        val customMap = customs.associateBy { it.corner.id }
+        val restaurants = restaurantRepository.findAllActiveForList()
+        val customs = restaurantCustomRepository.findAllByUserId(userId)
+        val customMap = customs.associateBy { it.restaurant.id }
 
-        val (orderedCorners, unorderedCorners) =
-            corners
+        val (orderedRestaurants, unorderedRestaurants) =
+            restaurants
                 .partition {
                     customMap[it.id]?.orderIndex != null
                 }.let { (ordered, unordered) ->
                     ordered.sortedBy { customMap[it.id]!!.orderIndex!! } to unordered
                 }
 
-        val resultCorners = orderedCorners + unorderedCorners
+        val resultRestaurants = orderedRestaurants + unorderedRestaurants
 
         return RestaurantV2ListResponseDto(
-            count = resultCorners.size,
+            count = resultRestaurants.size,
             result =
-                resultCorners.map { corner ->
-                    val custom = customMap[corner.id]
+                resultRestaurants.map { restaurant ->
+                    val custom = customMap[restaurant.id]
                     val liked = custom?.like ?: false
                     val visible = custom?.visible ?: true
-                    RestaurantV2ResponseDto.from(corner, liked, visible)
+                    RestaurantV2ResponseDto.from(restaurant, liked, visible)
                 },
         )
     }
@@ -68,8 +68,8 @@ class RestaurantV2Service(
         restaurantId: Int,
         like: Boolean,
     ): RestaurantV2LikeResponseDto {
-        val corner =
-            cornerRepository
+        val restaurant =
+            restaurantRepository
                 .findById(restaurantId)
                 .orElseThrow { RestaurantNotFoundException() }
         val user =
@@ -78,11 +78,11 @@ class RestaurantV2Service(
                 .orElseThrow { UserNotFoundException() }
 
         val custom =
-            cornerCustomRepository.findCornerCustomV2ByUserIdAndCornerId(userId, corner.id)
-                ?: CornerCustomV2(user = user, corner = corner)
+            restaurantCustomRepository.findRestaurantCustomV2ByUserIdAndRestaurantId(userId, restaurant.id)
+                ?: RestaurantCustomV2(user = user, restaurant = restaurant)
 
         custom.like = like
-        val savedCustom = cornerCustomRepository.save(custom)
+        val savedCustom = restaurantCustomRepository.save(custom)
 
         return RestaurantV2LikeResponseDto(
             restaurantId = restaurantId,
@@ -96,8 +96,8 @@ class RestaurantV2Service(
         restaurantId: Int,
         visible: Boolean,
     ): RestaurantV2VisibleResponseDto {
-        val corner =
-            cornerRepository
+        val restaurant =
+            restaurantRepository
                 .findById(restaurantId)
                 .orElseThrow { RestaurantNotFoundException() }
         val user =
@@ -106,11 +106,11 @@ class RestaurantV2Service(
                 .orElseThrow { UserNotFoundException() }
 
         val custom =
-            cornerCustomRepository.findCornerCustomV2ByUserIdAndCornerId(userId, corner.id)
-                ?: CornerCustomV2(user = user, corner = corner)
+            restaurantCustomRepository.findRestaurantCustomV2ByUserIdAndRestaurantId(userId, restaurant.id)
+                ?: RestaurantCustomV2(user = user, restaurant = restaurant)
 
         custom.visible = visible
-        val savedCustom = cornerCustomRepository.save(custom)
+        val savedCustom = restaurantCustomRepository.save(custom)
 
         return RestaurantV2VisibleResponseDto(
             restaurantId = restaurantId,
@@ -120,13 +120,13 @@ class RestaurantV2Service(
 
     fun getRestaurantOrder(userId: Int): RestaurantV2OrderResponseDto {
         val orderedCustoms =
-            cornerCustomRepository
+            restaurantCustomRepository
                 .findAllByUserId(userId)
                 .filter { it.orderIndex != null }
                 .sortedBy { it.orderIndex }
 
         return RestaurantV2OrderResponseDto(
-            restaurantOrder = orderedCustoms.map { it.corner.id },
+            restaurantOrder = orderedCustoms.map { it.restaurant.id },
         )
     }
 
@@ -138,30 +138,30 @@ class RestaurantV2Service(
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
         val requestedOrderIds = request.order
 
-        val cornerMap =
-            cornerRepository
+        val restaurantMap =
+            restaurantRepository
                 .findAllById(requestedOrderIds)
                 .associateBy { it.id }
 
-        if (cornerMap.size != requestedOrderIds.toSet().size) {
+        if (restaurantMap.size != requestedOrderIds.toSet().size) {
             throw RestaurantNotFoundException()
         }
 
-        val existingCustoms = cornerCustomRepository.findAllByUserId(userId)
-        val customMap = existingCustoms.associateBy { it.corner.id }
+        val existingCustoms = restaurantCustomRepository.findAllByUserId(userId)
+        val customMap = existingCustoms.associateBy { it.restaurant.id }
 
-        val customsToSave = mutableListOf<CornerCustomV2>()
+        val customsToSave = mutableListOf<RestaurantCustomV2>()
 
         existingCustoms
-            .filter { it.orderIndex != null && it.corner.id !in requestedOrderIds }
+            .filter { it.orderIndex != null && it.restaurant.id !in requestedOrderIds }
             .forEach { custom ->
                 custom.orderIndex = null
                 customsToSave.add(custom)
             }
 
-        requestedOrderIds.forEachIndexed { index, cornerId ->
+        requestedOrderIds.forEachIndexed { index, restaurantId ->
             val newOrderIndex = index + 1
-            val custom = customMap[cornerId] ?: CornerCustomV2(user = user, corner = cornerMap[cornerId]!!)
+            val custom = customMap[restaurantId] ?: RestaurantCustomV2(user = user, restaurant = restaurantMap[restaurantId]!!)
 
             if (custom.orderIndex != newOrderIndex) {
                 custom.orderIndex = newOrderIndex
@@ -170,7 +170,7 @@ class RestaurantV2Service(
         }
 
         if (customsToSave.isNotEmpty()) {
-            cornerCustomRepository.saveAll(customsToSave)
+            restaurantCustomRepository.saveAll(customsToSave)
         }
 
         return RestaurantV2OrderUpdateResponseDto(requestedOrderIds)

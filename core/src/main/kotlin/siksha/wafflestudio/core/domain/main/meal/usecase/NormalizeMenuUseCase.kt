@@ -5,7 +5,7 @@ import siksha.wafflestudio.core.domain.main.menu.data.MenuAliasV2
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAliasV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.data.CornerV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 
 @Component
 class NormalizeMenuUseCase(
@@ -14,16 +14,16 @@ class NormalizeMenuUseCase(
 ) {
     operator fun invoke(
         originalName: String,
-        corner: CornerV2,
+        restaurant: RestaurantV2,
     ): MenuV2 {
         val alias = menuAliasV2Repository.findByAlias(originalName)
         val normalizedName = alias?.menuName ?: normalizeName(originalName)
 
         val menu =
-            menuV2Repository.findByCornerAndName(corner, normalizedName)
+            menuV2Repository.findByRestaurantAndName(restaurant, normalizedName)
                 ?: menuV2Repository.save(
                     MenuV2(
-                        corner = corner,
+                        restaurant = restaurant,
                         name = normalizedName,
                     ),
                 )

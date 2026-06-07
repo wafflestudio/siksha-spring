@@ -21,14 +21,13 @@ import siksha.wafflestudio.core.domain.main.meal.usecase.NormalizeMenuUseCase
 import siksha.wafflestudio.core.domain.main.meal.usecase.SyncMealUseCase
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.CornerV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
-import siksha.wafflestudio.core.domain.main.restaurant.repository.CornerV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import java.time.LocalDate
 import kotlin.test.assertEquals
 
 class SyncMealUseCaseTest {
-    private lateinit var cornerV2Repository: CornerV2Repository
+    private lateinit var restaurantV2Repository: RestaurantV2Repository
     private lateinit var mealV2Repository: MealV2Repository
     private lateinit var mealMenuV2Repository: MealMenuV2Repository
     private lateinit var normalizeMenuUseCase: NormalizeMenuUseCase
@@ -36,13 +35,13 @@ class SyncMealUseCaseTest {
 
     @BeforeEach
     internal fun setUp() {
-        cornerV2Repository = mockk()
+        restaurantV2Repository = mockk()
         mealV2Repository = mockk()
         mealMenuV2Repository = mockk()
         normalizeMenuUseCase = mockk()
         useCase =
             SyncMealUseCase(
-                cornerV2Repository,
+                restaurantV2Repository,
                 mealV2Repository,
                 mealMenuV2Repository,
                 normalizeMenuUseCase,
@@ -51,10 +50,10 @@ class SyncMealUseCaseTest {
     }
 
     @Test
-    fun `corner가 존재하지 않으면 RestaurantNotFound 던짐`() {
+    fun `restaurant가 존재하지 않으면 RestaurantNotFound 던짐`() {
         // given
         every {
-            cornerV2Repository.findActiveDefaultByBuildingNumberAndRestaurantName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "109동",
                 "없는식당",
             )
@@ -80,28 +79,29 @@ class SyncMealUseCaseTest {
 
         // verify
         verify {
-            cornerV2Repository.findActiveDefaultByBuildingNumberAndRestaurantName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "109동",
                 "없는식당",
             )
         }
-        verify(exactly = 0) { mealV2Repository.deleteAllByCornerAndDateAndType(any(), any(), any()) }
+        verify(exactly = 0) { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) }
         verify(exactly = 0) { mealV2Repository.save(any()) }
     }
 
     @Test
     fun `정상 흐름 - 단일 meal과 단일 menu 동기화`() {
         // given
-        val corner = testCorner()
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
-        val savedMeal = MealV2(id = 100, corner = corner, date = date, type = type, price = 12000, noMeat = false)
-        val normalizedMenu = MenuV2(id = 10, corner = corner, name = "뚝배기순두부")
+        val savedMeal =
+            MealV2(id = 100, restaurant = restaurant, date = date, type = type, price = 12000, noMeat = false)
+        val normalizedMenu = MenuV2(id = 10, restaurant = restaurant, name = "뚝배기순두부")
 
-        everyDefaultCorner(corner)
-        every { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) } just runs
+        everyDefaultRestaurant(restaurant)
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
-        every { normalizeMenuUseCase.invoke("뚝배기순두부", corner) } returns normalizedMenu
+        every { normalizeMenuUseCase.invoke("뚝배기순두부", restaurant) } returns normalizedMenu
         every { mealMenuV2Repository.save(any()) } answers { firstArg() }
 
         // when
@@ -123,30 +123,30 @@ class SyncMealUseCaseTest {
         useCase(request)
 
         // then
-        verifyDefaultCornerLookup()
-        verify { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) }
+        verifyDefaultRestaurantLookup()
+        verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
         verify(exactly = 1) { mealV2Repository.save(any()) }
-        verify(exactly = 1) { normalizeMenuUseCase.invoke("뚝배기순두부", corner) }
+        verify(exactly = 1) { normalizeMenuUseCase.invoke("뚝배기순두부", restaurant) }
         verify(exactly = 1) { mealMenuV2Repository.save(any()) }
     }
 
     @Test
     fun `정상 흐름 - 여러 meal과 묶음 메뉴 동기화`() {
         // given
-        val corner = testCorner()
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
-        val savedMeal = MealV2(id = 100, corner = corner, date = date, type = type)
-        val menuChicken = MenuV2(id = 1, corner = corner, name = "닭갈비")
-        val menuSalad = MenuV2(id = 2, corner = corner, name = "그린샐러드")
-        val menuSoup = MenuV2(id = 3, corner = corner, name = "열무된장국")
+        val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
+        val menuChicken = MenuV2(id = 1, restaurant = restaurant, name = "닭갈비")
+        val menuSalad = MenuV2(id = 2, restaurant = restaurant, name = "그린샐러드")
+        val menuSoup = MenuV2(id = 3, restaurant = restaurant, name = "열무된장국")
 
-        everyDefaultCorner(corner)
-        every { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) } just runs
+        everyDefaultRestaurant(restaurant)
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
-        every { normalizeMenuUseCase.invoke("닭갈비", corner) } returns menuChicken
-        every { normalizeMenuUseCase.invoke("그린샐러드", corner) } returns menuSalad
-        every { normalizeMenuUseCase.invoke("열무된장국", corner) } returns menuSoup
+        every { normalizeMenuUseCase.invoke("닭갈비", restaurant) } returns menuChicken
+        every { normalizeMenuUseCase.invoke("그린샐러드", restaurant) } returns menuSalad
+        every { normalizeMenuUseCase.invoke("열무된장국", restaurant) } returns menuSoup
         every { mealMenuV2Repository.save(any()) } answers { firstArg() }
 
         // when
@@ -174,39 +174,35 @@ class SyncMealUseCaseTest {
 
         // then
         verify(exactly = 2) { mealV2Repository.save(any()) }
-        verify(exactly = 3) { normalizeMenuUseCase.invoke(any(), corner) }
+        verify(exactly = 3) { normalizeMenuUseCase.invoke(any(), restaurant) }
         verify(exactly = 3) { mealMenuV2Repository.save(any()) }
     }
 
     @Test
-    fun `명시 corner가 있으면 해당 corner 기준으로 동기화`() {
+    fun `기존 세부 식당 단위는 restaurant 이름으로 동기화`() {
         // given
-        val building = BuildingV2(id = 2, number = "301동")
-        val restaurant = RestaurantV2(id = 2, building = building, name = "301동식당")
-        val corner = CornerV2(id = 20, restaurant = restaurant, name = "TAKE-OUT")
+        val restaurant = testRestaurant(buildingNumber = "301동", name = "1층 교직원전용식당")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.BREAKFAST
-        val savedMeal = MealV2(id = 100, corner = corner, date = date, type = type)
-        val menu = MenuV2(id = 10, corner = corner, name = "삼각김밥")
+        val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
+        val menu = MenuV2(id = 10, restaurant = restaurant, name = "삼각김밥")
 
         every {
-            cornerV2Repository.findActiveByBuildingNumberAndRestaurantNameAndName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "301동",
-                "301동식당",
-                "TAKE-OUT",
+                "1층 교직원전용식당",
             )
-        } returns corner
-        every { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) } just runs
+        } returns restaurant
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
-        every { normalizeMenuUseCase.invoke("삼각김밥", corner) } returns menu
+        every { normalizeMenuUseCase.invoke("삼각김밥", restaurant) } returns menu
         every { mealMenuV2Repository.save(any()) } answers { firstArg() }
 
         // when
         useCase(
             CrawlerMealRequestDto(
                 buildingNumber = "301동",
-                restaurant = "301동식당",
-                corner = "TAKE-OUT",
+                restaurant = "1층 교직원전용식당",
                 date = date,
                 type = type,
                 meals =
@@ -222,33 +218,29 @@ class SyncMealUseCaseTest {
 
         // then
         verify {
-            cornerV2Repository.findActiveByBuildingNumberAndRestaurantNameAndName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "301동",
-                "301동식당",
-                "TAKE-OUT",
+                "1층 교직원전용식당",
             )
         }
-        verify(exactly = 0) {
-            cornerV2Repository.findActiveDefaultByBuildingNumberAndRestaurantName(any(), any())
-        }
-        verify { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) }
-        verify { normalizeMenuUseCase.invoke("삼각김밥", corner) }
+        verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
+        verify { normalizeMenuUseCase.invoke("삼각김밥", restaurant) }
     }
 
     @Test
     fun `meal_menu_v2에 original_name이 정확히 저장됨`() {
         // given
-        val corner = testCorner()
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
-        val savedMeal = MealV2(id = 100, corner = corner, date = date, type = type)
-        val normalizedMenu = MenuV2(id = 10, corner = corner, name = "치즈돈까스")
+        val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
+        val normalizedMenu = MenuV2(id = 10, restaurant = restaurant, name = "치즈돈까스")
         val mealMenuSlot = slot<MealMenuV2>()
 
-        everyDefaultCorner(corner)
-        every { mealV2Repository.deleteAllByCornerAndDateAndType(any(), any(), any()) } just runs
+        everyDefaultRestaurant(restaurant)
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) } just runs
         every { mealV2Repository.save(any()) } returns savedMeal
-        every { normalizeMenuUseCase.invoke(any(), corner) } returns normalizedMenu
+        every { normalizeMenuUseCase.invoke(any(), restaurant) } returns normalizedMenu
         every { mealMenuV2Repository.save(capture(mealMenuSlot)) } answers { firstArg() }
 
         // when
@@ -278,12 +270,12 @@ class SyncMealUseCaseTest {
     @Test
     fun `meals가 빈 배열이면 delete만 수행하고 새로 저장하지 않음`() {
         // given
-        val corner = testCorner()
+        val restaurant = testRestaurant()
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
 
-        everyDefaultCorner(corner)
-        every { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) } just runs
+        everyDefaultRestaurant(restaurant)
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
 
         // when
         val request =
@@ -297,30 +289,33 @@ class SyncMealUseCaseTest {
         useCase(request)
 
         // then
-        verify { mealV2Repository.deleteAllByCornerAndDateAndType(corner, date, type) }
+        verify { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) }
         verify(exactly = 0) { mealV2Repository.save(any()) }
         verify(exactly = 0) { mealMenuV2Repository.save(any()) }
         verify(exactly = 0) { normalizeMenuUseCase.invoke(any(), any()) }
     }
 
-    private fun testCorner(): CornerV2 {
-        val building = BuildingV2(id = 1, number = "109동", name = "농협")
-        val restaurant = RestaurantV2(id = 1, building = building, name = "자하연식당 3층")
-        return CornerV2(id = 1, restaurant = restaurant, isDefault = true)
+    private fun testRestaurant(
+        buildingNumber: String = "109동",
+        buildingName: String? = "농협",
+        name: String = "자하연식당 3층",
+    ): RestaurantV2 {
+        val building = BuildingV2(id = 1, number = buildingNumber, name = buildingName)
+        return RestaurantV2(id = 1, building = building, name = name)
     }
 
-    private fun everyDefaultCorner(corner: CornerV2) {
+    private fun everyDefaultRestaurant(restaurant: RestaurantV2) {
         every {
-            cornerV2Repository.findActiveDefaultByBuildingNumberAndRestaurantName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "109동",
                 "자하연식당 3층",
             )
-        } returns corner
+        } returns restaurant
     }
 
-    private fun verifyDefaultCornerLookup() {
+    private fun verifyDefaultRestaurantLookup() {
         verify {
-            cornerV2Repository.findActiveDefaultByBuildingNumberAndRestaurantName(
+            restaurantV2Repository.findActiveByBuildingNumberAndName(
                 "109동",
                 "자하연식당 3층",
             )
