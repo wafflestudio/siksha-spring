@@ -8,6 +8,7 @@ import jakarta.persistence.IdClass
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -23,7 +24,12 @@ class BuildingCustomV2Pk(
 ) : Serializable
 
 @Entity(name = "building_custom_v2")
-@Table(name = "building_custom_v2")
+@Table(
+    name = "building_custom_v2",
+    uniqueConstraints = [
+        UniqueConstraint(name = "uk_building_custom_v2_user_order", columnNames = ["user_id", "order_index"]),
+    ],
+)
 @IdClass(BuildingCustomV2Pk::class)
 data class BuildingCustomV2(
     @Id

@@ -13,7 +13,7 @@ interface RestaurantV2Repository : JpaRepository<RestaurantV2, Int> {
         select r
         from restaurant_v2 r
         join fetch r.building b
-        order by b.sortOrder asc, r.displayOrder asc, r.id asc
+        order by b.id asc, r.displayOrder asc, r.id asc
         """,
     )
     fun findAllForList(): List<RestaurantV2>

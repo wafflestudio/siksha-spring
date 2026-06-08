@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -26,12 +25,6 @@ class RestaurantV2(
     val building: BuildingV2,
     @Column(nullable = false, length = 100)
     val name: String,
-    @Column(length = 200)
-    val address: String? = null,
-    @Column(precision = 10, scale = 7)
-    val latitude: BigDecimal? = null,
-    @Column(precision = 10, scale = 7)
-    val longitude: BigDecimal? = null,
     @Column(columnDefinition = "json")
     val operatingHours: String? = null,
     @Column(name = "owner_id")

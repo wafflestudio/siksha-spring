@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.util.EtcUtils
 import java.math.BigDecimal
@@ -23,18 +24,8 @@ data class RestaurantV2ResponseDto
         val nameKr: String?,
         @JsonProperty("nameEn")
         val nameEn: String?,
-        @JsonProperty("buildingNumber")
-        val buildingNumber: String,
-        @JsonProperty("buildingName")
-        val buildingName: String?,
         @JsonProperty("restaurantName")
         val restaurantName: String,
-        @JsonProperty("addr")
-        val addr: String?,
-        @JsonProperty("lat")
-        val lat: BigDecimal?,
-        @JsonProperty("lng")
-        val lng: BigDecimal?,
         @JsonProperty("liked")
         val liked: Boolean?,
         @JsonProperty("visible")
@@ -55,35 +46,57 @@ data class RestaurantV2ResponseDto
                 restaurant: RestaurantV2,
                 liked: Boolean = false,
                 visible: Boolean = true,
-            ): RestaurantV2ResponseDto {
-                val building = restaurant.building
-
-                return RestaurantV2ResponseDto(
+            ): RestaurantV2ResponseDto =
+                RestaurantV2ResponseDto(
                     id = restaurant.id,
                     code = restaurant.name,
                     nameKr = restaurant.name,
                     nameEn = null,
-                    buildingNumber = building.number,
-                    buildingName = building.name,
                     restaurantName = restaurant.name,
-                    addr = restaurant.address,
                     liked = liked,
                     visible = visible,
-                    lat = restaurant.latitude,
-                    lng = restaurant.longitude,
                     operatingHours = EtcUtils.convertEtc(restaurant.operatingHours),
                     ownerId = restaurant.ownerId,
                     createdAt = restaurant.createdAt,
                     updatedAt = restaurant.updatedAt,
                 )
-            }
         }
     }
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantV2BuildingResponseDto(
+    @JsonProperty("buildingNumber")
+    val buildingNumber: String,
+    @JsonProperty("buildingName")
+    val buildingName: String?,
+    @JsonProperty("addr")
+    val addr: String?,
+    @JsonProperty("lat")
+    val lat: BigDecimal?,
+    @JsonProperty("lng")
+    val lng: BigDecimal?,
+    val restaurants: List<RestaurantV2ResponseDto>,
+) {
+    companion object {
+        fun from(
+            building: BuildingV2,
+            restaurants: List<RestaurantV2ResponseDto>,
+        ): RestaurantV2BuildingResponseDto =
+            RestaurantV2BuildingResponseDto(
+                buildingNumber = building.number,
+                buildingName = building.name,
+                addr = building.address,
+                lat = building.latitude,
+                lng = building.longitude,
+                restaurants = restaurants,
+            )
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2ListResponseDto(
     val count: Int,
-    val result: List<RestaurantV2ResponseDto>,
+    val result: List<RestaurantV2BuildingResponseDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -113,39 +126,12 @@ data class RestaurantV2VisibleRequestDto(
 )
 
 /**
- * Restaurant id order.
- *
- * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
- * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
+ * Static restaurant id order inside a building.
  */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2OrderResponseDto(
     @field:JsonProperty("order")
     val restaurantOrder: List<Int>,
-)
-
-/**
- * Restaurant id order.
- *
- * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
- * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
- */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderUpdateResponseDto(
-    @field:JsonProperty("order")
-    val order: List<Int>,
-)
-
-/**
- * Restaurant id order.
- *
- * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
- * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
- */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderUpdateRequestDto(
-    @field:JsonProperty("order")
-    val order: List<Int>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

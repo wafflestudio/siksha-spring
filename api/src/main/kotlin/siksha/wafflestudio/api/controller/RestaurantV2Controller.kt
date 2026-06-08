@@ -13,9 +13,6 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ListResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpdateRequestDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpdateResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.service.RestaurantV2Service
@@ -31,7 +28,10 @@ class RestaurantV2Controller(
     fun getRestaurants(): RestaurantV2ListResponseDto = restaurantService.getAllRestaurants()
 
     @GetMapping("/personal")
-    @Operation(summary = "식당 목록 + 즐겨찾기, 순서 정렬에 따른 개인화된 응답 (로그인)", description = "개인화된 식당 목록을 조회합니다 (로그인)")
+    @Operation(
+        summary = "식당 목록 + 즐겨찾기, 노출 여부, 건물 순서에 따른 개인화된 응답 (로그인)",
+        description = "개인화된 식당 목록을 조회합니다 (로그인)",
+    )
     fun getPersonalizedRestaurants(request: HttpServletRequest): RestaurantV2ListResponseDto =
         restaurantService.getAllPersonalizedRestaurants(request.userId)
 
@@ -50,21 +50,4 @@ class RestaurantV2Controller(
         @PathVariable restaurantId: Int,
         @RequestBody requestBody: RestaurantV2VisibleRequestDto,
     ): RestaurantV2VisibleResponseDto = restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
-
-    @GetMapping("/order")
-    @Operation(
-        summary = "식당 순서 조회",
-        description = "호환용 전체 식당 순서를 조회합니다. 건물 내부 식당 순서는 /v2/buildings/{buildingNumber}/restaurants/order를 사용합니다",
-    )
-    fun getRestaurantOrder(request: HttpServletRequest): RestaurantV2OrderResponseDto = restaurantService.getRestaurantOrder(request.userId)
-
-    @PatchMapping("/order")
-    @Operation(
-        summary = "식당 순서 변경",
-        description = "호환용 전체 식당 순서를 변경합니다. 건물 내부 식당 순서는 /v2/buildings/{buildingNumber}/restaurants/order를 사용합니다",
-    )
-    fun changeRestaurantOrder(
-        request: HttpServletRequest,
-        @RequestBody requestBody: RestaurantV2OrderUpdateRequestDto,
-    ): RestaurantV2OrderUpdateResponseDto = restaurantService.changeRestaurantOrder(request.userId, requestBody)
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import java.math.BigDecimal
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
@@ -21,8 +22,12 @@ class BuildingV2(
     val number: String,
     @Column(length = 100)
     val name: String? = null,
-    @Column(nullable = false)
-    val sortOrder: Int = 0,
+    @Column(length = 200)
+    val address: String? = null,
+    @Column(precision = 10, scale = 7)
+    val latitude: BigDecimal? = null,
+    @Column(precision = 10, scale = 7)
+    val longitude: BigDecimal? = null,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),
