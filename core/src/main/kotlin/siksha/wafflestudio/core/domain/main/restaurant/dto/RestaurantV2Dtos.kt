@@ -23,8 +23,6 @@ data class RestaurantV2ResponseDto
         val nameKr: String?,
         @JsonProperty("nameEn")
         val nameEn: String?,
-        @JsonProperty("building")
-        val building: String?,
         @JsonProperty("buildingNumber")
         val buildingNumber: String,
         @JsonProperty("buildingName")
@@ -65,7 +63,6 @@ data class RestaurantV2ResponseDto
                     code = restaurant.name,
                     nameKr = restaurant.name,
                     nameEn = null,
-                    building = building.number,
                     buildingNumber = building.number,
                     buildingName = building.name,
                     restaurantName = restaurant.name,
