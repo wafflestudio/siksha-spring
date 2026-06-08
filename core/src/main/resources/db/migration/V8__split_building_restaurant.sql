@@ -52,6 +52,9 @@ create table if not exists building_custom_v2
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci;
 
+alter table restaurant_custom_v2
+    modify column order_index int null comment '사용자 지정 건물 내부 식당 정렬 순서';
+
 alter table restaurant_v2
     add column building_id int null after id,
     add column display_order int not null default 0 after owner_id;

@@ -52,11 +52,17 @@ class RestaurantV2Controller(
     ): RestaurantV2VisibleResponseDto = restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
 
     @GetMapping("/order")
-    @Operation(summary = "식당 순서 조회", description = "식당의 순서를 조회합니다")
+    @Operation(
+        summary = "식당 순서 조회",
+        description = "호환용 전체 식당 순서를 조회합니다. 건물 내부 식당 순서는 /v2/buildings/{buildingNumber}/restaurants/order를 사용합니다",
+    )
     fun getRestaurantOrder(request: HttpServletRequest): RestaurantV2OrderResponseDto = restaurantService.getRestaurantOrder(request.userId)
 
     @PatchMapping("/order")
-    @Operation(summary = "식당 순서 변경", description = "식당의 순서를 변경합니다")
+    @Operation(
+        summary = "식당 순서 변경",
+        description = "호환용 전체 식당 순서를 변경합니다. 건물 내부 식당 순서는 /v2/buildings/{buildingNumber}/restaurants/order를 사용합니다",
+    )
     fun changeRestaurantOrder(
         request: HttpServletRequest,
         @RequestBody requestBody: RestaurantV2OrderUpdateRequestDto,

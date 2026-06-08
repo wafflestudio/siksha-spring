@@ -112,18 +112,36 @@ data class RestaurantV2VisibleRequestDto(
     val visible: Boolean,
 )
 
+/**
+ * Restaurant id order.
+ *
+ * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
+ * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
+ */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2OrderResponseDto(
     @field:JsonProperty("order")
     val restaurantOrder: List<Int>,
 )
 
+/**
+ * Restaurant id order.
+ *
+ * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
+ * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
+ */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2OrderUpdateResponseDto(
     @field:JsonProperty("order")
     val order: List<Int>,
 )
 
+/**
+ * Restaurant id order.
+ *
+ * `/v2/buildings/{buildingNumber}/restaurants/order` uses this as a building-scoped restaurant order.
+ * Legacy `/v2/restaurants/order` keeps the same wire shape for compatibility.
+ */
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2OrderUpdateRequestDto(
     @field:JsonProperty("order")

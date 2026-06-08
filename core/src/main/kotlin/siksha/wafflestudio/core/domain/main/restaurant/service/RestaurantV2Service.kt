@@ -163,8 +163,9 @@ class RestaurantV2Service(
         userId: Int,
         request: RestaurantV2OrderUpdateRequestDto,
     ): RestaurantV2OrderUpdateResponseDto {
-        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
         val requestedOrderIds = request.order
+        validateDistinctOrder(requestedOrderIds)
+        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
 
         val restaurantMap =
             restaurantRepository

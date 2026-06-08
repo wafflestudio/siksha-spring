@@ -40,6 +40,7 @@ data class RestaurantCustomV2(
     var like: Boolean = false,
     @Column(name = "visible", nullable = false)
     var visible: Boolean = true,
+    /** 사용자별 building 내부 restaurant 정렬 순서. */
     @Column(name = "order_index")
     var orderIndex: Int? = null,
     @CreationTimestamp

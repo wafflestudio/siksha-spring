@@ -180,6 +180,13 @@ class RestaurantV2ServiceTest {
     }
 
     @Test
+    fun `change restaurant order rejects duplicate restaurant ids`() {
+        Assertions.assertThrows(InvalidRestaurantOrderException::class.java) {
+            service.changeRestaurantOrder(1, RestaurantV2OrderUpdateRequestDto(listOf(1, 1)))
+        }
+    }
+
+    @Test
     fun `change scoped restaurant order only updates restaurants in building`() {
         // given
         val userId = 1
