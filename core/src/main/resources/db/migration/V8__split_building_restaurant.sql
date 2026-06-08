@@ -85,7 +85,7 @@ join (
     select '301동', '301동식당 일반', 2 union all
     select '301동', '301동식당 TAKE-OUT', 3 union all
     select '301동', '301동 1층 교직원전용식당', 4 union all
-    select '301동', '301동식당 카페 301동', 5 union all
+    select '301동', '카페 301', 5 union all
     select '113동', '동원관식당', 1 union all
     select '109동', '자하연식당 2층', 1 union all
     select '109동', '자하연식당 3층', 2 union all
