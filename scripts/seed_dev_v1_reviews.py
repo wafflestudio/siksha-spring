@@ -62,14 +62,13 @@ class MenuSeedTarget:
 
 
 class ApiClient:
-    def __init__(self, base_url: str, api_prefix: str, timeout: int) -> None:
+    def __init__(self, base_url: str, timeout: int) -> None:
         self.base_url = base_url.rstrip("/")
-        self.api_prefix = normalize_prefix(api_prefix)
         self.timeout = timeout
 
     def url(self, path: str, query: dict[str, str] | None = None) -> str:
         normalized_path = path if path.startswith("/") else f"/{path}"
-        url = f"{self.base_url}{self.api_prefix}{normalized_path}"
+        url = f"{self.base_url}{normalized_path}"
         if query:
             url = f"{url}?{urlencode(query)}"
         return url
@@ -157,12 +156,6 @@ def parse_response_body(raw: bytes) -> Any:
         return json.loads(text)
     except json.JSONDecodeError:
         return text
-
-
-def normalize_prefix(prefix: str) -> str:
-    if not prefix:
-        return ""
-    return "/" + prefix.strip("/")
 
 
 def normalize_image_path(path: str) -> Path:
@@ -291,11 +284,6 @@ def post_review(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Seed dummy v1 reviews into Siksha dev.")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
-    parser.add_argument(
-        "--api-prefix",
-        default="",
-        help="Default is empty because current dev responds at /auth/login/test, not /api/v1/auth/login/test.",
-    )
     parser.add_argument("--user-count", type=int, default=10)
     parser.add_argument("--reviews-per-user", type=int, default=5)
     parser.add_argument("--identity-prefix", default=f"qa-review-seed-{today_iso()}")
@@ -314,7 +302,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     random.seed(args.seed)
-    client = ApiClient(args.base_url, args.api_prefix, args.timeout)
+    client = ApiClient(args.base_url, args.timeout)
     end_date = add_days(args.start_date, args.days)
 
     image_path = normalize_image_path(args.image_path)
@@ -333,7 +321,6 @@ def main() -> int:
 
     identities = [f"{args.identity_prefix}-{index + 1:02d}" for index in range(args.user_count)]
     print(f"base_url={args.base_url}")
-    print(f"api_prefix={normalize_prefix(args.api_prefix) or '(empty)'}")
     print(f"selected_menu_date={selected_date}")
     print(f"menu_targets={len(targets)}")
     print(f"user_count={len(identities)} reviews_per_user={per_user_count}")
