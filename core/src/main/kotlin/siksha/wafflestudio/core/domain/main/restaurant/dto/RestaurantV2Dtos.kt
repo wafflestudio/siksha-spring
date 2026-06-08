@@ -129,3 +129,21 @@ data class RestaurantV2OrderUpdateRequestDto(
     @field:JsonProperty("order")
     val order: List<Int>,
 )
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2OrderResponseDto(
+    @field:JsonProperty("order")
+    val buildingOrder: List<String>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2OrderUpdateResponseDto(
+    @field:JsonProperty("order")
+    val order: List<String>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2OrderUpdateRequestDto(
+    @field:JsonProperty("order")
+    val order: List<String>,
+)

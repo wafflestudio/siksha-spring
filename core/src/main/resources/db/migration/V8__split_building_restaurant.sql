@@ -34,6 +34,24 @@ create table if not exists building_v2
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci;
 
+create table if not exists building_custom_v2
+(
+    user_id     int                                 not null comment '사용자 ID',
+    building_id int                                 not null comment '건물 ID',
+    order_index int                                 null comment '사용자 지정 건물 정렬 순서',
+    created_at  timestamp default CURRENT_TIMESTAMP not null comment '생성 시간',
+    updated_at  timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '변경 시간',
+    primary key (user_id, building_id),
+    constraint building_custom_v2_user_fk
+        foreign key (user_id) references user (id)
+            on delete cascade,
+    constraint building_custom_v2_building_fk
+        foreign key (building_id) references building_v2 (id)
+            on delete cascade
+) engine = InnoDB
+  default charset = utf8mb4
+  collate = utf8mb4_unicode_ci;
+
 alter table restaurant_v2
     add column building_id int null after id,
     add column display_order int not null default 0 after owner_id;

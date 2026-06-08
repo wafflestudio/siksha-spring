@@ -31,4 +31,17 @@ interface RestaurantV2Repository : JpaRepository<RestaurantV2, Int> {
         @Param("buildingNumber") buildingNumber: String,
         @Param("name") name: String,
     ): RestaurantV2?
+
+    @Query(
+        """
+        select r
+        from restaurant_v2 r
+        join fetch r.building b
+        where b.number = :buildingNumber
+        order by r.displayOrder asc, r.id asc
+        """,
+    )
+    fun findAllByBuildingNumber(
+        @Param("buildingNumber") buildingNumber: String,
+    ): List<RestaurantV2>
 }
