@@ -9,10 +9,8 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.dto.BuildingV2OrderResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.BuildingV2OrderUpdateRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.BuildingV2OrderUpdateResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
@@ -20,7 +18,6 @@ class BuildingCustomV2Service(
     private val userRepository: UserRepository,
     private val buildingRepository: BuildingV2Repository,
     private val buildingCustomRepository: BuildingCustomV2Repository,
-    private val restaurantRepository: RestaurantV2Repository,
 ) {
     fun getBuildingOrder(userId: Int): BuildingV2OrderResponseDto {
         val orderedCustoms =
@@ -80,16 +77,6 @@ class BuildingCustomV2Service(
         }
 
         return BuildingV2OrderUpdateResponseDto(requestedOrderNumbers)
-    }
-
-    fun getRestaurantOrderInBuilding(buildingNumber: String): RestaurantV2OrderResponseDto {
-        buildingRepository.findByNumber(buildingNumber) ?: throw BuildingNotFoundException()
-
-        val restaurants = restaurantRepository.findAllByBuildingNumber(buildingNumber)
-
-        return RestaurantV2OrderResponseDto(
-            restaurantOrder = restaurants.map { it.id },
-        )
     }
 
     private fun <T> validateDistinctOrder(order: List<T>) {

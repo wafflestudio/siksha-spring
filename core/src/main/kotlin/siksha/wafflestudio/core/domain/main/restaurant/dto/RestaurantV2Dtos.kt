@@ -125,15 +125,6 @@ data class RestaurantV2VisibleRequestDto(
     val visible: Boolean,
 )
 
-/**
- * Static restaurant id order inside a building.
- */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderResponseDto(
-    @field:JsonProperty("order")
-    val restaurantOrder: List<Int>,
-)
-
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class BuildingV2OrderResponseDto(
     @field:JsonProperty("order")

@@ -6,15 +6,12 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import siksha.wafflestudio.core.domain.common.exception.BuildingNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.InvalidRestaurantOrderException
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.dto.BuildingV2OrderUpdateRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.service.BuildingCustomV2Service
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
@@ -24,7 +21,6 @@ class BuildingCustomV2ServiceTest {
     private lateinit var userRepository: UserRepository
     private lateinit var buildingRepository: BuildingV2Repository
     private lateinit var buildingCustomRepository: BuildingCustomV2Repository
-    private lateinit var restaurantRepository: RestaurantV2Repository
     private lateinit var service: BuildingCustomV2Service
 
     @BeforeEach
@@ -33,13 +29,11 @@ class BuildingCustomV2ServiceTest {
         userRepository = mockk(relaxed = true)
         buildingRepository = mockk(relaxed = true)
         buildingCustomRepository = mockk(relaxed = true)
-        restaurantRepository = mockk(relaxed = true)
         service =
             BuildingCustomV2Service(
                 userRepository,
                 buildingRepository,
                 buildingCustomRepository,
-                restaurantRepository,
             )
     }
 
@@ -103,32 +97,6 @@ class BuildingCustomV2ServiceTest {
         }
     }
 
-    @Test
-    fun `get restaurant order in building returns static building scoped order`() {
-        // given
-        val building = testBuilding(id = 1, number = "301동")
-        val regular = testRestaurant(id = 1, building = building, name = "301동식당 일반", displayOrder = 1)
-        val cafe = testRestaurant(id = 2, building = building, name = "카페 301", displayOrder = 2)
-
-        every { buildingRepository.findByNumber("301동") } returns building
-        every { restaurantRepository.findAllByBuildingNumber("301동") } returns listOf(regular, cafe)
-
-        // when
-        val result = service.getRestaurantOrderInBuilding("301동")
-
-        // then
-        Assertions.assertEquals(listOf(regular.id, cafe.id), result.restaurantOrder)
-    }
-
-    @Test
-    fun `get restaurant order in building rejects missing building`() {
-        every { buildingRepository.findByNumber("999동") } returns null
-
-        Assertions.assertThrows(BuildingNotFoundException::class.java) {
-            service.getRestaurantOrderInBuilding("999동")
-        }
-    }
-
     private fun testUser(id: Int = 1): User = User(id = id, type = "test", identity = "test", nickname = "test")
 
     private fun testBuilding(
@@ -136,17 +104,4 @@ class BuildingCustomV2ServiceTest {
         number: String,
         name: String? = null,
     ): BuildingV2 = BuildingV2(id = id, number = number, name = name)
-
-    private fun testRestaurant(
-        id: Int,
-        building: BuildingV2,
-        name: String,
-        displayOrder: Int = 0,
-    ): RestaurantV2 =
-        RestaurantV2(
-            id = id,
-            building = building,
-            name = name,
-            displayOrder = displayOrder,
-        )
 }
