@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.data.Restaurant
+import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantRepository
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 

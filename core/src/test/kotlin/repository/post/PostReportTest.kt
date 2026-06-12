@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
-import siksha.wafflestudio.core.domain.community.board.data.Board
-import siksha.wafflestudio.core.domain.community.post.data.Post
-import siksha.wafflestudio.core.domain.community.post.data.PostReport
-import siksha.wafflestudio.core.domain.community.post.repository.PostReportRepository
+import siksha.wafflestudio.core.domain.v1.community.board.data.Board
+import siksha.wafflestudio.core.domain.v1.community.post.data.Post
+import siksha.wafflestudio.core.domain.v1.community.post.data.PostReport
+import siksha.wafflestudio.core.domain.v1.community.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

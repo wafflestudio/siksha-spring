@@ -4,7 +4,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
+import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
 import siksha.wafflestudio.core.domain.user.dto.MenuAlarmSendDto
