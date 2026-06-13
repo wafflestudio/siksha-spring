@@ -50,8 +50,7 @@ values ('63동', '학생회관', 1),
        ('74동', null, 9),
        ('30-2동', null, 10),
        ('220동', null, 11),
-       ('85동', '수의과대학', 12),
-       ('기타', null, 999)
+       ('85동', '수의과대학', 12)
 on duplicate key update
     name = values(name),
     default_order = values(default_order);
