@@ -66,6 +66,8 @@ class SecurityConfig(
                 "/reviews/comments/recommendation",
                 "/reviews/dist",
                 "/reviews/keyword/dist",
+                "/v2/reviews/dist",
+                "/v2/reviews/keyword/dist",
                 "/versions/**",
                 "/voc",
                 "/ping",

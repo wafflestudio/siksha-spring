@@ -47,6 +47,8 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/reviews/comments/recommendation"),
             AntPathRequestMatcher("/reviews/dist"),
             AntPathRequestMatcher("/reviews/keyword/dist"),
+            AntPathRequestMatcher("/v2/reviews/dist"),
+            AntPathRequestMatcher("/v2/reviews/keyword/dist"),
             AntPathRequestMatcher("/voc"),
             AntPathRequestMatcher("/ping"),
             AntPathRequestMatcher("/v2/crawler/**"),

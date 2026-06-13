@@ -65,6 +65,21 @@ GET   /v2/menus/{menuId}/web
 POST  /v2/menus/{menuId}/like
 POST  /v2/menus/{menuId}/unlike
 GET   /v2/menus/me
+POST  /v2/reviews
+POST  /v2/reviews/images
+GET   /v2/reviews
+GET   /v2/reviews/web
+GET   /v2/reviews/{reviewId}
+GET   /v2/reviews/{reviewId}/web
+PATCH /v2/reviews/{reviewId}
+DELETE /v2/reviews/{reviewId}
+POST  /v2/reviews/{reviewId}/like
+DELETE /v2/reviews/{reviewId}/like
+GET   /v2/reviews/me
+GET   /v2/reviews/dist
+GET   /v2/reviews/keyword/dist
+GET   /v2/reviews/filter
+GET   /v2/reviews/filter/web
 ```
 
 ### Existing V2 Tables
@@ -289,6 +304,7 @@ Implementation notes:
 - Existing image upload flow can be reused.
 - Existing keyword mapping utilities can be reused.
 - Existing review response DTOs may be copied first, then simplified for V2.
+- Implemented V2 review code keeps V1 review tables untouched and uses `menu_v2.id` as request `menu_id`.
 
 Recommended schema check:
 
