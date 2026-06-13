@@ -6,10 +6,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinColumns
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -19,43 +17,25 @@ import java.io.Serializable
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
-class RestaurantCustomV2Pk(
+class RestaurantLikeV2Pk(
     var user: Int = 0,
     var restaurant: Int = 0,
 ) : Serializable
 
-@Entity(name = "restaurant_custom_v2")
-@Table(
-    name = "restaurant_custom_v2",
-    uniqueConstraints = [
-        UniqueConstraint(name = "uk_restaurant_custom_v2_user_building_order", columnNames = ["user_id", "building_id", "order_index"]),
-    ],
-)
-@IdClass(RestaurantCustomV2Pk::class)
-data class RestaurantCustomV2(
+@Entity(name = "restaurant_like_v2")
+@Table(name = "restaurant_like_v2")
+@IdClass(RestaurantLikeV2Pk::class)
+data class RestaurantLikeV2(
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var user: User,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    var building: BuildingV2,
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns(
-        value = [
-            JoinColumn(name = "restaurant_id", referencedColumnName = "id", nullable = false),
-            JoinColumn(name = "building_id", referencedColumnName = "building_id", nullable = false, insertable = false, updatable = false),
-        ],
-    )
+    @JoinColumn(name = "restaurant_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     var restaurant: RestaurantV2,
-    @Column(name = "order_index")
-    var orderIndex: Int? = null,
-    @Column(nullable = false)
-    var visible: Boolean = true,
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val createdAt: OffsetDateTime = OffsetDateTime.now(ZoneId.of("UTC")),

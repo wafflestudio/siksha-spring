@@ -6,14 +6,16 @@ import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantCustomV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantLikeV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
+import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2BuildingResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ListResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpdateRequestDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2OrderUpdateResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleResponseDto
+import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantLikeV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
@@ -22,43 +24,39 @@ class RestaurantV2Service(
     private val restaurantRepository: RestaurantV2Repository,
     private val userRepository: UserRepository,
     private val restaurantCustomRepository: RestaurantCustomV2Repository,
+    private val buildingCustomRepository: BuildingCustomV2Repository,
+    private val restaurantLikeRepository: RestaurantLikeV2Repository,
 ) {
     @Cacheable(value = ["restaurantCache"])
     fun getAllRestaurants(): RestaurantV2ListResponseDto {
-        val restaurants = restaurantRepository.findAll()
-        return RestaurantV2ListResponseDto(
-            count = restaurants.size,
-            result =
-                restaurants.map { restaurant ->
-                    RestaurantV2ResponseDto.from(restaurant)
-                },
-        )
+        val restaurants = restaurantRepository.findAllForList()
+        return restaurants.toGroupedResponse()
     }
 
     fun getAllPersonalizedRestaurants(userId: Int): RestaurantV2ListResponseDto {
-        val restaurants = restaurantRepository.findAll()
-        val customs = restaurantCustomRepository.findAllByUserId(userId)
-        val customMap = customs.associateBy { it.restaurant.id }
+        val restaurants = restaurantRepository.findAllForList()
+        val restaurantCustomMap = restaurantCustomRepository.findAllByUserId(userId).associateBy { it.restaurant.id }
+        val buildingCustomMap = buildingCustomRepository.findAllByUserId(userId).associateBy { it.building.id }
+        val likedRestaurantIds = restaurantLikeRepository.findAllByUserId(userId).map { it.restaurant.id }.toSet()
 
-        val (orderedRestaurants, unorderedRestaurants) =
-            restaurants
-                .partition {
-                    customMap[it.id]?.orderIndex != null
-                }.let { (ordered, unordered) ->
-                    ordered.sortedBy { customMap[it.id]!!.orderIndex!! } to unordered
-                }
+        val resultRestaurants =
+            restaurants.sortedWith(
+                compareBy(
+                    { restaurant -> if (buildingCustomMap[restaurant.building.id]?.orderIndex != null) 0 else 1 },
+                    { restaurant -> buildingCustomMap[restaurant.building.id]?.orderIndex ?: restaurant.building.defaultOrder },
+                    { restaurant -> restaurant.building.defaultOrder },
+                    { restaurant -> restaurant.building.id },
+                    { restaurant -> if (restaurantCustomMap[restaurant.id]?.orderIndex != null) 0 else 1 },
+                    { restaurant -> restaurantCustomMap[restaurant.id]?.orderIndex ?: restaurant.defaultOrder },
+                    { restaurant -> restaurant.defaultOrder },
+                    { restaurant -> restaurant.id },
+                ),
+            )
 
-        val resultRestaurants = orderedRestaurants + unorderedRestaurants
-
-        return RestaurantV2ListResponseDto(
-            count = resultRestaurants.size,
-            result =
-                resultRestaurants.map { restaurant ->
-                    val custom = customMap[restaurant.id]
-                    val liked = custom?.like ?: false
-                    val visible = custom?.visible ?: true
-                    RestaurantV2ResponseDto.from(restaurant, liked, visible)
-                },
+        return resultRestaurants.toGroupedResponse(
+            restaurantCustomMap = restaurantCustomMap,
+            buildingVisibleMap = buildingCustomMap.mapValues { it.value.visible },
+            likedRestaurantIds = likedRestaurantIds,
         )
     }
 
@@ -68,25 +66,20 @@ class RestaurantV2Service(
         restaurantId: Int,
         like: Boolean,
     ): RestaurantV2LikeResponseDto {
-        val restaurant =
-            restaurantRepository
-                .findById(restaurantId)
-                .orElseThrow { RestaurantNotFoundException() }
-        val user =
-            userRepository
-                .findById(userId)
-                .orElseThrow { UserNotFoundException() }
+        val restaurant = restaurantRepository.findById(restaurantId).orElseThrow { RestaurantNotFoundException() }
+        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        val existing = restaurantLikeRepository.findRestaurantLikeV2ByUserIdAndRestaurantId(userId, restaurantId)
 
-        val custom =
-            restaurantCustomRepository.findRestaurantCustomV2ByUserIdAndRestaurantId(userId, restaurant.id)
-                ?: RestaurantCustomV2(user = user, restaurant = restaurant)
-
-        custom.like = like
-        val savedCustom = restaurantCustomRepository.save(custom)
+        if (like && existing == null) {
+            restaurantLikeRepository.save(RestaurantLikeV2(user = user, restaurant = restaurant))
+        }
+        if (!like && existing != null) {
+            restaurantLikeRepository.delete(existing)
+        }
 
         return RestaurantV2LikeResponseDto(
             restaurantId = restaurantId,
-            liked = savedCustom.like,
+            liked = like,
         )
     }
 
@@ -96,83 +89,51 @@ class RestaurantV2Service(
         restaurantId: Int,
         visible: Boolean,
     ): RestaurantV2VisibleResponseDto {
-        val restaurant =
-            restaurantRepository
-                .findById(restaurantId)
-                .orElseThrow { RestaurantNotFoundException() }
-        val user =
-            userRepository
-                .findById(userId)
-                .orElseThrow { UserNotFoundException() }
-
-        val custom =
-            restaurantCustomRepository.findRestaurantCustomV2ByUserIdAndRestaurantId(userId, restaurant.id)
-                ?: RestaurantCustomV2(user = user, restaurant = restaurant)
+        val restaurant = restaurantRepository.findById(restaurantId).orElseThrow { RestaurantNotFoundException() }
+        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        val existing = restaurantCustomRepository.findRestaurantCustomV2ByUserIdAndRestaurantId(userId, restaurant.id)
+        val custom = existing ?: RestaurantCustomV2(user = user, building = restaurant.building, restaurant = restaurant)
 
         custom.visible = visible
-        val savedCustom = restaurantCustomRepository.save(custom)
+        if (custom.visible && custom.orderIndex == null) {
+            if (existing != null) {
+                restaurantCustomRepository.delete(existing)
+            }
+        } else {
+            restaurantCustomRepository.save(custom)
+        }
 
         return RestaurantV2VisibleResponseDto(
             restaurantId = restaurantId,
-            visible = savedCustom.visible,
+            visible = visible,
         )
     }
 
-    fun getRestaurantOrder(userId: Int): RestaurantV2OrderResponseDto {
-        val orderedCustoms =
-            restaurantCustomRepository
-                .findAllByUserId(userId)
-                .filter { it.orderIndex != null }
-                .sortedBy { it.orderIndex }
-
-        return RestaurantV2OrderResponseDto(
-            restaurantOrder = orderedCustoms.map { it.restaurant.id },
+    private fun List<RestaurantV2>.toGroupedResponse(
+        restaurantCustomMap: Map<Int, RestaurantCustomV2> = emptyMap(),
+        buildingVisibleMap: Map<Int, Boolean> = emptyMap(),
+        likedRestaurantIds: Set<Int> = emptySet(),
+    ): RestaurantV2ListResponseDto =
+        RestaurantV2ListResponseDto(
+            count = size,
+            result =
+                groupBy { it.building.id }
+                    .values
+                    .map { restaurantsInBuilding ->
+                        val building = restaurantsInBuilding.first().building
+                        RestaurantV2BuildingResponseDto.from(
+                            building = building,
+                            visible = buildingVisibleMap[building.id] ?: true,
+                            restaurants =
+                                restaurantsInBuilding.map { restaurant ->
+                                    val custom = restaurantCustomMap[restaurant.id]
+                                    RestaurantV2ResponseDto.from(
+                                        restaurant = restaurant,
+                                        liked = restaurant.id in likedRestaurantIds,
+                                        visible = custom?.visible ?: true,
+                                    )
+                                },
+                        )
+                    },
         )
-    }
-
-    @Transactional
-    fun changeRestaurantOrder(
-        userId: Int,
-        request: RestaurantV2OrderUpdateRequestDto,
-    ): RestaurantV2OrderUpdateResponseDto {
-        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
-        val requestedOrderIds = request.order
-
-        val restaurantMap =
-            restaurantRepository
-                .findAllById(requestedOrderIds)
-                .associateBy { it.id }
-
-        if (restaurantMap.size != requestedOrderIds.toSet().size) {
-            throw RestaurantNotFoundException()
-        }
-
-        val existingCustoms = restaurantCustomRepository.findAllByUserId(userId)
-        val customMap = existingCustoms.associateBy { it.restaurant.id }
-
-        val customsToSave = mutableListOf<RestaurantCustomV2>()
-
-        existingCustoms
-            .filter { it.orderIndex != null && it.restaurant.id !in requestedOrderIds }
-            .forEach { custom ->
-                custom.orderIndex = null
-                customsToSave.add(custom)
-            }
-
-        requestedOrderIds.forEachIndexed { index, restaurantId ->
-            val newOrderIndex = index + 1
-            val custom = customMap[restaurantId] ?: RestaurantCustomV2(user = user, restaurant = restaurantMap[restaurantId]!!)
-
-            if (custom.orderIndex != newOrderIndex) {
-                custom.orderIndex = newOrderIndex
-                customsToSave.add(custom)
-            }
-        }
-
-        if (customsToSave.isNotEmpty()) {
-            restaurantCustomRepository.saveAll(customsToSave)
-        }
-
-        return RestaurantV2OrderUpdateResponseDto(requestedOrderIds)
-    }
 }
