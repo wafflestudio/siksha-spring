@@ -13,8 +13,6 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeRequestDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2LikeResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2ListResponseDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleRequestDto
-import siksha.wafflestudio.core.domain.main.restaurant.dto.RestaurantV2VisibleResponseDto
 import siksha.wafflestudio.core.domain.main.restaurant.service.RestaurantV2Service
 
 @RestController
@@ -23,9 +21,9 @@ import siksha.wafflestudio.core.domain.main.restaurant.service.RestaurantV2Servi
 class RestaurantV2Controller(
     private val restaurantService: RestaurantV2Service,
 ) {
-    @GetMapping("")
-    @Operation(summary = "Get restaurants", description = "Get all restaurants grouped by building")
-    fun getRestaurants(): RestaurantV2ListResponseDto = restaurantService.getAllRestaurants()
+    @GetMapping("/web")
+    @Operation(summary = "Get web restaurants", description = "Get all restaurants grouped by building for unauthenticated clients")
+    fun getWebRestaurants(): RestaurantV2ListResponseDto = restaurantService.getAllRestaurants()
 
     @GetMapping("/personal")
     @Operation(summary = "Get personalized restaurants", description = "Get restaurants with building custom, restaurant custom, and likes")
@@ -39,12 +37,4 @@ class RestaurantV2Controller(
         @PathVariable restaurantId: Int,
         @RequestBody requestBody: RestaurantV2LikeRequestDto,
     ): RestaurantV2LikeResponseDto = restaurantService.setRestaurantLike(request.userId, restaurantId, requestBody.like)
-
-    @PatchMapping("/visible/{restaurantId}")
-    @Operation(summary = "Set restaurant visibility", description = "Show or hide a restaurant")
-    fun setRestaurantVisible(
-        request: HttpServletRequest,
-        @PathVariable restaurantId: Int,
-        @RequestBody requestBody: RestaurantV2VisibleRequestDto,
-    ): RestaurantV2VisibleResponseDto = restaurantService.setRestaurantVisible(request.userId, restaurantId, requestBody.visible)
 }

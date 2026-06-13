@@ -68,7 +68,7 @@ class SecurityConfig(
                 "/versions/**",
                 "/voc",
                 "/ping",
-                "/crawler/**",
+                "/v2/crawler/**",
                 "/menus/festival/**",
             ).permitAll()
             .anyRequest()

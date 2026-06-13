@@ -118,36 +118,35 @@ create index idx_restaurant_v2_building_order
     on restaurant_v2 (building_id, default_order);
 
 alter table restaurant_custom_v2
-    add column building_id int null after user_id,
-    drop column `like`,
-    modify column order_index int null comment 'Custom restaurant order inside building';
+    drop foreign key restaurant_custom_v2_restaurant_fk;
 
 alter table restaurant_custom_v2
-    modify column building_id int not null,
-    add constraint restaurant_custom_v2_building_fk
-        foreign key (building_id) references building_v2 (id)
-            on delete cascade,
-    add constraint restaurant_custom_v2_restaurant_building_fk
-        foreign key (restaurant_id, building_id) references restaurant_v2 (id, building_id)
-            on delete cascade,
-    add constraint uk_restaurant_custom_v2_user_building_order unique (user_id, building_id, order_index);
+    drop foreign key restaurant_custom_v2_user_fk;
+
+alter table restaurant_custom_v2
+    drop primary key;
+
+alter table restaurant_custom_v2
+    drop column restaurant_id,
+    drop column `like`,
+    drop column visible,
+    drop column order_index,
+    add column customs json not null comment 'Custom data' after user_id,
+    add primary key (user_id),
+    add constraint restaurant_custom_v2_user_fk
+        foreign key (user_id) references user (id)
+            on delete cascade;
 
 create table if not exists building_custom_v2
 (
-    user_id     int                                 not null comment 'User ID',
-    building_id int                                 not null comment 'Building ID',
-    order_index int                                 null comment 'Custom building order',
-    visible     tinyint(1)                          not null default 1 comment 'Visibility',
-    created_at  timestamp default CURRENT_TIMESTAMP not null comment 'Created time',
-    updated_at  timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment 'Updated time',
-    primary key (user_id, building_id),
+    user_id    int                                 not null comment 'User ID',
+    customs    json                                not null comment 'Custom data',
+    created_at timestamp default CURRENT_TIMESTAMP not null comment 'Created time',
+    updated_at timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment 'Updated time',
+    primary key (user_id),
     constraint building_custom_v2_user_fk
         foreign key (user_id) references user (id)
-            on delete cascade,
-    constraint building_custom_v2_building_fk
-        foreign key (building_id) references building_v2 (id)
-            on delete cascade,
-    constraint uk_building_custom_v2_user_order unique (user_id, order_index)
+            on delete cascade
 ) engine = InnoDB
   default charset = utf8mb4
   collate = utf8mb4_unicode_ci;

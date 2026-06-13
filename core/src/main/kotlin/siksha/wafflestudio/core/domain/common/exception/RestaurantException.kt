@@ -12,3 +12,5 @@ class RestaurantNotFoundException : RestaurantException(HttpStatus.NOT_FOUND, "í
 class BuildingNotFoundException : RestaurantException(HttpStatus.NOT_FOUND, "Building not found")
 
 class InvalidRestaurantOrderException : RestaurantException(HttpStatus.BAD_REQUEST, "Invalid restaurant order")
+
+class InvalidCustomException : RestaurantException(HttpStatus.BAD_REQUEST, "Invalid custom")

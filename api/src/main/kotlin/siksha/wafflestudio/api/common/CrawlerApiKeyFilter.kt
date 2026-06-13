@@ -17,7 +17,7 @@ class CrawlerApiKeyFilter(
 ) : OncePerRequestFilter() {
     companion object {
         private const val HDR_API_KEY = "X-API-Key"
-        private const val CRAWLER_PATH_PREFIX = "/crawler/"
+        private const val CRAWLER_PATH_PREFIX = "/v2/crawler/"
     }
 
     override fun doFilterInternal(

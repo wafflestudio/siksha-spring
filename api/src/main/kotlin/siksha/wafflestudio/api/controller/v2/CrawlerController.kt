@@ -15,8 +15,8 @@ import siksha.wafflestudio.core.domain.main.meal.usecase.SyncMealUseCase
 class CrawlerController(
     private val syncMealUseCase: SyncMealUseCase,
 ) {
-    // POST /crawler/meals
-    @PostMapping("/crawler/meals")
+    // POST /v2/crawler/meals
+    @PostMapping("/v2/crawler/meals")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "식단 동기화", description = "크롤러에서 수집한 식단 데이터를 V2 테이블에 동기화합니다.")
     fun syncMeals(
