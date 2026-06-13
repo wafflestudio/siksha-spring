@@ -20,6 +20,7 @@ import siksha.wafflestudio.core.domain.main.meal.repository.MealV2Repository
 import siksha.wafflestudio.core.domain.main.meal.usecase.NormalizeMenuUseCase
 import siksha.wafflestudio.core.domain.main.meal.usecase.SyncMealUseCase
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import java.time.LocalDate
@@ -79,7 +80,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `정상 흐름 - 단일 meal과 단일 menu 동기화`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant("자하연식당 3층")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type, price = 12000, noMeat = false)
@@ -119,7 +120,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `정상 흐름 - 여러 meal과 묶음 메뉴 동기화`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant("자하연식당 3층")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
@@ -166,7 +167,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `meal_menu_v2에 original_name이 정확히 저장됨`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant("자하연식당 3층")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
         val savedMeal = MealV2(id = 100, restaurant = restaurant, date = date, type = type)
@@ -205,7 +206,7 @@ class SyncMealUseCaseTest {
     @Test
     fun `meals가 빈 배열이면 delete만 수행하고 새로 저장하지 않음`() {
         // given
-        val restaurant = RestaurantV2(id = 1, name = "자하연식당 3층")
+        val restaurant = testRestaurant("자하연식당 3층")
         val date = LocalDate.of(2026, 4, 1)
         val type = MealType.LUNCH
 
@@ -228,4 +229,12 @@ class SyncMealUseCaseTest {
         verify(exactly = 0) { mealMenuV2Repository.save(any()) }
         verify(exactly = 0) { normalizeMenuUseCase.invoke(any(), any()) }
     }
+
+    private fun testRestaurant(name: String): RestaurantV2 =
+        RestaurantV2(
+            id = 1,
+            building = BuildingV2(id = 1, number = "109", defaultOrder = 1),
+            name = name,
+            defaultOrder = 1,
+        )
 }

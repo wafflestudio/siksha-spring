@@ -6,10 +6,11 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomRepository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantRepository
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.data.Restaurant
+import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantCustomRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.service.RestaurantService
 import kotlin.test.assertNotNull
 
 class RestaurantServiceTest {

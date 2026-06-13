@@ -14,18 +14,18 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import siksha.wafflestudio.core.domain.common.exception.CommentAlreadyReportedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidCommentReportFormException
-import siksha.wafflestudio.core.domain.community.board.data.Board
-import siksha.wafflestudio.core.domain.community.comment.data.Comment
-import siksha.wafflestudio.core.domain.community.comment.data.CommentLike
-import siksha.wafflestudio.core.domain.community.comment.data.CommentReport
-import siksha.wafflestudio.core.domain.community.comment.repository.CommentLikeRepository
-import siksha.wafflestudio.core.domain.community.comment.repository.CommentReportRepository
-import siksha.wafflestudio.core.domain.community.comment.repository.CommentRepository
-import siksha.wafflestudio.core.domain.community.comment.service.CommentService
-import siksha.wafflestudio.core.domain.community.post.data.Post
-import siksha.wafflestudio.core.domain.community.post.repository.PostRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import siksha.wafflestudio.core.domain.v1.community.board.data.Board
+import siksha.wafflestudio.core.domain.v1.community.comment.data.Comment
+import siksha.wafflestudio.core.domain.v1.community.comment.data.CommentLike
+import siksha.wafflestudio.core.domain.v1.community.comment.data.CommentReport
+import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentLikeRepository
+import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentReportRepository
+import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentRepository
+import siksha.wafflestudio.core.domain.v1.community.comment.service.CommentService
+import siksha.wafflestudio.core.domain.v1.community.post.data.Post
+import siksha.wafflestudio.core.domain.v1.community.post.repository.PostRepository
 
 class CommentServiceTest {
     private lateinit var userRepository: UserRepository

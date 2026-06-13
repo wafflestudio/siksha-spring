@@ -51,6 +51,7 @@ class SecurityConfig(
                 AntPathRequestMatcher.antMatcher("/community/**/web"),
                 AntPathRequestMatcher.antMatcher("/menus/**/web"),
                 AntPathRequestMatcher.antMatcher("/reviews/**/web"),
+                AntPathRequestMatcher.antMatcher("/v2/**/web"),
             ).permitAll()
             .requestMatchers(
                 "/error",
@@ -65,10 +66,12 @@ class SecurityConfig(
                 "/reviews/comments/recommendation",
                 "/reviews/dist",
                 "/reviews/keyword/dist",
+                "/v2/reviews/dist",
+                "/v2/reviews/keyword/dist",
                 "/versions/**",
                 "/voc",
                 "/ping",
-                "/crawler/**",
+                "/v2/crawler/**",
                 "/menus/festival/**",
             ).permitAll()
             .anyRequest()

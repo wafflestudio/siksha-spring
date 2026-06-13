@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
+import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.util.EtcUtils
 import java.math.BigDecimal
@@ -23,14 +24,8 @@ data class RestaurantV2ResponseDto
         val nameKr: String?,
         @JsonProperty("nameEn")
         val nameEn: String?,
-        @JsonProperty("building")
-        val building: String?,
-        @JsonProperty("addr")
-        val addr: String?,
-        @JsonProperty("lat")
-        val lat: BigDecimal?,
-        @JsonProperty("lng")
-        val lng: BigDecimal?,
+        @JsonProperty("restaurantName")
+        val restaurantName: String,
         @JsonProperty("liked")
         val liked: Boolean?,
         @JsonProperty("visible")
@@ -57,12 +52,9 @@ data class RestaurantV2ResponseDto
                     code = restaurant.name,
                     nameKr = restaurant.name,
                     nameEn = null,
-                    building = restaurant.building,
-                    addr = restaurant.address,
+                    restaurantName = restaurant.name,
                     liked = liked,
                     visible = visible,
-                    lat = restaurant.latitude,
-                    lng = restaurant.longitude,
                     operatingHours = EtcUtils.convertEtc(restaurant.operatingHours),
                     ownerId = restaurant.ownerId,
                     createdAt = restaurant.createdAt,
@@ -72,9 +64,43 @@ data class RestaurantV2ResponseDto
     }
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantV2BuildingResponseDto(
+    @JsonProperty("buildingNumber")
+    val buildingNumber: String,
+    @JsonProperty("buildingName")
+    val buildingName: String?,
+    @JsonProperty("addr")
+    val addr: String?,
+    @JsonProperty("lat")
+    val lat: BigDecimal?,
+    @JsonProperty("lng")
+    val lng: BigDecimal?,
+    @JsonProperty("visible")
+    val visible: Boolean,
+    val restaurants: List<RestaurantV2ResponseDto>,
+) {
+    companion object {
+        fun from(
+            building: BuildingV2,
+            visible: Boolean = true,
+            restaurants: List<RestaurantV2ResponseDto>,
+        ): RestaurantV2BuildingResponseDto =
+            RestaurantV2BuildingResponseDto(
+                buildingNumber = building.number,
+                buildingName = building.name,
+                addr = building.address,
+                lat = building.latitude,
+                lng = building.longitude,
+                visible = visible,
+                restaurants = restaurants,
+            )
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class RestaurantV2ListResponseDto(
     val count: Int,
-    val result: List<RestaurantV2ResponseDto>,
+    val result: List<RestaurantV2BuildingResponseDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -91,32 +117,46 @@ data class RestaurantV2LikeRequestDto(
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2VisibleResponseDto(
+data class BuildingV2CustomItemDto(
+    val buildingNumber: String,
+    val order: Int,
+    val visible: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2CustomResponseDto(
+    val customs: List<BuildingV2CustomItemDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2CustomUpdateRequestDto(
+    val customs: List<BuildingV2CustomItemDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class BuildingV2CustomUpdateResponseDto(
+    val customs: List<BuildingV2CustomItemDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class RestaurantV2CustomItemDto(
     @field:JsonProperty("id")
     val restaurantId: Int,
+    val order: Int,
     val visible: Boolean,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2VisibleRequestDto(
-    @field:JsonProperty("visible")
-    val visible: Boolean,
+data class RestaurantV2CustomResponseDto(
+    val customs: List<RestaurantV2CustomItemDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderResponseDto(
-    @field:JsonProperty("order")
-    val restaurantOrder: List<Int>,
+data class RestaurantV2CustomUpdateRequestDto(
+    val customs: List<RestaurantV2CustomItemDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderUpdateResponseDto(
-    @field:JsonProperty("order")
-    val order: List<Int>,
-)
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2OrderUpdateRequestDto(
-    @field:JsonProperty("order")
-    val order: List<Int>,
+data class RestaurantV2CustomUpdateResponseDto(
+    val customs: List<RestaurantV2CustomItemDto>,
 )
