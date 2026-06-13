@@ -5,6 +5,7 @@ import org.springframework.batch.item.ItemProcessor
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
@@ -16,16 +17,21 @@ import java.time.LocalDate
 @Qualifier("everyMealAlarmProcessor")
 class EveryMealAlarmProcessor(
     private val menuRepository: MenuRepository,
+    private val menuAlarmV2Repository: MenuAlarmV2Repository,
     private val chunkPrefetchListener: ChunkPrefetchListener,
     @Value("#{jobParameters['type']}") private val type: String,
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
-        menuRepository
-            .findAllByDateAndType(
-                LocalDate.now(),
-                type,
-            ).map { it.getCode() to it.getRestaurantId() }
-            .toSet()
+        (
+            menuRepository
+                .findAllByDateAndType(
+                    LocalDate.now(),
+                    type,
+                ).map { it.getCode() to it.getRestaurantId() } +
+                menuAlarmV2Repository
+                    .findAllAlarmMenusByDateAndType(LocalDate.now(), type.toMealV2Type())
+                    .map { it.getCode() to it.getRestaurantId() }
+        ).toSet()
     }
 
     override fun process(user: User): DailyMenuAlarm? {
@@ -56,4 +62,12 @@ class EveryMealAlarmProcessor(
             menus = menus,
         )
     }
+
+    private fun String.toMealV2Type(): String =
+        when (this) {
+            "BR" -> "BREAKFAST"
+            "LU" -> "LUNCH"
+            "DN" -> "DINNER"
+            else -> this
+        }
 }

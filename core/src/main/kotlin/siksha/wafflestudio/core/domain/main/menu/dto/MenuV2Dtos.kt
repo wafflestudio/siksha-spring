@@ -100,6 +100,8 @@ interface MenuV2LikedMenuRow {
     fun getReviewCnt(): Int
 
     fun getLikeCnt(): Int
+
+    fun getAlarm(): Int
 }
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -191,6 +193,7 @@ data class MenuV2LikedMenuDto(
     val reviewCnt: Int,
     val likeCnt: Int,
     val isLiked: Boolean = true,
+    val alarm: Boolean,
     @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
     val createdAt: OffsetDateTime,
 ) {
@@ -203,6 +206,7 @@ data class MenuV2LikedMenuDto(
                 score = row.getScore(),
                 reviewCnt = row.getReviewCnt(),
                 likeCnt = row.getLikeCnt(),
+                alarm = row.getAlarm() == 1,
                 createdAt = row.getMenuCreatedAt().toInstant().atOffset(ZoneOffset.UTC),
             )
     }
@@ -301,6 +305,50 @@ data class MenuV2DetailsDto(
                 isLiked = row.getIsLiked() == 1,
                 createdAt = row.getMenuCreatedAt().toInstant().atOffset(ZoneOffset.UTC),
                 meals = meals,
+            )
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2AlarmDto(
+    val id: Long,
+    val code: String,
+    val nameKr: String,
+    val nameEn: String? = null,
+    val restaurantId: Int,
+    val restaurantName: String,
+    val buildingNumber: String,
+    val buildingName: String?,
+    val score: Double?,
+    val reviewCnt: Int,
+    val likeCnt: Int,
+    val isLiked: Boolean,
+    val alarm: Boolean,
+    @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+    val createdAt: OffsetDateTime,
+    val meals: List<MenuV2MealContextDto>,
+) {
+    companion object {
+        fun from(
+            menu: MenuV2DetailsDto,
+            alarm: Boolean,
+        ): MenuV2AlarmDto =
+            MenuV2AlarmDto(
+                id = menu.id,
+                code = menu.code,
+                nameKr = menu.nameKr,
+                nameEn = menu.nameEn,
+                restaurantId = menu.restaurantId,
+                restaurantName = menu.restaurantName,
+                buildingNumber = menu.buildingNumber,
+                buildingName = menu.buildingName,
+                score = menu.score,
+                reviewCnt = menu.reviewCnt,
+                likeCnt = menu.likeCnt,
+                isLiked = menu.isLiked,
+                alarm = alarm,
+                createdAt = menu.createdAt,
+                meals = menu.meals,
             )
     }
 }

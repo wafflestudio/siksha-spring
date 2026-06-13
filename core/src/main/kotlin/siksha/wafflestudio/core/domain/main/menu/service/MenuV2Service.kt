@@ -5,9 +5,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2AlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2BuildingInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DateWithTypeDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
@@ -22,14 +26,15 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2RestaurantInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.toMealTypeCode
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Document
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Json
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.itemOf
-import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
-import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
@@ -49,6 +54,7 @@ class MenuV2Service(
     private val restaurantCustomRepository: RestaurantCustomV2Repository,
     private val menuRepository: MenuV2Repository,
     private val menuLikeRepository: MenuLikeV2Repository,
+    private val menuAlarmRepository: MenuAlarmV2Repository,
     private val userRepository: UserRepository,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
@@ -137,6 +143,7 @@ class MenuV2Service(
     ): MenuV2DetailsDto {
         ensureUserAndMenuExist(userId, menuId)
         menuLikeRepository.unlikeMenu(userId = userId, menuId = menuId)
+        menuAlarmRepository.deleteMenuAlarm(userId = userId, menuId = menuId)
         return getMenuById(menuId = menuId, userId = userId)
     }
 
@@ -157,13 +164,73 @@ class MenuV2Service(
         return MenuV2LikedListResponseDto(count = rows.size, result = result)
     }
 
+    @Transactional
+    fun menuAlarmOn(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2AlarmDto {
+        val (_, menu) = ensureUserAndMenuExist(userId, menuId)
+        if (!menuLikeRepository.existsLikedMenu(userId = userId, menuId = menuId)) {
+            throw MenuNotLikedException()
+        }
+        if (menuAlarmRepository.existsByUserIdAndMenuId(userId = userId, menuId = menuId)) {
+            throw MenuAlarmAlreadyExistsException()
+        }
+
+        try {
+            menuAlarmRepository.postMenuAlarm(userId = userId, menuId = menuId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+
+        return MenuV2AlarmDto.from(getMenuById(menuId = menu.id, userId = userId), alarm = true)
+    }
+
+    @Transactional
+    fun menuAlarmOff(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2AlarmDto {
+        val (_, menu) = ensureUserAndMenuExist(userId, menuId)
+        if (!menuLikeRepository.existsLikedMenu(userId = userId, menuId = menuId)) {
+            throw MenuNotLikedException()
+        }
+
+        try {
+            menuAlarmRepository.deleteMenuAlarm(userId = userId, menuId = menuId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+
+        return MenuV2AlarmDto.from(getMenuById(menuId = menu.id, userId = userId), alarm = false)
+    }
+
+    @Transactional
+    fun menuAlarmOffAll(userId: Int) {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        try {
+            menuAlarmRepository.deleteMenuAlarmByUserId(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
+
+    @Transactional
+    fun menuAlarmOnAll(userId: Int) {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        try {
+            menuAlarmRepository.postAllLikedMenuAlarms(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
+
     private fun ensureUserAndMenuExist(
         userId: Int,
         menuId: Long,
-    ) {
-        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
-        menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
-    }
+    ) =
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() } to
+            menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
 
     private fun buildLikedBuildings(
         restaurants: List<RestaurantV2>,

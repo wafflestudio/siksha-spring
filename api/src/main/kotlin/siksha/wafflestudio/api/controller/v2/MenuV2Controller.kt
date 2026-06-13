@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2AlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2ListResponseDto
@@ -82,6 +83,40 @@ class MenuV2Controller(
     @SecurityRequirement(name = "bearerAuth")
     fun getMyMenus(request: HttpServletRequest): MenuV2LikedListResponseDto =
         menuService.getMyMenus(userId = request.userId)
+
+    @PostMapping("/{menuId}/alarm/on")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Turn on V2 menu alarm", description = "Turn on alarm for a liked normalized V2 menu")
+    @SecurityRequirement(name = "bearerAuth")
+    fun menuAlarmOn(
+        @PathVariable menuId: Long,
+        request: HttpServletRequest,
+    ): MenuV2AlarmDto = menuService.menuAlarmOn(menuId = menuId, userId = request.userId)
+
+    @PostMapping("/{menuId}/alarm/off")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Turn off V2 menu alarm", description = "Turn off alarm for a normalized V2 menu")
+    @SecurityRequirement(name = "bearerAuth")
+    fun menuAlarmOff(
+        @PathVariable menuId: Long,
+        request: HttpServletRequest,
+    ): MenuV2AlarmDto = menuService.menuAlarmOff(menuId = menuId, userId = request.userId)
+
+    @PostMapping("/alarm/off")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Turn off all V2 menu alarms", description = "Turn off all V2 menu alarms for the authenticated user")
+    @SecurityRequirement(name = "bearerAuth")
+    fun menuAlarmOffAll(request: HttpServletRequest) {
+        menuService.menuAlarmOffAll(userId = request.userId)
+    }
+
+    @PostMapping("/alarm/on")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Turn on all V2 menu alarms", description = "Turn on alarms for all liked V2 menus")
+    @SecurityRequirement(name = "bearerAuth")
+    fun menuAlarmOnAll(request: HttpServletRequest) {
+        menuService.menuAlarmOnAll(userId = request.userId)
+    }
 
     @GetMapping("/{menuId}")
     @ResponseStatus(HttpStatus.OK)

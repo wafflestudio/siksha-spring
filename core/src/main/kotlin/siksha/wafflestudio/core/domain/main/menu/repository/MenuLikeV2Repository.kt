@@ -8,6 +8,21 @@ import siksha.wafflestudio.core.domain.main.menu.data.MenuLikeV2
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
 
 interface MenuLikeV2Repository : JpaRepository<MenuLikeV2, Long> {
+    @Query(
+        value = """
+            select count(*) > 0
+            from menu_like_v2
+            where user_id = :userId
+              and menu_id = :menuId
+              and coalesce(is_liked, 1) = 1
+        """,
+        nativeQuery = true,
+    )
+    fun existsLikedMenu(
+        @Param("userId") userId: Int,
+        @Param("menuId") menuId: Long,
+    ): Boolean
+
     @Modifying
     @Query(
         value = """
@@ -46,7 +61,8 @@ interface MenuLikeV2Repository : JpaRepository<MenuLikeV2, Long> {
                 menu.created_at as menuCreatedAt,
                 review_stats.score as score,
                 ifnull(review_stats.reviewCnt, 0) as reviewCnt,
-                ifnull(like_stats.likeCnt, 0) as likeCnt
+                ifnull(like_stats.likeCnt, 0) as likeCnt,
+                case when menu_alarm.menu_id is null then 0 else 1 end as alarm
             from menu_like_v2 my_like
             join menu_v2 menu on menu.id = my_like.menu_id
             join restaurant_v2 restaurant on restaurant.id = menu.restaurant_id
@@ -61,6 +77,9 @@ interface MenuLikeV2Repository : JpaRepository<MenuLikeV2, Long> {
                 where coalesce(menu_like.is_liked, 1) = 1
                 group by menu_like.menu_id
             ) like_stats on like_stats.menuId = menu.id
+            left join menu_alarm_v2 menu_alarm
+                on menu_alarm.user_id = my_like.user_id
+                and menu_alarm.menu_id = menu.id
             where my_like.user_id = :userId
               and coalesce(my_like.is_liked, 1) = 1
             order by menu.name asc, menu.id asc

@@ -6,6 +6,7 @@ import org.springframework.batch.core.ItemReadListener
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.scope.context.ChunkContext
 import org.springframework.stereotype.Component
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.v1.main.menu.dto.AlarmMenuSummary
 import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuAlarmRepository
 import siksha.wafflestudio.core.domain.user.data.User
@@ -17,6 +18,7 @@ import siksha.wafflestudio.core.domain.user.repository.UserDeviceRepository
 class ChunkPrefetchListener(
     private val userDeviceRepository: UserDeviceRepository,
     private val menuAlarmRepository: MenuAlarmRepository,
+    private val menuAlarmV2Repository: MenuAlarmV2Repository,
 ) : ItemReadListener<User>,
     ItemProcessListener<User, Any>,
     ChunkListener {
@@ -40,8 +42,8 @@ class ChunkPrefetchListener(
                 .groupBy { it.userId.toInt() }
 
         userMenuAlarmsMap =
-            menuAlarmRepository
-                .findMenuAlarmByUserIds(userIds)
+            (menuAlarmRepository.findMenuAlarmByUserIds(userIds) +
+                menuAlarmV2Repository.findMenuAlarmByUserIds(userIds))
                 .groupBy { it.getUserId() }
 
         prefetched = true

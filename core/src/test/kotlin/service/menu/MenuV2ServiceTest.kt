@@ -17,6 +17,7 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.service.MenuV2Service
@@ -43,6 +44,7 @@ class MenuV2ServiceTest {
     private lateinit var restaurantCustomRepository: RestaurantCustomV2Repository
     private lateinit var menuRepository: MenuV2Repository
     private lateinit var menuLikeRepository: MenuLikeV2Repository
+    private lateinit var menuAlarmRepository: MenuAlarmV2Repository
     private lateinit var userRepository: UserRepository
     private lateinit var service: MenuV2Service
 
@@ -56,6 +58,7 @@ class MenuV2ServiceTest {
         restaurantCustomRepository = mockk()
         menuRepository = mockk()
         menuLikeRepository = mockk()
+        menuAlarmRepository = mockk()
         userRepository = mockk()
         service =
             MenuV2Service(
@@ -66,6 +69,7 @@ class MenuV2ServiceTest {
                 restaurantCustomRepository,
                 menuRepository,
                 menuLikeRepository,
+                menuAlarmRepository,
                 userRepository,
             )
     }
@@ -170,14 +174,36 @@ class MenuV2ServiceTest {
         every { userRepository.findById(1) } returns Optional.of(testUser())
         every { menuRepository.findById(10) } returns Optional.of(MenuV2(id = 10, restaurant = restaurant, name = "Menu"))
         every { menuLikeRepository.unlikeMenu(userId = 1, menuId = 10) } just runs
+        every { menuAlarmRepository.deleteMenuAlarm(userId = 1, menuId = 10) } just runs
         every { mealMenuRepository.findMenuDetailById(10, 1) } returns menuDetail(menuId = 10, isLiked = 0)
         every { mealMenuRepository.findMealContextsByMenuId(10) } returns emptyList()
 
         val result = service.unlikeMenu(menuId = 10, userId = 1)
 
         verify { menuLikeRepository.unlikeMenu(userId = 1, menuId = 10) }
+        verify { menuAlarmRepository.deleteMenuAlarm(userId = 1, menuId = 10) }
         assertEquals(10, result.id)
         assertFalse(result.isLiked)
+    }
+
+    @Test
+    fun `menu alarm on requires liked menu and inserts menu alarm v2`() {
+        val building = BuildingV2(id = 1, number = "301", name = "Building", defaultOrder = 1)
+        val restaurant = RestaurantV2(id = 1, building = building, name = "Restaurant", defaultOrder = 1)
+        val menu = MenuV2(id = 10, restaurant = restaurant, name = "Menu")
+        every { userRepository.findById(1) } returns Optional.of(testUser())
+        every { menuRepository.findById(10) } returns Optional.of(menu)
+        every { menuLikeRepository.existsLikedMenu(userId = 1, menuId = 10) } returns true
+        every { menuAlarmRepository.existsByUserIdAndMenuId(userId = 1, menuId = 10) } returns false
+        every { menuAlarmRepository.postMenuAlarm(userId = 1, menuId = 10) } just runs
+        every { mealMenuRepository.findMenuDetailById(10, 1) } returns menuDetail(menuId = 10, isLiked = 1)
+        every { mealMenuRepository.findMealContextsByMenuId(10) } returns emptyList()
+
+        val result = service.menuAlarmOn(menuId = 10, userId = 1)
+
+        verify { menuAlarmRepository.postMenuAlarm(userId = 1, menuId = 10) }
+        assertTrue(result.alarm)
+        assertTrue(result.isLiked)
     }
 
     @Test
@@ -306,6 +332,7 @@ class MenuV2ServiceTest {
         override fun getScore(): Double = 4.5
         override fun getReviewCnt(): Int = 2
         override fun getLikeCnt(): Int = 3
+        override fun getAlarm(): Int = 1
     }
 
     companion object {

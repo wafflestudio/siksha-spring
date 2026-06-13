@@ -65,6 +65,10 @@ GET   /v2/menus/{menuId}/web
 POST  /v2/menus/{menuId}/like
 POST  /v2/menus/{menuId}/unlike
 GET   /v2/menus/me
+POST  /v2/menus/{menuId}/alarm/on
+POST  /v2/menus/{menuId}/alarm/off
+POST  /v2/menus/alarm/on
+POST  /v2/menus/alarm/off
 POST  /v2/reviews
 POST  /v2/reviews/images
 GET   /v2/reviews
@@ -97,6 +101,7 @@ meal_menu_v2
 review_v2
 keyword_review_v2
 menu_like_v2
+menu_alarm_v2
 review_like_v2
 ```
 
@@ -234,31 +239,22 @@ Decision:
 - Keep `menu_like_v2.is_liked` for now because the column already exists in the V2 schema.
 - Like upserts a row with `is_liked=1`; unlike updates the row to `is_liked=0`.
 
-### 3. Menu Alarm V2 Decision
+### 3. Menu Alarm V2
 
-V2 currently has no `menu_alarm_v2` table. Do not migrate menu alarm APIs until the schema is decided.
+V2 menu alarm is implemented with a dedicated `menu_alarm_v2` table.
 
-Existing V1 APIs:
-
-```text
-POST /menus/{menu_id}/alarm/on
-POST /menus/{menu_id}/alarm/off
-POST /menus/alarm/on
-POST /menus/alarm/off
-```
-
-Recommended V2 schema if alarms are required:
+Schema:
 
 ```text
 menu_alarm_v2
-- user_id
+- user_id -> user.id
 - menu_id -> menu_v2.id
 - created_at
 - updated_at
-- unique(user_id, menu_id)
+- primary key(user_id, menu_id)
 ```
 
-Target APIs, if implemented:
+APIs:
 
 ```text
 POST /v2/menus/{menuId}/alarm/on
@@ -269,8 +265,12 @@ POST /v2/menus/alarm/off
 
 Implementation notes:
 
-- Scheduler code must be updated separately to read `menu_alarm_v2`.
-- Alarm semantics should be based on normalized `menu_v2`, not a single date-specific meal row.
+- Alarm semantics are based on normalized `menu_v2`, not a single date-specific meal row.
+- Alarm on requires the user to like the menu, matching V1 behavior.
+- Menu unlike removes the corresponding V2 alarm, matching V1 behavior.
+- Turn-on-all inserts alarms for every currently liked `menu_v2` row that does not already have an alarm.
+- Scheduler prefetch reads both V1 `menu_alarm` and V2 `menu_alarm_v2`, so V1 app traffic remains supported while V2 alarms can be sent.
+- Scheduler comparison should prefix the internal V2 alarm code as `v2:{menuId}` to avoid accidental collisions with V1 menu codes.
 
 ### 4. Review V2 Entities And Repositories
 
