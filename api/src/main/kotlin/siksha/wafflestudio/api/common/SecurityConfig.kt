@@ -51,6 +51,7 @@ class SecurityConfig(
                 AntPathRequestMatcher.antMatcher("/community/**/web"),
                 AntPathRequestMatcher.antMatcher("/menus/**/web"),
                 AntPathRequestMatcher.antMatcher("/reviews/**/web"),
+                AntPathRequestMatcher.antMatcher("/v2/**/web"),
             ).permitAll()
             .requestMatchers(
                 "/error",

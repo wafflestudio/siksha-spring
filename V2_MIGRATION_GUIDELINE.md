@@ -58,6 +58,10 @@ GET   /v2/customs/buildings
 PATCH /v2/customs/buildings
 GET   /v2/customs/buildings/{buildingNumber}/restaurants
 PATCH /v2/customs/buildings/{buildingNumber}/restaurants
+GET   /v2/menus
+GET   /v2/menus/web
+GET   /v2/menus/{menuId}
+GET   /v2/menus/{menuId}/web
 ```
 
 ### Existing V2 Tables
@@ -183,10 +187,10 @@ Implementation notes:
 - For unauthenticated `/web`, `is_liked=false` and personalized filtering should not apply.
 - For authenticated APIs, apply `menu_like_v2` and custom visibility/order where relevant.
 
-Open decision:
+Decision:
 
-- Decide whether `GET /v2/menus/{menuId}` uses `menu_v2.id`, `meal_v2.id`, or `meal_menu_v2.id`.
-- If detail needs date/type/price context, `mealId` or `mealMenuId` may be a better identifier than `menu_v2.id`.
+- `GET /v2/menus/{menuId}` uses `menu_v2.id` because likes and reviews reference normalized menus.
+- Date/type/price context is returned as a `meals` list on the detail response.
 
 ### 2. Menu Like V2
 

@@ -34,6 +34,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/community/**/web"),
             AntPathRequestMatcher("/menus/**/web"),
             AntPathRequestMatcher("/reviews/**/web"),
+            AntPathRequestMatcher("/v2/**/web"),
             AntPathRequestMatcher("/error"),
             AntPathRequestMatcher("/swagger-ui/**"),
             AntPathRequestMatcher("/v3/api-docs/**"),
