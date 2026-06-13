@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
+import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
-import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
@@ -91,9 +91,28 @@ class MenuV2ServiceTest {
         assertEquals("WEEKDAY", result.result[0].dateType)
         assertEquals(1, result.result[0].lunch.size)
         assertEquals("301", result.result[0].lunch[0].buildingNumber)
-        assertEquals(10, result.result[0].lunch[0].restaurants[0].id)
-        assertEquals(100, result.result[0].lunch[0].restaurants[0].menus[0].id)
-        assertFalse(result.result[0].lunch[0].restaurants[0].menus[0].isLiked)
+        assertEquals(
+            10,
+            result.result[0]
+                .lunch[0]
+                .restaurants[0]
+                .id,
+        )
+        assertEquals(
+            100,
+            result.result[0]
+                .lunch[0]
+                .restaurants[0]
+                .menus[0]
+                .id,
+        )
+        assertFalse(
+            result.result[0]
+                .lunch[0]
+                .restaurants[0]
+                .menus[0]
+                .isLiked,
+        )
     }
 
     @Test
@@ -128,9 +147,25 @@ class MenuV2ServiceTest {
 
         assertEquals(listOf("B2", "B1"), result.result[0].lunch.map { it.buildingNumber })
         assertFalse(result.result[0].lunch[0].visible)
-        assertEquals(listOf(3, 2), result.result[0].lunch[0].restaurants.map { it.id })
-        assertFalse(result.result[0].lunch[0].restaurants[0].visible)
-        assertTrue(result.result[0].lunch[0].restaurants[1].visible)
+        assertEquals(
+            listOf(3, 2),
+            result.result[0]
+                .lunch[0]
+                .restaurants
+                .map { it.id },
+        )
+        assertFalse(
+            result.result[0]
+                .lunch[0]
+                .restaurants[0]
+                .visible,
+        )
+        assertTrue(
+            result.result[0]
+                .lunch[0]
+                .restaurants[1]
+                .visible,
+        )
     }
 
     @Test
@@ -223,8 +258,19 @@ class MenuV2ServiceTest {
         assertEquals(1, result.count)
         assertEquals("301", result.result[0].buildingNumber)
         assertEquals(1, result.result[0].restaurants[0].id)
-        assertEquals(10, result.result[0].restaurants[0].menus[0].id)
-        assertTrue(result.result[0].restaurants[0].menus[0].isLiked)
+        assertEquals(
+            10,
+            result.result[0]
+                .restaurants[0]
+                .menus[0]
+                .id,
+        )
+        assertTrue(
+            result.result[0]
+                .restaurants[0]
+                .menus[0]
+                .isLiked,
+        )
     }
 
     private fun menuRow(
@@ -273,19 +319,33 @@ class MenuV2ServiceTest {
         private val date: LocalDate,
     ) : MenuV2MealRow {
         override fun getMealMenuId(): Long = mealMenuId
+
         override fun getMealId(): Long = mealId
+
         override fun getMenuId(): Long = menuId
+
         override fun getMenuName(): String = "Menu"
+
         override fun getOriginalName(): String = "Original Menu"
+
         override fun getRestaurantId(): Int = restaurantId
+
         override fun getDate(): LocalDate = date
+
         override fun getType(): String = "LUNCH"
+
         override fun getPrice(): Int = 6500
+
         override fun getNoMeat(): Boolean = false
+
         override fun getMenuCreatedAt(): Timestamp = timestamp()
+
         override fun getScore(): Double = 4.5
+
         override fun getReviewCnt(): Int = 2
+
         override fun getLikeCnt(): Int = 3
+
         override fun getIsLiked(): Int = 0
     }
 
@@ -294,16 +354,27 @@ class MenuV2ServiceTest {
         private val isLiked: Int,
     ) : MenuV2DetailRow {
         override fun getMenuId(): Long = menuId
+
         override fun getMenuName(): String = "Menu"
+
         override fun getRestaurantId(): Int = 1
+
         override fun getRestaurantName(): String = "Restaurant"
+
         override fun getBuildingId(): Int = 1
+
         override fun getBuildingNumber(): String = "301"
+
         override fun getBuildingName(): String = "Building"
+
         override fun getMenuCreatedAt(): Timestamp = timestamp()
+
         override fun getScore(): Double = 4.0
+
         override fun getReviewCnt(): Int = 10
+
         override fun getLikeCnt(): Int = 5
+
         override fun getIsLiked(): Int = isLiked
     }
 
@@ -312,12 +383,19 @@ class MenuV2ServiceTest {
         private val mealId: Long,
     ) : MenuV2MealContextRow {
         override fun getMealMenuId(): Long = mealMenuId
+
         override fun getMealId(): Long = mealId
+
         override fun getDate(): LocalDate = LocalDate.of(2026, 6, 2)
+
         override fun getType(): String = "LUNCH"
+
         override fun getPrice(): Int = 6500
+
         override fun getNoMeat(): Boolean = false
+
         override fun getOriginalName(): String = "Original Menu"
+
         override fun getMealCreatedAt(): Timestamp = timestamp()
     }
 
@@ -326,12 +404,19 @@ class MenuV2ServiceTest {
         private val restaurantId: Int,
     ) : MenuV2LikedMenuRow {
         override fun getMenuId(): Long = menuId
+
         override fun getMenuName(): String = "Menu"
+
         override fun getRestaurantId(): Int = restaurantId
+
         override fun getMenuCreatedAt(): Timestamp = timestamp()
+
         override fun getScore(): Double = 4.5
+
         override fun getReviewCnt(): Int = 2
+
         override fun getLikeCnt(): Int = 3
+
         override fun getAlarm(): Int = 1
     }
 

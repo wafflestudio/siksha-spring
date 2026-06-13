@@ -367,5 +367,4 @@ class ReviewV2Service(
             throw KeywordMissingException()
         }
     }
-
 }

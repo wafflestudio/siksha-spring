@@ -18,6 +18,10 @@ import siksha.wafflestudio.core.domain.common.exception.PostAlreadyReportedExcep
 import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.PostReportSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.image.data.Image
+import siksha.wafflestudio.core.domain.image.data.ImageCategory
+import siksha.wafflestudio.core.domain.image.repository.ImageRepository
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.board.repository.BoardRepository
 import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.v1.community.post.data.Post
@@ -32,10 +36,6 @@ import siksha.wafflestudio.core.domain.v1.community.post.dto.PostsResponseDto
 import siksha.wafflestudio.core.domain.v1.community.post.repository.PostLikeRepository
 import siksha.wafflestudio.core.domain.v1.community.post.repository.PostReportRepository
 import siksha.wafflestudio.core.domain.v1.community.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.image.data.Image
-import siksha.wafflestudio.core.domain.image.data.ImageCategory
-import siksha.wafflestudio.core.domain.image.repository.ImageRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
 import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import siksha.wafflestudio.core.util.EtcUtils

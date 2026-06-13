@@ -237,5 +237,4 @@ class SyncMealUseCaseTest {
             name = name,
             defaultOrder = 1,
         )
-
 }

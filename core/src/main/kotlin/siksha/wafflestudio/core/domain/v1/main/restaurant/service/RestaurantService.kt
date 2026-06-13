@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.main.restaurant.data.RestaurantCustom
 import siksha.wafflestudio.core.domain.v1.main.restaurant.dto.RestaurantLikeResponseDto
 import siksha.wafflestudio.core.domain.v1.main.restaurant.dto.RestaurantListResponseDto
@@ -15,7 +16,6 @@ import siksha.wafflestudio.core.domain.v1.main.restaurant.dto.RestaurantResponse
 import siksha.wafflestudio.core.domain.v1.main.restaurant.dto.RestaurantVisibleResponseDto
 import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantCustomRepository
 import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
 class RestaurantService(

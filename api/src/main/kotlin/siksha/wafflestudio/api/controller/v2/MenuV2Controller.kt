@@ -81,8 +81,7 @@ class MenuV2Controller(
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get my liked V2 menus", description = "Get V2 menus liked by the authenticated user")
     @SecurityRequirement(name = "bearerAuth")
-    fun getMyMenus(request: HttpServletRequest): MenuV2LikedListResponseDto =
-        menuService.getMyMenus(userId = request.userId)
+    fun getMyMenus(request: HttpServletRequest): MenuV2LikedListResponseDto = menuService.getMyMenus(userId = request.userId)
 
     @PostMapping("/{menuId}/alarm/on")
     @ResponseStatus(HttpStatus.CREATED)

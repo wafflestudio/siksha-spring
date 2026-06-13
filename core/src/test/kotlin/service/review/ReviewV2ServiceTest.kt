@@ -2,9 +2,7 @@ package service.review
 
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -176,20 +174,35 @@ class ReviewV2ServiceTest {
         private val isLiked: Int,
     ) : ReviewV2Summary {
         override fun getId(): Long = reviewId
+
         override fun getMenuId(): Long = menuId
+
         override fun getMenuName(): String = "Menu"
+
         override fun getRestaurantId(): Int = 1
+
         override fun getRestaurantName(): String = "Restaurant"
+
         override fun getUserId(): Int = 1
+
         override fun getScore(): Int = 5
+
         override fun getComment(): String = "good"
+
         override fun getEtc(): String? = null
+
         override fun getTaste(): Int? = null
+
         override fun getPrice(): Int? = null
+
         override fun getFoodComposition(): Int? = null
+
         override fun getLikeCount(): Int = 1
+
         override fun getIsLiked(): Int = isLiked
+
         override fun getCreatedAt(): Timestamp = timestamp()
+
         override fun getUpdatedAt(): Timestamp = timestamp()
     }
 

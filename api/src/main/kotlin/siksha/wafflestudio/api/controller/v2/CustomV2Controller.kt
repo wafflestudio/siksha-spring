@@ -44,7 +44,10 @@ class CustomV2Controller(
     ): RestaurantV2CustomResponseDto = buildingCustomService.getRestaurantCustoms(request.userId, buildingNumber)
 
     @PatchMapping("/buildings/{buildingNumber}/restaurants")
-    @Operation(summary = "Update restaurant customs in building", description = "Update the full restaurant custom snapshot inside a building")
+    @Operation(
+        summary = "Update restaurant customs in building",
+        description = "Update the full restaurant custom snapshot inside a building",
+    )
     fun updateRestaurantCustoms(
         request: HttpServletRequest,
         @PathVariable buildingNumber: String,

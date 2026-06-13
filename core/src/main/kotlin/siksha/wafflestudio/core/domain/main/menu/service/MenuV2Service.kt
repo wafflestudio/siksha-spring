@@ -228,9 +228,8 @@ class MenuV2Service(
     private fun ensureUserAndMenuExist(
         userId: Int,
         menuId: Long,
-    ) =
-        userRepository.findById(userId).orElseThrow { UserNotFoundException() } to
-            menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
+    ) = userRepository.findById(userId).orElseThrow { UserNotFoundException() } to
+        menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
 
     private fun buildLikedBuildings(
         restaurants: List<RestaurantV2>,
@@ -342,7 +341,8 @@ class MenuV2Service(
         userId: Int,
         restaurants: List<RestaurantV2>,
     ): Map<Int, CustomV2Item>? =
-        restaurantCustomRepository.findByUserId(userId)
+        restaurantCustomRepository
+            .findByUserId(userId)
             ?.let { requireCompleteRestaurantDocument(CustomV2Json.parse(it.customs), restaurants) }
 
     private fun requireCompleteBuildingDocument(
@@ -371,7 +371,10 @@ class MenuV2Service(
         document: CustomV2Document,
         expectedIds: Set<Int>,
     ): Map<Int, CustomV2Item> {
-        val actualIds = document.items.keys.map { it.toIntOrNull() ?: throw InvalidCustomException() }.toSet()
+        val actualIds =
+            document.items.keys
+                .map { it.toIntOrNull() ?: throw InvalidCustomException() }
+                .toSet()
         if (actualIds != expectedIds) {
             throw InvalidCustomException()
         }

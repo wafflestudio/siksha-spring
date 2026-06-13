@@ -23,6 +23,7 @@ import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.main.menu.dto.MenuDetailsDto
 import siksha.wafflestudio.core.domain.v1.main.menu.dto.MenuPlainSummary
 import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
@@ -43,7 +44,6 @@ import siksha.wafflestudio.core.domain.v1.main.review.dto.ReviewWithImagesReques
 import siksha.wafflestudio.core.domain.v1.main.review.repository.KeywordReviewRepository
 import siksha.wafflestudio.core.domain.v1.main.review.repository.ReviewLikeRepository
 import siksha.wafflestudio.core.domain.v1.main.review.repository.ReviewRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
 import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import siksha.wafflestudio.core.util.EtcUtils

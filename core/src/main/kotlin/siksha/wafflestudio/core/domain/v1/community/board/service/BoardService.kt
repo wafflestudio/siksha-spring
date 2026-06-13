@@ -11,11 +11,11 @@ import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.board.data.Board
 import siksha.wafflestudio.core.domain.v1.community.board.dto.BoardCreateDto
 import siksha.wafflestudio.core.domain.v1.community.board.dto.BoardDto
 import siksha.wafflestudio.core.domain.v1.community.board.repository.BoardRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 
 @Service
 class BoardService(

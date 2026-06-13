@@ -16,6 +16,7 @@ import siksha.wafflestudio.core.domain.common.exception.NotFoundItem
 import siksha.wafflestudio.core.domain.common.exception.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.comment.data.Comment
 import siksha.wafflestudio.core.domain.v1.community.comment.data.CommentLike
 import siksha.wafflestudio.core.domain.v1.community.comment.data.CommentReport
@@ -28,7 +29,6 @@ import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentLi
 import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentReportRepository
 import siksha.wafflestudio.core.domain.v1.community.comment.repository.CommentRepository
 import siksha.wafflestudio.core.domain.v1.community.post.repository.PostRepository
-import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
 

@@ -96,5 +96,4 @@ class NormalizeMenuUseCaseTest {
             name = name,
             defaultOrder = 1,
         )
-
 }

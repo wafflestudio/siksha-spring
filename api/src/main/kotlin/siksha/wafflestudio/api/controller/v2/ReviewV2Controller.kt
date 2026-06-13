@@ -177,5 +177,12 @@ class ReviewV2Controller(
         @RequestParam(defaultValue = "10") size: Int,
         request: HttpServletRequest,
     ): ReviewV2ListResponse =
-        reviewService.getFilteredReviews(userId = request.userId, menuId = menuId, comment = comment, image = image, page = page, size = size)
+        reviewService.getFilteredReviews(
+            userId = request.userId,
+            menuId = menuId,
+            comment = comment,
+            image = image,
+            page = page,
+            size = size,
+        )
 }

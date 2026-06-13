@@ -11,8 +11,8 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import siksha.wafflestudio.core.domain.v1.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.v1.main.menu.data.Menu
 import java.time.OffsetDateTime
 import java.time.ZoneId
 

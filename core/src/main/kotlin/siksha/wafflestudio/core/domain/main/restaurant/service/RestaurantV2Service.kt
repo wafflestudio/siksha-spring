@@ -43,10 +43,12 @@ class RestaurantV2Service(
         val restaurants = restaurantRepository.findAllForList()
         val buildings = buildingRepository.findAllForList()
         val buildingCustomMap =
-            buildingCustomRepository.findByUserId(userId)
+            buildingCustomRepository
+                .findByUserId(userId)
                 ?.let { requireCompleteBuildingDocument(CustomV2Json.parse(it.customs), buildings) }
         val restaurantCustomMap =
-            restaurantCustomRepository.findByUserId(userId)
+            restaurantCustomRepository
+                .findByUserId(userId)
                 ?.let { requireCompleteRestaurantDocument(CustomV2Json.parse(it.customs), restaurants) }
         val likedRestaurantIds = restaurantLikeRepository.findAllByUserId(userId).map { it.restaurant.id }.toSet()
 
@@ -143,7 +145,10 @@ class RestaurantV2Service(
         document: CustomV2Document,
         expectedIds: Set<Int>,
     ): Map<Int, CustomV2Item> {
-        val actualIds = document.items.keys.map { it.toIntOrNull() ?: throw InvalidCustomException() }.toSet()
+        val actualIds =
+            document.items.keys
+                .map { it.toIntOrNull() ?: throw InvalidCustomException() }
+                .toSet()
         if (actualIds != expectedIds) {
             throw InvalidCustomException()
         }

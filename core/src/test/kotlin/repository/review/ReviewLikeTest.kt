@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.v1.main.menu.data.Menu
 import siksha.wafflestudio.core.domain.v1.main.restaurant.data.Restaurant
 import siksha.wafflestudio.core.domain.v1.main.review.data.Review
 import siksha.wafflestudio.core.domain.v1.main.review.data.ReviewLike
 import siksha.wafflestudio.core.domain.v1.main.review.repository.ReviewLikeRepository
-import siksha.wafflestudio.core.domain.user.data.User
 import java.time.LocalDate
 import java.time.OffsetDateTime
 

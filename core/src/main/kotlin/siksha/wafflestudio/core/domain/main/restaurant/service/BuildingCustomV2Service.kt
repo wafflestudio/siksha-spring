@@ -195,7 +195,10 @@ class BuildingCustomV2Service(
         expectedIds: Set<Int>,
         exact: Boolean = true,
     ): Map<Int, CustomV2Item> {
-        val actualIds = document.items.keys.map { it.toIntOrNull() ?: throw InvalidCustomException() }.toSet()
+        val actualIds =
+            document.items.keys
+                .map { it.toIntOrNull() ?: throw InvalidCustomException() }
+                .toSet()
         if ((exact && actualIds != expectedIds) || (!exact && !actualIds.containsAll(expectedIds))) {
             throw InvalidCustomException()
         }

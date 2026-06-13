@@ -4,9 +4,9 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
@@ -95,6 +95,17 @@ class RestaurantV2ServiceTest {
         val secondRestaurant = RestaurantV2(id = 2, building = firstBuilding, name = "R2", defaultOrder = 2)
         val thirdRestaurant = RestaurantV2(id = 3, building = secondBuilding, name = "R3", defaultOrder = 1)
         val fourthRestaurant = RestaurantV2(id = 4, building = secondBuilding, name = "R4", defaultOrder = 2)
+        val restaurantCustomsJson =
+            """
+            {
+              "items": {
+                "1": { "order": 1, "visible": true },
+                "2": { "order": 2, "visible": true },
+                "4": { "order": 1, "visible": false },
+                "3": { "order": 2, "visible": true }
+              }
+            }
+            """.trimIndent()
 
         every { restaurantRepository.findAllForList() } returns
             listOf(firstRestaurant, secondRestaurant, thirdRestaurant, fourthRestaurant)
@@ -107,7 +118,7 @@ class RestaurantV2ServiceTest {
         every { restaurantCustomRepository.findByUserId(1) } returns
             RestaurantCustomV2(
                 userId = 1,
-                customs = """{"items":{"1":{"order":1,"visible":true},"2":{"order":2,"visible":true},"4":{"order":1,"visible":false},"3":{"order":2,"visible":true}}}""",
+                customs = restaurantCustomsJson,
             )
         every { restaurantLikeRepository.findAllByUserId(1) } returns emptyList()
 
@@ -138,5 +149,4 @@ class RestaurantV2ServiceTest {
             service.getAllPersonalizedRestaurants(1)
         }
     }
-
 }
