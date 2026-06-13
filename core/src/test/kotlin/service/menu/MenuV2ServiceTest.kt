@@ -2,7 +2,10 @@ package service.menu
 
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -10,8 +13,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailRow
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
+import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.service.MenuV2Service
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
@@ -21,9 +28,12 @@ import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustom
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.user.data.User
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Optional
 
 class MenuV2ServiceTest {
     private lateinit var mealMenuRepository: MealMenuV2Repository
@@ -31,6 +41,9 @@ class MenuV2ServiceTest {
     private lateinit var buildingRepository: BuildingV2Repository
     private lateinit var buildingCustomRepository: BuildingCustomV2Repository
     private lateinit var restaurantCustomRepository: RestaurantCustomV2Repository
+    private lateinit var menuRepository: MenuV2Repository
+    private lateinit var menuLikeRepository: MenuLikeV2Repository
+    private lateinit var userRepository: UserRepository
     private lateinit var service: MenuV2Service
 
     @BeforeEach
@@ -41,6 +54,9 @@ class MenuV2ServiceTest {
         buildingRepository = mockk()
         buildingCustomRepository = mockk()
         restaurantCustomRepository = mockk()
+        menuRepository = mockk()
+        menuLikeRepository = mockk()
+        userRepository = mockk()
         service =
             MenuV2Service(
                 mealMenuRepository,
@@ -48,6 +64,9 @@ class MenuV2ServiceTest {
                 buildingRepository,
                 buildingCustomRepository,
                 restaurantCustomRepository,
+                menuRepository,
+                menuLikeRepository,
+                userRepository,
             )
     }
 
@@ -127,6 +146,61 @@ class MenuV2ServiceTest {
         assertEquals("LU", result.meals[0].type)
     }
 
+    @Test
+    fun `like menu upserts menu like v2 and returns detail`() {
+        val building = BuildingV2(id = 1, number = "301", name = "Building", defaultOrder = 1)
+        val restaurant = RestaurantV2(id = 1, building = building, name = "Restaurant", defaultOrder = 1)
+        every { userRepository.findById(1) } returns Optional.of(testUser())
+        every { menuRepository.findById(10) } returns Optional.of(MenuV2(id = 10, restaurant = restaurant, name = "Menu"))
+        every { menuLikeRepository.likeMenu(userId = 1, menuId = 10) } just runs
+        every { mealMenuRepository.findMenuDetailById(10, 1) } returns menuDetail(menuId = 10)
+        every { mealMenuRepository.findMealContextsByMenuId(10) } returns emptyList()
+
+        val result = service.likeMenu(menuId = 10, userId = 1)
+
+        verify { menuLikeRepository.likeMenu(userId = 1, menuId = 10) }
+        assertEquals(10, result.id)
+        assertTrue(result.isLiked)
+    }
+
+    @Test
+    fun `unlike menu updates menu like v2 to false and returns detail`() {
+        val building = BuildingV2(id = 1, number = "301", name = "Building", defaultOrder = 1)
+        val restaurant = RestaurantV2(id = 1, building = building, name = "Restaurant", defaultOrder = 1)
+        every { userRepository.findById(1) } returns Optional.of(testUser())
+        every { menuRepository.findById(10) } returns Optional.of(MenuV2(id = 10, restaurant = restaurant, name = "Menu"))
+        every { menuLikeRepository.unlikeMenu(userId = 1, menuId = 10) } just runs
+        every { mealMenuRepository.findMenuDetailById(10, 1) } returns menuDetail(menuId = 10, isLiked = 0)
+        every { mealMenuRepository.findMealContextsByMenuId(10) } returns emptyList()
+
+        val result = service.unlikeMenu(menuId = 10, userId = 1)
+
+        verify { menuLikeRepository.unlikeMenu(userId = 1, menuId = 10) }
+        assertEquals(10, result.id)
+        assertFalse(result.isLiked)
+    }
+
+    @Test
+    fun `my menus returns liked menus grouped by building and restaurant`() {
+        val building = BuildingV2(id = 1, number = "301", name = "Building", defaultOrder = 1)
+        val restaurant = RestaurantV2(id = 1, building = building, name = "Restaurant", defaultOrder = 1)
+
+        every { userRepository.findById(1) } returns Optional.of(testUser())
+        every { menuLikeRepository.findLikedMenusByUserId(1) } returns
+            listOf(likedMenuRow(menuId = 10, restaurantId = 1))
+        every { restaurantRepository.findAllForList() } returns listOf(restaurant)
+        every { buildingCustomRepository.findByUserId(1) } returns null
+        every { restaurantCustomRepository.findByUserId(1) } returns null
+
+        val result = service.getMyMenus(userId = 1)
+
+        assertEquals(1, result.count)
+        assertEquals("301", result.result[0].buildingNumber)
+        assertEquals(1, result.result[0].restaurants[0].id)
+        assertEquals(10, result.result[0].restaurants[0].menus[0].id)
+        assertTrue(result.result[0].restaurants[0].menus[0].isLiked)
+    }
+
     private fun menuRow(
         menuId: Long,
         mealId: Long,
@@ -142,12 +216,28 @@ class MenuV2ServiceTest {
             date = date,
         )
 
-    private fun menuDetail(menuId: Long): MenuV2DetailRow = TestMenuDetailRow(menuId = menuId)
+    private fun menuDetail(
+        menuId: Long,
+        isLiked: Int = 1,
+    ): MenuV2DetailRow = TestMenuDetailRow(menuId = menuId, isLiked = isLiked)
 
     private fun mealContext(
         mealMenuId: Long,
         mealId: Long,
     ): MenuV2MealContextRow = TestMealContextRow(mealMenuId = mealMenuId, mealId = mealId)
+
+    private fun likedMenuRow(
+        menuId: Long,
+        restaurantId: Int,
+    ): MenuV2LikedMenuRow = TestLikedMenuRow(menuId = menuId, restaurantId = restaurantId)
+
+    private fun testUser(): User =
+        User(
+            id = 1,
+            type = "TEST",
+            identity = "test-user",
+            nickname = "tester",
+        )
 
     private data class TestMenuRow(
         private val mealMenuId: Long,
@@ -175,6 +265,7 @@ class MenuV2ServiceTest {
 
     private data class TestMenuDetailRow(
         private val menuId: Long,
+        private val isLiked: Int,
     ) : MenuV2DetailRow {
         override fun getMenuId(): Long = menuId
         override fun getMenuName(): String = "Menu"
@@ -187,7 +278,7 @@ class MenuV2ServiceTest {
         override fun getScore(): Double = 4.0
         override fun getReviewCnt(): Int = 10
         override fun getLikeCnt(): Int = 5
-        override fun getIsLiked(): Int = 1
+        override fun getIsLiked(): Int = isLiked
     }
 
     private data class TestMealContextRow(
@@ -202,6 +293,19 @@ class MenuV2ServiceTest {
         override fun getNoMeat(): Boolean = false
         override fun getOriginalName(): String = "Original Menu"
         override fun getMealCreatedAt(): Timestamp = timestamp()
+    }
+
+    private data class TestLikedMenuRow(
+        private val menuId: Long,
+        private val restaurantId: Int,
+    ) : MenuV2LikedMenuRow {
+        override fun getMenuId(): Long = menuId
+        override fun getMenuName(): String = "Menu"
+        override fun getRestaurantId(): Int = restaurantId
+        override fun getMenuCreatedAt(): Timestamp = timestamp()
+        override fun getScore(): Double = 4.5
+        override fun getReviewCnt(): Int = 2
+        override fun getLikeCnt(): Int = 3
     }
 
     companion object {

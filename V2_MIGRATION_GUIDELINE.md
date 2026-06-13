@@ -62,6 +62,9 @@ GET   /v2/menus
 GET   /v2/menus/web
 GET   /v2/menus/{menuId}
 GET   /v2/menus/{menuId}/web
+POST  /v2/menus/{menuId}/like
+POST  /v2/menus/{menuId}/unlike
+GET   /v2/menus/me
 ```
 
 ### Existing V2 Tables
@@ -211,10 +214,10 @@ Implementation notes:
 - Unlike should update only V2 like state.
 - `GET /v2/menus/me` should return liked V2 menus in the client-expected V2 shape.
 
-Open decision:
+Decision:
 
-- Decide whether `menu_like_v2.is_liked` should remain nullable/boolean, or whether row existence should represent liked state.
-- Row existence is simpler, but changing the schema requires a Flyway migration.
+- Keep `menu_like_v2.is_liked` for now because the column already exists in the V2 schema.
+- Like upserts a row with `is_liked=1`; unlike updates the row to `is_liked=0`.
 
 ### 3. Menu Alarm V2 Decision
 

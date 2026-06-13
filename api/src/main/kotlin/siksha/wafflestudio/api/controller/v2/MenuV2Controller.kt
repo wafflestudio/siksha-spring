@@ -8,12 +8,14 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2ListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.service.MenuV2Service
 import java.time.LocalDate
@@ -55,6 +57,31 @@ class MenuV2Controller(
             exceptEmpty = exceptEmpty,
             userId = null,
         )
+
+    @PostMapping("/{menuId}/like")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Like V2 menu", description = "Like a normalized V2 menu")
+    @SecurityRequirement(name = "bearerAuth")
+    fun likeMenu(
+        @PathVariable menuId: Long,
+        request: HttpServletRequest,
+    ): MenuV2DetailsDto = menuService.likeMenu(menuId = menuId, userId = request.userId)
+
+    @PostMapping("/{menuId}/unlike")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Unlike V2 menu", description = "Unlike a normalized V2 menu")
+    @SecurityRequirement(name = "bearerAuth")
+    fun unlikeMenu(
+        @PathVariable menuId: Long,
+        request: HttpServletRequest,
+    ): MenuV2DetailsDto = menuService.unlikeMenu(menuId = menuId, userId = request.userId)
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Get my liked V2 menus", description = "Get V2 menus liked by the authenticated user")
+    @SecurityRequirement(name = "bearerAuth")
+    fun getMyMenus(request: HttpServletRequest): MenuV2LikedListResponseDto =
+        menuService.getMyMenus(userId = request.userId)
 
     @GetMapping("/{menuId}")
     @ResponseStatus(HttpStatus.OK)

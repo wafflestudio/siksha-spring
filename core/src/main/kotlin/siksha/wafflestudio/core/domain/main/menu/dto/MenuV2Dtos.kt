@@ -86,6 +86,22 @@ interface MenuV2MealContextRow {
     fun getMealCreatedAt(): Timestamp
 }
 
+interface MenuV2LikedMenuRow {
+    fun getMenuId(): Long
+
+    fun getMenuName(): String
+
+    fun getRestaurantId(): Int
+
+    fun getMenuCreatedAt(): Timestamp
+
+    fun getScore(): Double?
+
+    fun getReviewCnt(): Int
+
+    fun getLikeCnt(): Int
+}
+
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class MenuV2InListDto(
     val id: Long,
@@ -163,6 +179,61 @@ data class MenuV2DateWithTypeDto(
 data class MenuV2ListResponseDto(
     val count: Int,
     val result: List<MenuV2DateWithTypeDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2LikedMenuDto(
+    val id: Long,
+    val code: String,
+    val nameKr: String,
+    val nameEn: String? = null,
+    val score: Double?,
+    val reviewCnt: Int,
+    val likeCnt: Int,
+    val isLiked: Boolean = true,
+    @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "UTC")
+    val createdAt: OffsetDateTime,
+) {
+    companion object {
+        fun from(row: MenuV2LikedMenuRow): MenuV2LikedMenuDto =
+            MenuV2LikedMenuDto(
+                id = row.getMenuId(),
+                code = row.getMenuName(),
+                nameKr = row.getMenuName(),
+                score = row.getScore(),
+                reviewCnt = row.getReviewCnt(),
+                likeCnt = row.getLikeCnt(),
+                createdAt = row.getMenuCreatedAt().toInstant().atOffset(ZoneOffset.UTC),
+            )
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2LikedRestaurantDto(
+    val id: Int,
+    val code: String,
+    val nameKr: String,
+    val nameEn: String? = null,
+    val restaurantName: String,
+    val visible: Boolean,
+    val menus: List<MenuV2LikedMenuDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2LikedBuildingDto(
+    val buildingNumber: String,
+    val buildingName: String?,
+    val addr: String?,
+    val lat: BigDecimal?,
+    val lng: BigDecimal?,
+    val visible: Boolean,
+    val restaurants: List<MenuV2LikedRestaurantDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2LikedListResponseDto(
+    val count: Int,
+    val result: List<MenuV2LikedBuildingDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

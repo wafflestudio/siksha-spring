@@ -3,13 +3,20 @@ package siksha.wafflestudio.core.domain.main.menu.service
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2BuildingInListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DateWithTypeDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2InListDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedBuildingDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedRestaurantDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2ListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
@@ -21,10 +28,13 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Json
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.itemOf
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -37,6 +47,9 @@ class MenuV2Service(
     private val buildingRepository: BuildingV2Repository,
     private val buildingCustomRepository: BuildingCustomV2Repository,
     private val restaurantCustomRepository: RestaurantCustomV2Repository,
+    private val menuRepository: MenuV2Repository,
+    private val menuLikeRepository: MenuLikeV2Repository,
+    private val userRepository: UserRepository,
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
@@ -106,6 +119,93 @@ class MenuV2Service(
         val mealContexts = mealMenuRepository.findMealContextsByMenuId(menuId).map(MenuV2MealContextDto::from)
         return MenuV2DetailsDto.from(detail, mealContexts)
     }
+
+    @Transactional
+    fun likeMenu(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2DetailsDto {
+        ensureUserAndMenuExist(userId, menuId)
+        menuLikeRepository.likeMenu(userId = userId, menuId = menuId)
+        return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    @Transactional
+    fun unlikeMenu(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2DetailsDto {
+        ensureUserAndMenuExist(userId, menuId)
+        menuLikeRepository.unlikeMenu(userId = userId, menuId = menuId)
+        return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    fun getMyMenus(userId: Int): MenuV2LikedListResponseDto {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        val rows = menuLikeRepository.findLikedMenusByUserId(userId)
+        if (rows.isEmpty()) {
+            return MenuV2LikedListResponseDto(count = 0, result = emptyList())
+        }
+
+        val restaurants = restaurantRepository.findAllForList()
+        val buildingCustomMap = loadBuildingCustomMap(userId)
+        val restaurantCustomMap = loadRestaurantCustomMap(userId, restaurants)
+        val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
+        val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
+
+        val result = buildLikedBuildings(orderedRestaurants, rowsByRestaurant, buildingCustomMap, restaurantCustomMap)
+        return MenuV2LikedListResponseDto(count = rows.size, result = result)
+    }
+
+    private fun ensureUserAndMenuExist(
+        userId: Int,
+        menuId: Long,
+    ) {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
+    }
+
+    private fun buildLikedBuildings(
+        restaurants: List<RestaurantV2>,
+        rowsByRestaurant: Map<Int, List<MenuV2LikedMenuRow>>,
+        buildingCustomMap: Map<Int, CustomV2Item>?,
+        restaurantCustomMap: Map<Int, CustomV2Item>?,
+    ): List<MenuV2LikedBuildingDto> =
+        restaurants
+            .groupBy { it.building.id }
+            .values
+            .mapNotNull { restaurantsInBuilding ->
+                val building = restaurantsInBuilding.first().building
+                val restaurantDtos =
+                    restaurantsInBuilding.mapNotNull { restaurant ->
+                        val menuDtos = rowsByRestaurant[restaurant.id].orEmpty().map(MenuV2LikedMenuDto::from)
+                        if (menuDtos.isEmpty()) {
+                            null
+                        } else {
+                            MenuV2LikedRestaurantDto(
+                                id = restaurant.id,
+                                code = restaurant.name,
+                                nameKr = restaurant.name,
+                                restaurantName = restaurant.name,
+                                visible = restaurantCustomMap?.get(restaurant.id)?.visible ?: true,
+                                menus = menuDtos,
+                            )
+                        }
+                    }
+                if (restaurantDtos.isEmpty()) {
+                    null
+                } else {
+                    MenuV2LikedBuildingDto(
+                        buildingNumber = building.number,
+                        buildingName = building.name,
+                        addr = building.address,
+                        lat = building.latitude,
+                        lng = building.longitude,
+                        visible = buildingCustomMap?.get(building.id)?.visible ?: true,
+                        restaurants = restaurantDtos,
+                    )
+                }
+            }
 
     private fun buildBuildings(
         restaurants: List<RestaurantV2>,
