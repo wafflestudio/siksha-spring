@@ -2,9 +2,7 @@ package siksha.wafflestudio.core.usecase.meal
 
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -87,7 +85,7 @@ class SyncMealUseCaseTest {
         val normalizedMenu = MenuV2(id = 10, restaurant = restaurant, name = "뚝배기순두부")
 
         every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
-        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } returns 0
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke("뚝배기순두부", restaurant) } returns normalizedMenu
         every { mealMenuV2Repository.save(any()) } answers { firstArg() }
@@ -129,7 +127,7 @@ class SyncMealUseCaseTest {
         val menuSoup = MenuV2(id = 3, restaurant = restaurant, name = "열무된장국")
 
         every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
-        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } returns 0
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke("닭갈비", restaurant) } returns menuChicken
         every { normalizeMenuUseCase.invoke("그린샐러드", restaurant) } returns menuSalad
@@ -175,7 +173,7 @@ class SyncMealUseCaseTest {
         val mealMenuSlot = slot<MealMenuV2>()
 
         every { restaurantV2Repository.findByName(any()) } returns restaurant
-        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) } just runs
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(any(), any(), any()) } returns 0
         every { mealV2Repository.save(any()) } returns savedMeal
         every { normalizeMenuUseCase.invoke(any(), restaurant) } returns normalizedMenu
         every { mealMenuV2Repository.save(capture(mealMenuSlot)) } answers { firstArg() }
@@ -211,7 +209,7 @@ class SyncMealUseCaseTest {
         val type = MealType.LUNCH
 
         every { restaurantV2Repository.findByName("자하연식당 3층") } returns restaurant
-        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } just runs
+        every { mealV2Repository.deleteAllByRestaurantAndDateAndType(restaurant, date, type) } returns 0
 
         // when
         val request =
