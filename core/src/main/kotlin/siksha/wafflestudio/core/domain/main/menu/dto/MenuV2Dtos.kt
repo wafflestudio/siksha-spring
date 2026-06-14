@@ -42,6 +42,34 @@ interface MenuV2MealRow {
     fun getIsLiked(): Int
 }
 
+interface MenuV2MealListRow {
+    fun getMealMenuId(): Long
+
+    fun getMealId(): Long
+
+    fun getMenuId(): Long
+
+    fun getOriginalName(): String
+
+    fun getRestaurantId(): Int
+
+    fun getDate(): LocalDate
+
+    fun getType(): String
+
+    fun getPrice(): Int?
+
+    fun getNoMeat(): Boolean
+
+    fun getScore(): Double?
+
+    fun getReviewCnt(): Int
+
+    fun getLikeCnt(): Int
+
+    fun getIsLiked(): Int
+}
+
 interface MenuV2DetailRow {
     fun getMenuId(): Long
 
@@ -181,6 +209,58 @@ data class MenuV2DateWithTypeDto(
 data class MenuV2ListResponseDto(
     val count: Int,
     val result: List<MenuV2DateWithTypeDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2MealListMenuDto(
+    val menuId: Long,
+    val menuName: String,
+    val score: Double?,
+    val reviewCnt: Int,
+    val likeCnt: Int,
+    val isLiked: Boolean,
+) {
+    companion object {
+        fun from(row: MenuV2MealListRow): MenuV2MealListMenuDto =
+            MenuV2MealListMenuDto(
+                menuId = row.getMenuId(),
+                menuName = row.getOriginalName(),
+                score = row.getScore(),
+                reviewCnt = row.getReviewCnt(),
+                likeCnt = row.getLikeCnt(),
+                isLiked = row.getIsLiked() == 1,
+            )
+    }
+}
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2MealListMealDto(
+    val price: Int?,
+    val noMeat: Boolean,
+    val menus: List<MenuV2MealListMenuDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2MealListRestaurantDto(
+    val id: Int,
+    val restaurantName: String,
+    val meals: List<MenuV2MealListMealDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2MealListBuildingDto(
+    val buildingNumber: String,
+    val buildingName: String?,
+    val restaurants: List<MenuV2MealListRestaurantDto>,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MenuV2MealListResponseDto(
+    @field:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val date: LocalDate,
+    val dateType: String,
+    val type: String,
+    val buildings: List<MenuV2MealListBuildingDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

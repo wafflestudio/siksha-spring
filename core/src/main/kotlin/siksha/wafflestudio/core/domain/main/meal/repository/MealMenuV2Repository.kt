@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param
 import siksha.wafflestudio.core.domain.main.meal.data.MealMenuV2
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextRow
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
 import java.time.LocalDate
 
@@ -57,6 +58,82 @@ interface MealMenuV2Repository : JpaRepository<MealMenuV2, Long> {
         @Param("endDate") endDate: LocalDate,
         @Param("userId") userId: Int,
     ): List<MenuV2MealRow>
+
+    @Query(
+        """
+        select
+            mm.id as mealMenuId,
+            meal.id as mealId,
+            menu.id as menuId,
+            mm.original_name as originalName,
+            restaurant.id as restaurantId,
+            meal.date as date,
+            meal.type as type,
+            meal.price as price,
+            meal.no_meat as noMeat,
+            review_stats.score as score,
+            ifnull(review_stats.reviewCnt, 0) as reviewCnt,
+            ifnull(like_stats.likeCnt, 0) as likeCnt,
+            case when user_like.id is null then 0 else 1 end as isLiked
+        from meal_menu_v2 mm
+        join meal_v2 meal on meal.id = mm.meal_id
+        join menu_v2 menu on menu.id = mm.menu_id
+        join restaurant_v2 restaurant on restaurant.id = meal.restaurant_id
+        left join (
+            select review.menu_id as menuId, avg(review.score) as score, count(review.id) as reviewCnt
+            from review_v2 review
+            group by review.menu_id
+        ) review_stats on review_stats.menuId = menu.id
+        left join (
+            select menu_like.menu_id as menuId, count(menu_like.id) as likeCnt
+            from menu_like_v2 menu_like
+            where coalesce(menu_like.is_liked, 1) = 1
+            group by menu_like.menu_id
+        ) like_stats on like_stats.menuId = menu.id
+        left join menu_like_v2 user_like
+            on user_like.menu_id = menu.id
+            and user_like.user_id = :userId
+            and coalesce(user_like.is_liked, 1) = 1
+        where meal.date = :date
+          and meal.type = :type
+        order by meal.id asc, mm.id asc
+        """,
+        nativeQuery = true,
+    )
+    fun getMenusByDateAndType(
+        @Param("date") date: LocalDate,
+        @Param("type") type: String,
+        @Param("userId") userId: Int,
+    ): List<MenuV2MealListRow>
+
+    @Query(
+        """
+        select
+            mm.id as mealMenuId,
+            meal.id as mealId,
+            mm.menu_id as menuId,
+            mm.original_name as originalName,
+            meal.restaurant_id as restaurantId,
+            meal.date as date,
+            meal.type as type,
+            meal.price as price,
+            meal.no_meat as noMeat,
+            null as score,
+            0 as reviewCnt,
+            0 as likeCnt,
+            0 as isLiked
+        from meal_menu_v2 mm
+        join meal_v2 meal on meal.id = mm.meal_id
+        where meal.date = :date
+          and meal.type = :type
+        order by meal.id asc, mm.id asc
+        """,
+        nativeQuery = true,
+    )
+    fun findWebMenuRowsByDateAndType(
+        @Param("date") date: LocalDate,
+        @Param("type") type: String,
+    ): List<MenuV2MealListRow>
 
     @Query(
         """
