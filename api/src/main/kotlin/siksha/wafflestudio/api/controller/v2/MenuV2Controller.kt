@@ -17,7 +17,7 @@ import siksha.wafflestudio.api.common.userId
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2AlarmDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2ListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.service.MenuV2Service
 import java.time.LocalDate
 
@@ -29,34 +29,29 @@ class MenuV2Controller(
 ) {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get personalized V2 menus", description = "Get V2 menus by date range with custom order and likes")
+    @Operation(summary = "Get personalized V2 menus", description = "Get V2 menus by date and meal type with custom order")
     @SecurityRequirement(name = "bearerAuth")
-    fun getMenusWhereDate(
-        @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-        @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
+    fun getMenusByDateAndType(
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam("type") type: String,
         request: HttpServletRequest,
-    ): MenuV2ListResponseDto =
-        menuService.getMenusWhereDate(
-            startDate = startDate,
-            endDate = endDate,
-            exceptEmpty = exceptEmpty,
+    ): MenuV2MealListResponseDto =
+        menuService.getMenusByDateAndType(
+            date = date,
+            type = type,
             userId = request.userId,
         )
 
     @GetMapping("/web")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get web V2 menus", description = "Get V2 menus by date range for unauthenticated clients")
-    fun getMenusWhereDateWithoutAuth(
-        @RequestParam("start_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam("end_date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate,
-        @RequestParam("except_empty", defaultValue = "false") exceptEmpty: Boolean,
-    ): MenuV2ListResponseDto =
-        menuService.getMenusWhereDate(
-            startDate = startDate,
-            endDate = endDate,
-            exceptEmpty = exceptEmpty,
-            userId = null,
+    @Operation(summary = "Get web V2 menus", description = "Get V2 menus by date and meal type for unauthenticated clients")
+    fun getMenusByDateAndTypeWithoutAuth(
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @RequestParam("type") type: String,
+    ): MenuV2MealListResponseDto =
+        menuService.getMenusByDateAndTypeForWeb(
+            date = date,
+            type = type,
         )
 
     @PostMapping("/{menuId}/like")

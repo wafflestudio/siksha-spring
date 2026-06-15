@@ -5,27 +5,28 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
+import siksha.wafflestudio.core.domain.common.exception.InvalidMealTypeException
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
 import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.main.meal.data.MealType
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2AlarmDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2BuildingInListDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DateWithTypeDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2InListDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedBuildingDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedRestaurantDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2ListResponseDto
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextDto
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealRow
-import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2RestaurantInListDto
-import siksha.wafflestudio.core.domain.main.menu.dto.toMealTypeCode
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListBuildingDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListMealDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListMenuDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRestaurantDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRow
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
@@ -59,61 +60,57 @@ class MenuV2Service(
 ) {
     private val holidays: Set<LocalDate> = loadHolidays()
 
-    fun getMenusWhereDate(
-        startDate: LocalDate,
-        endDate: LocalDate,
-        exceptEmpty: Boolean,
-        userId: Int?,
-    ): MenuV2ListResponseDto {
-        if (startDate.isAfter(endDate)) {
-            return MenuV2ListResponseDto(count = 0, result = emptyList())
-        }
+    fun getMenusByDateAndType(
+        date: LocalDate,
+        type: String,
+        userId: Int,
+    ): MenuV2MealListResponseDto {
+        val mealType = type.toMealType()
+        val rows = mealMenuRepository.getMenusByDateAndType(date, mealType.name, userId)
+        return buildMealListResponse(date = date, mealType = mealType, rows = rows, userId = userId)
+    }
 
-        val targetUserId = userId ?: 0
-        val rows = mealMenuRepository.findMenuRowsByDate(startDate, endDate, targetUserId)
+    fun getMenusByDateAndTypeForWeb(
+        date: LocalDate,
+        type: String,
+    ): MenuV2MealListResponseDto {
+        val mealType = type.toMealType()
+        val rows = mealMenuRepository.findWebMenuRowsByDateAndType(date, mealType.name)
+        return buildMealListResponse(date = date, mealType = mealType, rows = rows, userId = null)
+    }
+
+    private fun buildMealListResponse(
+        date: LocalDate,
+        mealType: MealType,
+        rows: List<MenuV2MealListRow>,
+        userId: Int?,
+    ): MenuV2MealListResponseDto {
         if (rows.isEmpty()) {
-            return MenuV2ListResponseDto(count = 0, result = emptyList())
+            return MenuV2MealListResponseDto(
+                date = date,
+                dateType = getDateType(date),
+                type = mealType.toMealTypeCode(),
+                buildings = emptyList(),
+            )
         }
 
         val restaurants = restaurantRepository.findAllForList()
         val buildingCustomMap = userId?.let { loadBuildingCustomMap(it) }
         val restaurantCustomMap = userId?.let { loadRestaurantCustomMap(it, restaurants) }
         val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
-        val rowsByDateAndType = rows.groupBy { it.getDate() to it.getType().toMealTypeCode() }
 
-        val result =
-            datesBetween(startDate, endDate).map { date ->
-                MenuV2DateWithTypeDto(
-                    date = date,
-                    dateType = getDateType(date),
-                    breakfast =
-                        buildBuildings(
-                            restaurants = orderedRestaurants,
-                            rows = rowsByDateAndType[date to "BR"].orEmpty(),
-                            buildingCustomMap = buildingCustomMap,
-                            restaurantCustomMap = restaurantCustomMap,
-                            exceptEmpty = exceptEmpty,
-                        ),
-                    lunch =
-                        buildBuildings(
-                            restaurants = orderedRestaurants,
-                            rows = rowsByDateAndType[date to "LU"].orEmpty(),
-                            buildingCustomMap = buildingCustomMap,
-                            restaurantCustomMap = restaurantCustomMap,
-                            exceptEmpty = exceptEmpty,
-                        ),
-                    dinner =
-                        buildBuildings(
-                            restaurants = orderedRestaurants,
-                            rows = rowsByDateAndType[date to "DN"].orEmpty(),
-                            buildingCustomMap = buildingCustomMap,
-                            restaurantCustomMap = restaurantCustomMap,
-                            exceptEmpty = exceptEmpty,
-                        ),
-                )
-            }
-
-        return MenuV2ListResponseDto(count = result.size, result = result)
+        return MenuV2MealListResponseDto(
+            date = date,
+            dateType = getDateType(date),
+            type = mealType.toMealTypeCode(),
+            buildings =
+                buildMealListBuildings(
+                    restaurants = orderedRestaurants,
+                    rows = rows,
+                    buildingCustomMap = buildingCustomMap,
+                    restaurantCustomMap = restaurantCustomMap,
+                ),
+        )
     }
 
     fun getMenuById(
@@ -273,50 +270,60 @@ class MenuV2Service(
                 }
             }
 
-    private fun buildBuildings(
+    private fun buildMealListBuildings(
         restaurants: List<RestaurantV2>,
-        rows: List<MenuV2MealRow>,
+        rows: List<MenuV2MealListRow>,
         buildingCustomMap: Map<Int, CustomV2Item>?,
         restaurantCustomMap: Map<Int, CustomV2Item>?,
-        exceptEmpty: Boolean,
-    ): List<MenuV2BuildingInListDto> {
+    ): List<MenuV2MealListBuildingDto> {
         val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
         return restaurants
             .groupBy { it.building.id }
             .values
             .mapNotNull { restaurantsInBuilding ->
                 val building = restaurantsInBuilding.first().building
+                if (buildingCustomMap?.get(building.id)?.visible == false) {
+                    return@mapNotNull null
+                }
                 val restaurantDtos =
                     restaurantsInBuilding.mapNotNull { restaurant ->
-                        val menuDtos = rowsByRestaurant[restaurant.id].orEmpty().map(MenuV2InListDto::from)
-                        if (exceptEmpty && menuDtos.isEmpty()) {
+                        if (restaurantCustomMap?.get(restaurant.id)?.visible == false) {
+                            return@mapNotNull null
+                        }
+                        val mealDtos = rowsByRestaurant[restaurant.id].orEmpty().toMealListDtos()
+                        if (mealDtos.isEmpty()) {
                             null
                         } else {
-                            MenuV2RestaurantInListDto(
+                            MenuV2MealListRestaurantDto(
                                 id = restaurant.id,
-                                code = restaurant.name,
-                                nameKr = restaurant.name,
                                 restaurantName = restaurant.name,
-                                visible = restaurantCustomMap?.get(restaurant.id)?.visible ?: true,
-                                menus = menuDtos,
+                                meals = mealDtos,
                             )
                         }
                     }
-                if (exceptEmpty && restaurantDtos.isEmpty()) {
+                if (restaurantDtos.isEmpty()) {
                     null
                 } else {
-                    MenuV2BuildingInListDto(
+                    MenuV2MealListBuildingDto(
                         buildingNumber = building.number,
                         buildingName = building.name,
-                        addr = building.address,
-                        lat = building.latitude,
-                        lng = building.longitude,
-                        visible = buildingCustomMap?.get(building.id)?.visible ?: true,
                         restaurants = restaurantDtos,
                     )
                 }
             }
     }
+
+    private fun List<MenuV2MealListRow>.toMealListDtos(): List<MenuV2MealListMealDto> =
+        groupBy { it.getMealId() }
+            .values
+            .map { mealRows ->
+                val meal = mealRows.first()
+                MenuV2MealListMealDto(
+                    price = meal.getPrice(),
+                    noMeat = meal.getNoMeat(),
+                    menus = mealRows.map(MenuV2MealListMenuDto::from),
+                )
+            }
 
     private fun List<RestaurantV2>.sortedForMenu(
         buildingCustomMap: Map<Int, CustomV2Item>?,
@@ -389,19 +396,6 @@ class MenuV2Service(
         }
     }
 
-    private fun datesBetween(
-        startDate: LocalDate,
-        endDate: LocalDate,
-    ): List<LocalDate> {
-        val dates = mutableListOf<LocalDate>()
-        var currentDate = startDate
-        while (!currentDate.isAfter(endDate)) {
-            dates.add(currentDate)
-            currentDate = currentDate.plusDays(1)
-        }
-        return dates
-    }
-
     private fun loadHolidays(): Set<LocalDate> {
         val resourcePath = "/2025.json"
         val stream: InputStream =
@@ -419,5 +413,20 @@ class MenuV2Service(
             date.dayOfWeek == DayOfWeek.SUNDAY -> "HOLIDAY"
             date.dayOfWeek == DayOfWeek.SATURDAY -> "SATURDAY"
             else -> "WEEKDAY"
+        }
+
+    private fun String.toMealType(): MealType =
+        when (uppercase()) {
+            "BR" -> MealType.BREAKFAST
+            "LU" -> MealType.LUNCH
+            "DN" -> MealType.DINNER
+            else -> throw InvalidMealTypeException(this)
+        }
+
+    private fun MealType.toMealTypeCode(): String =
+        when (this) {
+            MealType.BREAKFAST -> "BR"
+            MealType.LUNCH -> "LU"
+            MealType.DINNER -> "DN"
         }
 }
