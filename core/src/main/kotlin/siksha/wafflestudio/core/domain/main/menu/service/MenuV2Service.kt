@@ -148,7 +148,7 @@ class MenuV2Service(
         userRepository.findById(userId).orElseThrow { UserNotFoundException() }
         val rows = menuLikeRepository.findLikedMenusByUserId(userId)
         if (rows.isEmpty()) {
-            return MenuV2LikedListResponseDto(count = 0, result = emptyList())
+            return MenuV2LikedListResponseDto(buildings = emptyList())
         }
 
         val restaurants = restaurantRepository.findAllForList()
@@ -158,7 +158,7 @@ class MenuV2Service(
         val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
 
         val result = buildLikedBuildings(orderedRestaurants, rowsByRestaurant, buildingCustomMap, restaurantCustomMap)
-        return MenuV2LikedListResponseDto(count = rows.size, result = result)
+        return MenuV2LikedListResponseDto(buildings = result)
     }
 
     @Transactional
@@ -239,18 +239,21 @@ class MenuV2Service(
             .values
             .mapNotNull { restaurantsInBuilding ->
                 val building = restaurantsInBuilding.first().building
+                if (buildingCustomMap?.get(building.id)?.visible == false) {
+                    return@mapNotNull null
+                }
                 val restaurantDtos =
                     restaurantsInBuilding.mapNotNull { restaurant ->
+                        if (restaurantCustomMap?.get(restaurant.id)?.visible == false) {
+                            return@mapNotNull null
+                        }
                         val menuDtos = rowsByRestaurant[restaurant.id].orEmpty().map(MenuV2LikedMenuDto::from)
                         if (menuDtos.isEmpty()) {
                             null
                         } else {
                             MenuV2LikedRestaurantDto(
                                 id = restaurant.id,
-                                code = restaurant.name,
-                                nameKr = restaurant.name,
                                 restaurantName = restaurant.name,
-                                visible = restaurantCustomMap?.get(restaurant.id)?.visible ?: true,
                                 menus = menuDtos,
                             )
                         }
@@ -261,10 +264,6 @@ class MenuV2Service(
                     MenuV2LikedBuildingDto(
                         buildingNumber = building.number,
                         buildingName = building.name,
-                        addr = building.address,
-                        lat = building.latitude,
-                        lng = building.longitude,
-                        visible = buildingCustomMap?.get(building.id)?.visible ?: true,
                         restaurants = restaurantDtos,
                     )
                 }

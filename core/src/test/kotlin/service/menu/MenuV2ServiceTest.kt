@@ -33,8 +33,6 @@ import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCust
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
-import java.sql.Timestamp
-import java.time.Instant
 import java.time.LocalDate
 import java.util.Optional
 
@@ -91,9 +89,6 @@ class MenuV2ServiceTest {
                     restaurantId = 10,
                     date = date,
                     originalName = "Original One",
-                    score = 4.5,
-                    reviewCnt = 2,
-                    likeCnt = 3,
                 ),
                 menuRow(
                     menuId = 101,
@@ -102,7 +97,6 @@ class MenuV2ServiceTest {
                     restaurantId = 10,
                     date = date,
                     originalName = "Original Two",
-                    isLiked = 1,
                 ),
             )
         every { restaurantRepository.findAllForList() } returns listOf(restaurant)
@@ -123,10 +117,10 @@ class MenuV2ServiceTest {
         assertFalse(meal.noMeat)
         assertEquals(listOf(100L, 101L), meal.menus.map { it.menuId })
         assertEquals(listOf("Original One", "Original Two"), meal.menus.map { it.menuName })
-        assertEquals(listOf(4.5, null), meal.menus.map { it.score })
-        assertEquals(listOf(2, 0), meal.menus.map { it.reviewCnt })
-        assertEquals(listOf(3, 0), meal.menus.map { it.likeCnt })
-        assertEquals(listOf(false, true), meal.menus.map { it.isLiked })
+        assertEquals(listOf(null, null), meal.menus.map { it.score })
+        assertEquals(listOf(0, 0), meal.menus.map { it.reviewCnt })
+        assertEquals(listOf(0, 0), meal.menus.map { it.likeCnt })
+        assertEquals(listOf(false, false), meal.menus.map { it.isLiked })
     }
 
     @Test
@@ -219,17 +213,17 @@ class MenuV2ServiceTest {
     fun `menu detail uses normalized menu id and includes meal contexts`() {
         every { mealMenuRepository.findMenuDetailById(10, 1) } returns menuDetail(menuId = 10)
         every { mealMenuRepository.findMealContextsByMenuId(10) } returns
-            listOf(mealContext(mealMenuId = 30, mealId = 20))
+            listOf(mealContext())
 
         val result = service.getMenuById(menuId = 10, userId = 1)
 
-        assertEquals(10, result.id)
-        assertEquals("Menu", result.nameKr)
+        assertEquals(10, result.menuId)
+        assertEquals("Menu", result.menuName)
         assertEquals("301", result.buildingNumber)
         assertTrue(result.isLiked)
         assertEquals(1, result.meals.size)
-        assertEquals(20, result.meals[0].mealId)
         assertEquals("LU", result.meals[0].type)
+        assertEquals("Original Menu", result.meals[0].menuName)
     }
 
     @Test
@@ -245,7 +239,7 @@ class MenuV2ServiceTest {
         val result = service.likeMenu(menuId = 10, userId = 1)
 
         verify { menuLikeRepository.likeMenu(userId = 1, menuId = 10) }
-        assertEquals(10, result.id)
+        assertEquals(10, result.menuId)
         assertTrue(result.isLiked)
     }
 
@@ -264,7 +258,7 @@ class MenuV2ServiceTest {
 
         verify { menuLikeRepository.unlikeMenu(userId = 1, menuId = 10) }
         verify { menuAlarmRepository.deleteMenuAlarm(userId = 1, menuId = 10) }
-        assertEquals(10, result.id)
+        assertEquals(10, result.menuId)
         assertFalse(result.isLiked)
     }
 
@@ -302,18 +296,17 @@ class MenuV2ServiceTest {
 
         val result = service.getMyMenus(userId = 1)
 
-        assertEquals(1, result.count)
-        assertEquals("301", result.result[0].buildingNumber)
-        assertEquals(1, result.result[0].restaurants[0].id)
+        assertEquals("301", result.buildings[0].buildingNumber)
+        assertEquals(1, result.buildings[0].restaurants[0].id)
         assertEquals(
             10,
-            result.result[0]
+            result.buildings[0]
                 .restaurants[0]
                 .menus[0]
-                .id,
+                .menuId,
         )
         assertTrue(
-            result.result[0]
+            result.buildings[0]
                 .restaurants[0]
                 .menus[0]
                 .isLiked,
@@ -350,10 +343,7 @@ class MenuV2ServiceTest {
         isLiked: Int = 1,
     ): MenuV2DetailRow = TestMenuDetailRow(menuId = menuId, isLiked = isLiked)
 
-    private fun mealContext(
-        mealMenuId: Long,
-        mealId: Long,
-    ): MenuV2MealContextRow = TestMealContextRow(mealMenuId = mealMenuId, mealId = mealId)
+    private fun mealContext(): MenuV2MealContextRow = TestMealContextRow()
 
     private fun likedMenuRow(
         menuId: Long,
@@ -425,8 +415,6 @@ class MenuV2ServiceTest {
 
         override fun getBuildingName(): String = "Building"
 
-        override fun getMenuCreatedAt(): Timestamp = timestamp()
-
         override fun getScore(): Double = 4.0
 
         override fun getReviewCnt(): Int = 10
@@ -436,14 +424,7 @@ class MenuV2ServiceTest {
         override fun getIsLiked(): Int = isLiked
     }
 
-    private data class TestMealContextRow(
-        private val mealMenuId: Long,
-        private val mealId: Long,
-    ) : MenuV2MealContextRow {
-        override fun getMealMenuId(): Long = mealMenuId
-
-        override fun getMealId(): Long = mealId
-
+    private class TestMealContextRow : MenuV2MealContextRow {
         override fun getDate(): LocalDate = LocalDate.of(2026, 6, 2)
 
         override fun getType(): String = "LUNCH"
@@ -453,8 +434,6 @@ class MenuV2ServiceTest {
         override fun getNoMeat(): Boolean = false
 
         override fun getOriginalName(): String = "Original Menu"
-
-        override fun getMealCreatedAt(): Timestamp = timestamp()
     }
 
     private data class TestLikedMenuRow(
@@ -467,8 +446,6 @@ class MenuV2ServiceTest {
 
         override fun getRestaurantId(): Int = restaurantId
 
-        override fun getMenuCreatedAt(): Timestamp = timestamp()
-
         override fun getScore(): Double = 4.5
 
         override fun getReviewCnt(): Int = 2
@@ -476,9 +453,5 @@ class MenuV2ServiceTest {
         override fun getLikeCnt(): Int = 3
 
         override fun getAlarm(): Int = 1
-    }
-
-    companion object {
-        private fun timestamp(): Timestamp = Timestamp.from(Instant.parse("2026-06-02T00:00:00Z"))
     }
 }
