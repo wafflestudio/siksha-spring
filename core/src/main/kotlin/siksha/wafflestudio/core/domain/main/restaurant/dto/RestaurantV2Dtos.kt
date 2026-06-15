@@ -117,46 +117,31 @@ data class RestaurantV2LikeRequestDto(
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class BuildingV2CustomItemDto(
+data class CustomV2RestaurantItemDto(
+    val name: String,
+    val order: Int,
+    val visible: Boolean,
+)
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class CustomV2BuildingItemDto(
     val buildingNumber: String,
     val order: Int,
     val visible: Boolean,
+    val restaurants: List<CustomV2RestaurantItemDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class BuildingV2CustomResponseDto(
-    val customs: List<BuildingV2CustomItemDto>,
+data class CustomV2ResponseDto(
+    val customs: List<CustomV2BuildingItemDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class BuildingV2CustomUpdateRequestDto(
-    val customs: List<BuildingV2CustomItemDto>,
+data class CustomV2UpdateRequestDto(
+    val customs: List<CustomV2BuildingItemDto>,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class BuildingV2CustomUpdateResponseDto(
-    val customs: List<BuildingV2CustomItemDto>,
-)
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2CustomItemDto(
-    @field:JsonProperty("id")
-    val restaurantId: Int,
-    val order: Int,
-    val visible: Boolean,
-)
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2CustomResponseDto(
-    val customs: List<RestaurantV2CustomItemDto>,
-)
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2CustomUpdateRequestDto(
-    val customs: List<RestaurantV2CustomItemDto>,
-)
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class RestaurantV2CustomUpdateResponseDto(
-    val customs: List<RestaurantV2CustomItemDto>,
+data class CustomV2UpdateResponseDto(
+    val customs: List<CustomV2BuildingItemDto>,
 )

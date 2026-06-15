@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
 import siksha.wafflestudio.core.domain.common.exception.InvalidMealTypeException
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
 import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
@@ -30,16 +29,10 @@ import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRow
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Document
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
-import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Json
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.itemOf
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Service
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.io.InputStream
 import java.time.DayOfWeek
@@ -50,9 +43,7 @@ import java.time.format.DateTimeFormatter
 class MenuV2Service(
     private val mealMenuRepository: MealMenuV2Repository,
     private val restaurantRepository: RestaurantV2Repository,
-    private val buildingRepository: BuildingV2Repository,
-    private val buildingCustomRepository: BuildingCustomV2Repository,
-    private val restaurantCustomRepository: RestaurantCustomV2Repository,
+    private val customService: CustomV2Service,
     private val menuRepository: MenuV2Repository,
     private val menuLikeRepository: MenuLikeV2Repository,
     private val menuAlarmRepository: MenuAlarmV2Repository,
@@ -95,8 +86,9 @@ class MenuV2Service(
         }
 
         val restaurants = restaurantRepository.findAllForList()
-        val buildingCustomMap = userId?.let { loadBuildingCustomMap(it) }
-        val restaurantCustomMap = userId?.let { loadRestaurantCustomMap(it, restaurants) }
+        val customMaps = userId?.let { customService.getCustomMaps(it) }
+        val buildingCustomMap = customMaps?.buildingCustomMap
+        val restaurantCustomMap = customMaps?.restaurantCustomMap
         val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
 
         return MenuV2MealListResponseDto(
@@ -152,8 +144,9 @@ class MenuV2Service(
         }
 
         val restaurants = restaurantRepository.findAllForList()
-        val buildingCustomMap = loadBuildingCustomMap(userId)
-        val restaurantCustomMap = loadRestaurantCustomMap(userId, restaurants)
+        val customMaps = customService.getCustomMaps(userId)
+        val buildingCustomMap = customMaps?.buildingCustomMap
+        val restaurantCustomMap = customMaps?.restaurantCustomMap
         val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
         val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
 
@@ -336,64 +329,6 @@ class MenuV2Service(
                 { restaurant -> restaurant.id },
             ),
         )
-
-    private fun loadBuildingCustomMap(userId: Int): Map<Int, CustomV2Item>? {
-        val custom = buildingCustomRepository.findByUserId(userId) ?: return null
-        val buildings = buildingRepository.findAllForList()
-        return requireCompleteBuildingDocument(CustomV2Json.parse(custom.customs), buildings)
-    }
-
-    private fun loadRestaurantCustomMap(
-        userId: Int,
-        restaurants: List<RestaurantV2>,
-    ): Map<Int, CustomV2Item>? =
-        restaurantCustomRepository
-            .findByUserId(userId)
-            ?.let { requireCompleteRestaurantDocument(CustomV2Json.parse(it.customs), restaurants) }
-
-    private fun requireCompleteBuildingDocument(
-        document: CustomV2Document,
-        buildings: List<BuildingV2>,
-    ): Map<Int, CustomV2Item> {
-        val expectedIds = buildings.map { it.id }.toSet()
-        val itemMap = requireCompleteItems(document, expectedIds)
-        validateDenseOrder(itemMap.values.map { it.order!! })
-        return itemMap
-    }
-
-    private fun requireCompleteRestaurantDocument(
-        document: CustomV2Document,
-        restaurants: List<RestaurantV2>,
-    ): Map<Int, CustomV2Item> {
-        val expectedIds = restaurants.map { it.id }.toSet()
-        val itemMap = requireCompleteItems(document, expectedIds)
-        restaurants.groupBy { it.building.id }.values.forEach { restaurantsInBuilding ->
-            validateDenseOrder(restaurantsInBuilding.map { itemMap[it.id]!!.order!! })
-        }
-        return itemMap
-    }
-
-    private fun requireCompleteItems(
-        document: CustomV2Document,
-        expectedIds: Set<Int>,
-    ): Map<Int, CustomV2Item> {
-        val actualIds =
-            document.items.keys
-                .map { it.toIntOrNull() ?: throw InvalidCustomException() }
-                .toSet()
-        if (actualIds != expectedIds) {
-            throw InvalidCustomException()
-        }
-        return expectedIds.associateWith { id ->
-            document.itemOf(id)?.takeIf { it.isComplete() } ?: throw InvalidCustomException()
-        }
-    }
-
-    private fun validateDenseOrder(orders: List<Int>) {
-        if (orders.toSet() != (1..orders.size).toSet()) {
-            throw InvalidCustomException()
-        }
-    }
 
     private fun loadHolidays(): Set<LocalDate> {
         val resourcePath = "/2025.json"
