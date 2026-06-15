@@ -58,7 +58,6 @@ interface MenuLikeV2Repository : JpaRepository<MenuLikeV2, Long> {
                 menu.id as menuId,
                 menu.name as menuName,
                 restaurant.id as restaurantId,
-                menu.created_at as menuCreatedAt,
                 review_stats.score as score,
                 ifnull(review_stats.reviewCnt, 0) as reviewCnt,
                 ifnull(like_stats.likeCnt, 0) as likeCnt,

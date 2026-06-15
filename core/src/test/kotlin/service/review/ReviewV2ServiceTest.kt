@@ -31,7 +31,6 @@ import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import java.sql.Timestamp
 import java.time.Instant
-import java.time.OffsetDateTime
 import java.util.Optional
 
 class ReviewV2ServiceTest {
@@ -91,7 +90,7 @@ class ReviewV2ServiceTest {
                 request = ReviewV2Request(menu_id = 10, score = 5, comment = "good"),
             )
 
-        assertEquals(10, result.id)
+        assertEquals(10, result.menuId)
         assertEquals(-1, keywordSlot.captured.taste)
         assertEquals(-1, keywordSlot.captured.price)
         assertEquals(-1, keywordSlot.captured.foodComposition)
@@ -147,9 +146,8 @@ class ReviewV2ServiceTest {
 
     private fun menuDetails(): MenuV2DetailsDto =
         MenuV2DetailsDto(
-            id = 10,
-            code = "Menu",
-            nameKr = "Menu",
+            menuId = 10,
+            menuName = "Menu",
             restaurantId = 1,
             restaurantName = "Restaurant",
             buildingNumber = "301",
@@ -158,7 +156,6 @@ class ReviewV2ServiceTest {
             reviewCnt = 1,
             likeCnt = 0,
             isLiked = false,
-            createdAt = OffsetDateTime.parse("2026-06-02T00:00:00Z"),
             meals = emptyList(),
         )
 
