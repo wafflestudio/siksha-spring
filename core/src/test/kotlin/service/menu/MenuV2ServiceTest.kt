@@ -23,14 +23,12 @@ import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repositor
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
 import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.service.MenuV2Service
-import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantCustomV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Maps
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Service
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.time.LocalDate
@@ -39,9 +37,7 @@ import java.util.Optional
 class MenuV2ServiceTest {
     private lateinit var mealMenuRepository: MealMenuV2Repository
     private lateinit var restaurantRepository: RestaurantV2Repository
-    private lateinit var buildingRepository: BuildingV2Repository
-    private lateinit var buildingCustomRepository: BuildingCustomV2Repository
-    private lateinit var restaurantCustomRepository: RestaurantCustomV2Repository
+    private lateinit var customService: CustomV2Service
     private lateinit var menuRepository: MenuV2Repository
     private lateinit var menuLikeRepository: MenuLikeV2Repository
     private lateinit var menuAlarmRepository: MenuAlarmV2Repository
@@ -53,9 +49,7 @@ class MenuV2ServiceTest {
         clearAllMocks()
         mealMenuRepository = mockk()
         restaurantRepository = mockk()
-        buildingRepository = mockk()
-        buildingCustomRepository = mockk()
-        restaurantCustomRepository = mockk()
+        customService = mockk()
         menuRepository = mockk()
         menuLikeRepository = mockk()
         menuAlarmRepository = mockk()
@@ -64,9 +58,7 @@ class MenuV2ServiceTest {
             MenuV2Service(
                 mealMenuRepository,
                 restaurantRepository,
-                buildingRepository,
-                buildingCustomRepository,
-                restaurantCustomRepository,
+                customService,
                 menuRepository,
                 menuLikeRepository,
                 menuAlarmRepository,
@@ -143,35 +135,21 @@ class MenuV2ServiceTest {
             )
         every { restaurantRepository.findAllForList() } returns
             listOf(firstRestaurant, secondRestaurant, thirdRestaurant, fourthRestaurant)
-        every { buildingRepository.findAllForList() } returns listOf(firstBuilding, secondBuilding, thirdBuilding)
-        every { buildingCustomRepository.findByUserId(1) } returns
-            BuildingCustomV2(
-                userId = 1,
-                customs =
-                    """
-                    {
-                      "items": {
-                        "1": {"order": 2, "visible": true},
-                        "2": {"order": 1, "visible": true},
-                        "3": {"order": 3, "visible": false}
-                      }
-                    }
-                    """.trimIndent(),
-            )
-        every { restaurantCustomRepository.findByUserId(1) } returns
-            RestaurantCustomV2(
-                userId = 1,
-                customs =
-                    """
-                    {
-                      "items": {
-                        "1": {"order": 1, "visible": true},
-                        "2": {"order": 2, "visible": true},
-                        "3": {"order": 1, "visible": false},
-                        "4": {"order": 1, "visible": true}
-                      }
-                    }
-                    """.trimIndent(),
+        every { customService.getCustomMaps(1) } returns
+            CustomV2Maps(
+                buildingCustomMap =
+                    mapOf(
+                        1 to CustomV2Item(order = 2, visible = true),
+                        2 to CustomV2Item(order = 1, visible = true),
+                        3 to CustomV2Item(order = 3, visible = false),
+                    ),
+                restaurantCustomMap =
+                    mapOf(
+                        1 to CustomV2Item(order = 1, visible = true),
+                        2 to CustomV2Item(order = 2, visible = true),
+                        3 to CustomV2Item(order = 1, visible = false),
+                        4 to CustomV2Item(order = 1, visible = true),
+                    ),
             )
 
         val result = service.getMenusByDateAndType(date = date, type = "LU", userId = 1)
@@ -291,8 +269,7 @@ class MenuV2ServiceTest {
         every { menuLikeRepository.findLikedMenusByUserId(1) } returns
             listOf(likedMenuRow(menuId = 10, restaurantId = 1))
         every { restaurantRepository.findAllForList() } returns listOf(restaurant)
-        every { buildingCustomRepository.findByUserId(1) } returns null
-        every { restaurantCustomRepository.findByUserId(1) } returns null
+        every { customService.getCustomMaps(1) } returns null
 
         val result = service.getMyMenus(userId = 1)
 

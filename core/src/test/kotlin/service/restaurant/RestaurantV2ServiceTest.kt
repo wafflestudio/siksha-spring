@@ -8,15 +8,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
-import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingCustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
-import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantCustomV2
+import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingCustomV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.BuildingV2Repository
-import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantCustomV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantLikeV2Repository
 import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Maps
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Service
 import siksha.wafflestudio.core.domain.main.restaurant.service.RestaurantV2Service
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import java.math.BigDecimal
@@ -25,9 +23,7 @@ import kotlin.test.assertNotNull
 class RestaurantV2ServiceTest {
     private lateinit var restaurantRepository: RestaurantV2Repository
     private lateinit var userRepository: UserRepository
-    private lateinit var buildingRepository: BuildingV2Repository
-    private lateinit var restaurantCustomRepository: RestaurantCustomV2Repository
-    private lateinit var buildingCustomRepository: BuildingCustomV2Repository
+    private lateinit var customService: CustomV2Service
     private lateinit var restaurantLikeRepository: RestaurantLikeV2Repository
     private lateinit var service: RestaurantV2Service
 
@@ -36,17 +32,13 @@ class RestaurantV2ServiceTest {
         clearAllMocks()
         restaurantRepository = mockk()
         userRepository = mockk()
-        buildingRepository = mockk()
-        restaurantCustomRepository = mockk()
-        buildingCustomRepository = mockk()
+        customService = mockk()
         restaurantLikeRepository = mockk()
         service =
             RestaurantV2Service(
                 restaurantRepository,
                 userRepository,
-                buildingRepository,
-                restaurantCustomRepository,
-                buildingCustomRepository,
+                customService,
                 restaurantLikeRepository,
             )
     }
@@ -95,30 +87,23 @@ class RestaurantV2ServiceTest {
         val secondRestaurant = RestaurantV2(id = 2, building = firstBuilding, name = "R2", defaultOrder = 2)
         val thirdRestaurant = RestaurantV2(id = 3, building = secondBuilding, name = "R3", defaultOrder = 1)
         val fourthRestaurant = RestaurantV2(id = 4, building = secondBuilding, name = "R4", defaultOrder = 2)
-        val restaurantCustomsJson =
-            """
-            {
-              "items": {
-                "1": { "order": 1, "visible": true },
-                "2": { "order": 2, "visible": true },
-                "4": { "order": 1, "visible": false },
-                "3": { "order": 2, "visible": true }
-              }
-            }
-            """.trimIndent()
 
         every { restaurantRepository.findAllForList() } returns
             listOf(firstRestaurant, secondRestaurant, thirdRestaurant, fourthRestaurant)
-        every { buildingRepository.findAllForList() } returns listOf(firstBuilding, secondBuilding)
-        every { buildingCustomRepository.findByUserId(1) } returns
-            BuildingCustomV2(
-                userId = 1,
-                customs = """{"items":{"2":{"order":1,"visible":false},"1":{"order":2,"visible":true}}}""",
-            )
-        every { restaurantCustomRepository.findByUserId(1) } returns
-            RestaurantCustomV2(
-                userId = 1,
-                customs = restaurantCustomsJson,
+        every { customService.getCustomMaps(1) } returns
+            CustomV2Maps(
+                buildingCustomMap =
+                    mapOf(
+                        1 to CustomV2Item(order = 2, visible = true),
+                        2 to CustomV2Item(order = 1, visible = false),
+                    ),
+                restaurantCustomMap =
+                    mapOf(
+                        1 to CustomV2Item(order = 1, visible = true),
+                        2 to CustomV2Item(order = 2, visible = true),
+                        4 to CustomV2Item(order = 1, visible = false),
+                        3 to CustomV2Item(order = 2, visible = true),
+                    ),
             )
         every { restaurantLikeRepository.findAllByUserId(1) } returns emptyList()
 
@@ -138,12 +123,7 @@ class RestaurantV2ServiceTest {
         val restaurant = RestaurantV2(id = 1, building = building, name = "R1", defaultOrder = 1)
 
         every { restaurantRepository.findAllForList() } returns listOf(restaurant)
-        every { buildingRepository.findAllForList() } returns listOf(building)
-        every { buildingCustomRepository.findByUserId(1) } returns
-            BuildingCustomV2(
-                userId = 1,
-                customs = """{"items":{"1":{"order":1}}}""",
-            )
+        every { customService.getCustomMaps(1) } throws InvalidCustomException()
 
         assertThrows<InvalidCustomException> {
             service.getAllPersonalizedRestaurants(1)

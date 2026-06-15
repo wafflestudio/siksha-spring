@@ -9,9 +9,9 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
-@Entity(name = "building_custom_v2")
-@Table(name = "building_custom_v2")
-data class BuildingCustomV2(
+@Entity(name = "custom_v2")
+@Table(name = "custom_v2")
+data class CustomV2(
     @Id
     @Column(name = "user_id", nullable = false)
     val userId: Int,
