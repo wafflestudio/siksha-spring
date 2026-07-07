@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import siksha.wafflestudio.core.domain.main.menu.service.FestivalService
+import siksha.wafflestudio.core.domain.v1.main.menu.service.FestivalService
 import java.time.LocalDate
 
 class FestivalServiceTest {

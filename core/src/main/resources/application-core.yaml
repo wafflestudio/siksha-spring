@@ -4,8 +4,10 @@ spring:
       ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-      jdbc:
-        time_zone: UTC
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
     show-sql: true
   flyway:
     enabled: true

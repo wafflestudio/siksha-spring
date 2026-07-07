@@ -22,6 +22,10 @@ class UnauthorizedUserException : MainException(HttpStatus.UNAUTHORIZED, "인증
 
 class MenuNotFoundException : MainException(HttpStatus.NOT_FOUND, "해당 메뉴를 찾을 수 없습니다.")
 
+class InvalidMealTypeException(
+    mealType: String,
+) : MainException(HttpStatus.BAD_REQUEST, "지원하지 않는 meal type 입니다: $mealType")
+
 class MenuLikeException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메뉴 좋아요 처리 중에 오류가 발생했습니다.")
 
 class MenuAlarmException : MainException(HttpStatus.INTERNAL_SERVER_ERROR, "메뉴 알림 처리 중에 오류가 발생했습니다.")

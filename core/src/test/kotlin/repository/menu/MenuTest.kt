@@ -6,9 +6,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.main.menu.data.Menu
-import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
-import siksha.wafflestudio.core.domain.main.restaurant.data.Restaurant
+import siksha.wafflestudio.core.domain.v1.main.menu.data.Menu
+import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.data.Restaurant
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

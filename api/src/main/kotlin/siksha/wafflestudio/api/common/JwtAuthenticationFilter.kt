@@ -34,6 +34,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/community/**/web"),
             AntPathRequestMatcher("/menus/**/web"),
             AntPathRequestMatcher("/reviews/**/web"),
+            AntPathRequestMatcher("/v2/**/web"),
             AntPathRequestMatcher("/error"),
             AntPathRequestMatcher("/swagger-ui/**"),
             AntPathRequestMatcher("/v3/api-docs/**"),
@@ -46,9 +47,11 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/reviews/comments/recommendation"),
             AntPathRequestMatcher("/reviews/dist"),
             AntPathRequestMatcher("/reviews/keyword/dist"),
+            AntPathRequestMatcher("/v2/reviews/dist"),
+            AntPathRequestMatcher("/v2/reviews/keyword/dist"),
             AntPathRequestMatcher("/voc"),
             AntPathRequestMatcher("/ping"),
-            AntPathRequestMatcher("/crawler/**"),
+            AntPathRequestMatcher("/v2/crawler/**"),
             AntPathRequestMatcher("/menus/festival/**"),
         )
 

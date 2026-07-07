@@ -4,10 +4,11 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import siksha.wafflestudio.core.domain.main.menu.repository.MenuRepository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.dto.DailyMenuAlarm
 import siksha.wafflestudio.core.domain.user.dto.MenuAlarmSendDto
+import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
 import java.time.LocalDate
 
 @Component
@@ -15,13 +16,18 @@ import java.time.LocalDate
 @Qualifier("dailyAlarmProcessor")
 class DailyAlarmProcessor(
     private val menuRepository: MenuRepository,
+    private val menuAlarmV2Repository: MenuAlarmV2Repository,
     private val chunkPrefetchListener: ChunkPrefetchListener,
 ) : ItemProcessor<User, DailyMenuAlarm> {
     private val todayMenusSet: Set<Pair<String, Int>> by lazy {
-        menuRepository
-            .findAllByDate(LocalDate.now())
-            .map { it.getCode() to it.getRestaurantId() }
-            .toSet()
+        (
+            menuRepository
+                .findAllByDate(LocalDate.now())
+                .map { it.getCode() to it.getRestaurantId() } +
+                menuAlarmV2Repository
+                    .findAllAlarmMenusByDate(LocalDate.now())
+                    .map { it.getCode() to it.getRestaurantId() }
+        ).toSet()
     }
 
     override fun process(user: User): DailyMenuAlarm? {

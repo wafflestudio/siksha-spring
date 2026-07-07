@@ -1,0 +1,68 @@
+package siksha.wafflestudio.core.domain.v1.main.menu.dto
+
+import java.sql.Timestamp
+import java.time.LocalDate
+
+interface MenuSummary {
+    fun getId(): Int
+
+    fun getRestaurantId(): Int
+
+    fun getCode(): String
+
+    fun getDate(): LocalDate
+
+    fun getType(): String
+
+    fun getNameKr(): String?
+
+    fun getNameEn(): String?
+
+    fun getPrice(): Int?
+
+    fun getEtc(): String?
+
+    fun getCreatedAt(): Timestamp
+
+    fun getUpdatedAt(): Timestamp
+
+    fun getScore(): Double?
+
+    fun getReviewCnt(): Int
+}
+
+interface MenuPlainSummary {
+    fun getId(): Int
+
+    fun getRestaurantId(): Int
+
+    fun getCode(): String
+}
+
+interface MenuLikeSummary {
+    fun getId(): Int
+
+    fun getLikeCnt(): Int
+
+    fun getIsLiked(): Int
+}
+
+interface MenuLikeCount {
+    fun getId(): Int
+
+    fun getLikeCount(): Int
+}
+
+interface AlarmMenuSummary {
+    fun getId(): Int
+
+    fun getNameKr(): String?
+
+    fun getUserId(): Int
+
+    fun getRestaurantId(): Int
+
+    fun getRestaurantName(): String
+
+    fun getCode(): String
+}

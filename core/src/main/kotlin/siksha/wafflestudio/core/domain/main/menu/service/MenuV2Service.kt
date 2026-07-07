@@ -1,0 +1,366 @@
+package siksha.wafflestudio.core.domain.main.menu.service
+
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import siksha.wafflestudio.core.domain.common.exception.InvalidMealTypeException
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmAlreadyExistsException
+import siksha.wafflestudio.core.domain.common.exception.MenuAlarmException
+import siksha.wafflestudio.core.domain.common.exception.MenuNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.MenuNotLikedException
+import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.main.meal.data.MealType
+import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2AlarmDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailsDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedBuildingDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedMenuRow
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2LikedRestaurantDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealContextDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListBuildingDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListMealDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListMenuDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListResponseDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRestaurantDto
+import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2MealListRow
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuAlarmV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuLikeV2Repository
+import siksha.wafflestudio.core.domain.main.menu.repository.MenuV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
+import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
+import siksha.wafflestudio.core.domain.main.restaurant.repository.RestaurantV2Repository
+import siksha.wafflestudio.core.domain.main.restaurant.service.CustomV2Service
+import siksha.wafflestudio.core.domain.user.repository.UserRepository
+import java.io.InputStream
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+@Service
+class MenuV2Service(
+    private val mealMenuRepository: MealMenuV2Repository,
+    private val restaurantRepository: RestaurantV2Repository,
+    private val customService: CustomV2Service,
+    private val menuRepository: MenuV2Repository,
+    private val menuLikeRepository: MenuLikeV2Repository,
+    private val menuAlarmRepository: MenuAlarmV2Repository,
+    private val userRepository: UserRepository,
+) {
+    private val holidays: Set<LocalDate> = loadHolidays()
+
+    fun getMenusByDateAndType(
+        date: LocalDate,
+        type: String,
+        userId: Int,
+    ): MenuV2MealListResponseDto {
+        val mealType = type.toMealType()
+        val rows = mealMenuRepository.getMenusByDateAndType(date, mealType.name, userId)
+        return buildMealListResponse(date = date, mealType = mealType, rows = rows, userId = userId)
+    }
+
+    fun getMenusByDateAndTypeForWeb(
+        date: LocalDate,
+        type: String,
+    ): MenuV2MealListResponseDto {
+        val mealType = type.toMealType()
+        val rows = mealMenuRepository.findWebMenuRowsByDateAndType(date, mealType.name)
+        return buildMealListResponse(date = date, mealType = mealType, rows = rows, userId = null)
+    }
+
+    private fun buildMealListResponse(
+        date: LocalDate,
+        mealType: MealType,
+        rows: List<MenuV2MealListRow>,
+        userId: Int?,
+    ): MenuV2MealListResponseDto {
+        if (rows.isEmpty()) {
+            return MenuV2MealListResponseDto(
+                date = date,
+                dateType = getDateType(date),
+                type = mealType.toMealTypeCode(),
+                buildings = emptyList(),
+            )
+        }
+
+        val restaurants = restaurantRepository.findAllForList()
+        val customMaps = userId?.let { customService.getCustomMaps(it) }
+        val buildingCustomMap = customMaps?.buildingCustomMap
+        val restaurantCustomMap = customMaps?.restaurantCustomMap
+        val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
+
+        return MenuV2MealListResponseDto(
+            date = date,
+            dateType = getDateType(date),
+            type = mealType.toMealTypeCode(),
+            buildings =
+                buildMealListBuildings(
+                    restaurants = orderedRestaurants,
+                    rows = rows,
+                    buildingCustomMap = buildingCustomMap,
+                    restaurantCustomMap = restaurantCustomMap,
+                ),
+        )
+    }
+
+    fun getMenuById(
+        menuId: Long,
+        userId: Int?,
+    ): MenuV2DetailsDto {
+        val targetUserId = userId ?: 0
+        val detail = mealMenuRepository.findMenuDetailById(menuId, targetUserId) ?: throw MenuNotFoundException()
+        val mealContexts = mealMenuRepository.findMealContextsByMenuId(menuId).map(MenuV2MealContextDto::from)
+        return MenuV2DetailsDto.from(detail, mealContexts)
+    }
+
+    @Transactional
+    fun likeMenu(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2DetailsDto {
+        ensureUserAndMenuExist(userId, menuId)
+        menuLikeRepository.likeMenu(userId = userId, menuId = menuId)
+        return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    @Transactional
+    fun unlikeMenu(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2DetailsDto {
+        ensureUserAndMenuExist(userId, menuId)
+        menuLikeRepository.unlikeMenu(userId = userId, menuId = menuId)
+        menuAlarmRepository.deleteMenuAlarm(userId = userId, menuId = menuId)
+        return getMenuById(menuId = menuId, userId = userId)
+    }
+
+    fun getMyMenus(userId: Int): MenuV2LikedListResponseDto {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        val rows = menuLikeRepository.findLikedMenusByUserId(userId)
+        if (rows.isEmpty()) {
+            return MenuV2LikedListResponseDto(buildings = emptyList())
+        }
+
+        val restaurants = restaurantRepository.findAllForList()
+        val customMaps = customService.getCustomMaps(userId)
+        val buildingCustomMap = customMaps?.buildingCustomMap
+        val restaurantCustomMap = customMaps?.restaurantCustomMap
+        val orderedRestaurants = restaurants.sortedForMenu(buildingCustomMap, restaurantCustomMap)
+        val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
+
+        val result = buildLikedBuildings(orderedRestaurants, rowsByRestaurant, buildingCustomMap, restaurantCustomMap)
+        return MenuV2LikedListResponseDto(buildings = result)
+    }
+
+    @Transactional
+    fun menuAlarmOn(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2AlarmDto {
+        val (_, menu) = ensureUserAndMenuExist(userId, menuId)
+        if (!menuLikeRepository.existsLikedMenu(userId = userId, menuId = menuId)) {
+            throw MenuNotLikedException()
+        }
+        if (menuAlarmRepository.existsByUserIdAndMenuId(userId = userId, menuId = menuId)) {
+            throw MenuAlarmAlreadyExistsException()
+        }
+
+        try {
+            menuAlarmRepository.postMenuAlarm(userId = userId, menuId = menuId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+
+        return MenuV2AlarmDto.from(getMenuById(menuId = menu.id, userId = userId), alarm = true)
+    }
+
+    @Transactional
+    fun menuAlarmOff(
+        menuId: Long,
+        userId: Int,
+    ): MenuV2AlarmDto {
+        val (_, menu) = ensureUserAndMenuExist(userId, menuId)
+        if (!menuLikeRepository.existsLikedMenu(userId = userId, menuId = menuId)) {
+            throw MenuNotLikedException()
+        }
+
+        try {
+            menuAlarmRepository.deleteMenuAlarm(userId = userId, menuId = menuId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+
+        return MenuV2AlarmDto.from(getMenuById(menuId = menu.id, userId = userId), alarm = false)
+    }
+
+    @Transactional
+    fun menuAlarmOffAll(userId: Int) {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        try {
+            menuAlarmRepository.deleteMenuAlarmByUserId(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
+
+    @Transactional
+    fun menuAlarmOnAll(userId: Int) {
+        userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        try {
+            menuAlarmRepository.postAllLikedMenuAlarms(userId)
+        } catch (e: Exception) {
+            throw MenuAlarmException()
+        }
+    }
+
+    private fun ensureUserAndMenuExist(
+        userId: Int,
+        menuId: Long,
+    ) = userRepository.findById(userId).orElseThrow { UserNotFoundException() } to
+        menuRepository.findById(menuId).orElseThrow { MenuNotFoundException() }
+
+    private fun buildLikedBuildings(
+        restaurants: List<RestaurantV2>,
+        rowsByRestaurant: Map<Int, List<MenuV2LikedMenuRow>>,
+        buildingCustomMap: Map<Int, CustomV2Item>?,
+        restaurantCustomMap: Map<Int, CustomV2Item>?,
+    ): List<MenuV2LikedBuildingDto> =
+        restaurants
+            .groupBy { it.building.id }
+            .values
+            .mapNotNull { restaurantsInBuilding ->
+                val building = restaurantsInBuilding.first().building
+                if (buildingCustomMap?.get(building.id)?.visible == false) {
+                    return@mapNotNull null
+                }
+                val restaurantDtos =
+                    restaurantsInBuilding.mapNotNull { restaurant ->
+                        if (restaurantCustomMap?.get(restaurant.id)?.visible == false) {
+                            return@mapNotNull null
+                        }
+                        val menuDtos = rowsByRestaurant[restaurant.id].orEmpty().map(MenuV2LikedMenuDto::from)
+                        if (menuDtos.isEmpty()) {
+                            null
+                        } else {
+                            MenuV2LikedRestaurantDto(
+                                id = restaurant.id,
+                                restaurantName = restaurant.name,
+                                menus = menuDtos,
+                            )
+                        }
+                    }
+                if (restaurantDtos.isEmpty()) {
+                    null
+                } else {
+                    MenuV2LikedBuildingDto(
+                        buildingNumber = building.number,
+                        buildingName = building.name,
+                        restaurants = restaurantDtos,
+                    )
+                }
+            }
+
+    private fun buildMealListBuildings(
+        restaurants: List<RestaurantV2>,
+        rows: List<MenuV2MealListRow>,
+        buildingCustomMap: Map<Int, CustomV2Item>?,
+        restaurantCustomMap: Map<Int, CustomV2Item>?,
+    ): List<MenuV2MealListBuildingDto> {
+        val rowsByRestaurant = rows.groupBy { it.getRestaurantId() }
+        return restaurants
+            .groupBy { it.building.id }
+            .values
+            .mapNotNull { restaurantsInBuilding ->
+                val building = restaurantsInBuilding.first().building
+                if (buildingCustomMap?.get(building.id)?.visible == false) {
+                    return@mapNotNull null
+                }
+                val restaurantDtos =
+                    restaurantsInBuilding.mapNotNull { restaurant ->
+                        if (restaurantCustomMap?.get(restaurant.id)?.visible == false) {
+                            return@mapNotNull null
+                        }
+                        val mealDtos = rowsByRestaurant[restaurant.id].orEmpty().toMealListDtos()
+                        if (mealDtos.isEmpty()) {
+                            null
+                        } else {
+                            MenuV2MealListRestaurantDto(
+                                id = restaurant.id,
+                                restaurantName = restaurant.name,
+                                meals = mealDtos,
+                            )
+                        }
+                    }
+                if (restaurantDtos.isEmpty()) {
+                    null
+                } else {
+                    MenuV2MealListBuildingDto(
+                        buildingNumber = building.number,
+                        buildingName = building.name,
+                        restaurants = restaurantDtos,
+                    )
+                }
+            }
+    }
+
+    private fun List<MenuV2MealListRow>.toMealListDtos(): List<MenuV2MealListMealDto> =
+        groupBy { it.getMealId() }
+            .values
+            .map { mealRows ->
+                val meal = mealRows.first()
+                MenuV2MealListMealDto(
+                    price = meal.getPrice(),
+                    noMeat = meal.getNoMeat(),
+                    menus = mealRows.map(MenuV2MealListMenuDto::from),
+                )
+            }
+
+    private fun List<RestaurantV2>.sortedForMenu(
+        buildingCustomMap: Map<Int, CustomV2Item>?,
+        restaurantCustomMap: Map<Int, CustomV2Item>?,
+    ): List<RestaurantV2> =
+        sortedWith(
+            compareBy(
+                { restaurant -> buildingCustomMap?.get(restaurant.building.id)?.order ?: restaurant.building.defaultOrder },
+                { restaurant -> restaurant.building.id },
+                { restaurant -> restaurantCustomMap?.get(restaurant.id)?.order ?: restaurant.defaultOrder },
+                { restaurant -> restaurant.id },
+            ),
+        )
+
+    private fun loadHolidays(): Set<LocalDate> {
+        val resourcePath = "/2025.json"
+        val stream: InputStream =
+            this::class.java.getResourceAsStream(resourcePath)
+                ?: return emptySet()
+        val raw: Map<String, List<String>> = jacksonObjectMapper().readValue(stream)
+        return raw.keys.map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }.toSet()
+    }
+
+    private fun isHoliday(date: LocalDate): Boolean = holidays.contains(date)
+
+    private fun getDateType(date: LocalDate): String =
+        when {
+            isHoliday(date) -> "HOLIDAY"
+            date.dayOfWeek == DayOfWeek.SUNDAY -> "HOLIDAY"
+            date.dayOfWeek == DayOfWeek.SATURDAY -> "SATURDAY"
+            else -> "WEEKDAY"
+        }
+
+    private fun String.toMealType(): MealType =
+        when (uppercase()) {
+            "BR" -> MealType.BREAKFAST
+            "LU" -> MealType.LUNCH
+            "DN" -> MealType.DINNER
+            else -> throw InvalidMealTypeException(this)
+        }
+
+    private fun MealType.toMealTypeCode(): String =
+        when (this) {
+            MealType.BREAKFAST -> "BR"
+            MealType.LUNCH -> "LU"
+            MealType.DINNER -> "DN"
+        }
+}
