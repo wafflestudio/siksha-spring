@@ -23,7 +23,7 @@ class RestaurantV2Service(
     private val customService: CustomV2Service,
     private val restaurantLikeRepository: RestaurantLikeV2Repository,
 ) {
-    @Cacheable(value = ["restaurantCache"])
+    @Cacheable(value = ["restaurantV2Cache"])
     fun getAllRestaurants(): RestaurantV2ListResponseDto {
         val restaurants = restaurantRepository.findAllForList()
         return restaurants.toGroupedResponse()
