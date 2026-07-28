@@ -1,7 +1,9 @@
 package siksha.wafflestudio.core.domain.v1.version.service
 
+import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import siksha.wafflestudio.core.domain.common.exception.VersionNotFoundException
 import siksha.wafflestudio.core.domain.v1.version.data.ClientType
 import siksha.wafflestudio.core.domain.v1.version.dto.VersionResponseDto
@@ -18,5 +20,19 @@ class AppVersionService(
                 ?: throw VersionNotFoundException(clientType.name)
 
         return VersionResponseDto.from(appVersion)
+    }
+
+    @Transactional
+    @CachePut(value = ["appVersionCache"], key = "#clientType.name()")
+    fun updateMinimumVersion(
+        clientType: ClientType,
+        minimumVersion: String,
+    ): VersionResponseDto {
+        val current =
+            appVersionRepository.findByClientType(clientType)
+                ?: throw VersionNotFoundException(clientType.name)
+        val updated = appVersionRepository.save(current.copy(minimumVersion = minimumVersion))
+
+        return VersionResponseDto.from(updated)
     }
 }

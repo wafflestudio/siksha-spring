@@ -16,13 +16,20 @@ class SwaggerConfig {
     fun openApi(): OpenAPI =
         OpenAPI()
             .components(
-                Components().addSecuritySchemes(
-                    "bearerAuth",
-                    SecurityScheme()
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT"),
-                ),
+                Components()
+                    .addSecuritySchemes(
+                        "bearerAuth",
+                        SecurityScheme()
+                            .type(SecurityScheme.Type.HTTP)
+                            .scheme("bearer")
+                            .bearerFormat("JWT"),
+                    ).addSecuritySchemes(
+                        "crawlerApiKey",
+                        SecurityScheme()
+                            .type(SecurityScheme.Type.APIKEY)
+                            .name("X-API-Key")
+                            .`in`(SecurityScheme.In.HEADER),
+                    ),
             ).addSecurityItem(
                 SecurityRequirement().addList("bearerAuth"),
             ).info(configurationInfo())
