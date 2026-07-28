@@ -52,6 +52,7 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/voc"),
             AntPathRequestMatcher("/ping"),
             AntPathRequestMatcher("/v2/crawler/**"),
+            AntPathRequestMatcher("/versions/**"),
             AntPathRequestMatcher("/menus/festival/**"),
         )
 
