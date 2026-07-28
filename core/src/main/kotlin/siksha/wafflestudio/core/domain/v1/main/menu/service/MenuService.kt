@@ -39,16 +39,17 @@ class MenuService(
     private val holidays: Set<LocalDate> = loadHolidays()
 
     private fun loadHolidays(): Set<LocalDate> {
-        val resourcePath = "/2025.json"
-        val stream: InputStream =
-            this::class.java.getResourceAsStream(resourcePath)
-                ?: throw IllegalArgumentException("Resource not found: $resourcePath")
-
         val mapper = jacksonObjectMapper()
-        val raw: Map<String, List<String>> = mapper.readValue(stream)
-
-        return raw.keys
-            .map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+        return listOf("/2025.json", "/2026.json")
+            .flatMap { resourcePath ->
+                val stream: InputStream =
+                    this::class.java.getResourceAsStream(resourcePath)
+                        ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+                stream.use {
+                    val raw: Map<String, List<String>> = mapper.readValue(it)
+                    raw.keys
+                }
+            }.map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
             .toSet()
     }
 
