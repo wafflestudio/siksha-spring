@@ -331,12 +331,18 @@ class MenuV2Service(
         )
 
     private fun loadHolidays(): Set<LocalDate> {
-        val resourcePath = "/2025.json"
-        val stream: InputStream =
-            this::class.java.getResourceAsStream(resourcePath)
-                ?: return emptySet()
-        val raw: Map<String, List<String>> = jacksonObjectMapper().readValue(stream)
-        return raw.keys.map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }.toSet()
+        val mapper = jacksonObjectMapper()
+        return listOf("/2025.json", "/2026.json")
+            .flatMap { resourcePath ->
+                val stream: InputStream =
+                    this::class.java.getResourceAsStream(resourcePath)
+                        ?: return@flatMap emptyList()
+                stream.use {
+                    val raw: Map<String, List<String>> = mapper.readValue(it)
+                    raw.keys
+                }
+            }.map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+            .toSet()
     }
 
     private fun isHoliday(date: LocalDate): Boolean = holidays.contains(date)

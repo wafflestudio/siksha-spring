@@ -116,6 +116,16 @@ class MenuV2ServiceTest {
     }
 
     @Test
+    fun `menu list treats a date declared in 2026 holiday data as holiday`() {
+        val date = LocalDate.of(2026, 7, 17)
+        every { mealMenuRepository.findWebMenuRowsByDateAndType(date, "LUNCH") } returns emptyList()
+
+        val result = service.getMenusByDateAndTypeForWeb(date = date, type = "LU")
+
+        assertEquals("HOLIDAY", result.dateType)
+    }
+
+    @Test
     fun `personal menu list applies custom order and filters invisible items`() {
         val firstBuilding = BuildingV2(id = 1, number = "B1", name = "First", defaultOrder = 1)
         val secondBuilding = BuildingV2(id = 2, number = "B2", name = "Second", defaultOrder = 2)

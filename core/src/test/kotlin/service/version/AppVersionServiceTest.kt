@@ -3,6 +3,7 @@ package siksha.wafflestudio.core.service.version
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -44,6 +45,31 @@ class AppVersionServiceTest {
 
         assertThrows(VersionNotFoundException::class.java) {
             service.getMinimumVersion(ClientType.IOS)
+        }
+    }
+
+    @Test
+    fun `update minimum version by client type`() {
+        val current =
+            AppVersion(
+                id = 2,
+                minimumVersion = "3.5.0",
+                clientType = ClientType.IOS,
+            )
+        every { appVersionRepository.findByClientType(ClientType.IOS) } returns current
+        every { appVersionRepository.save(any()) } answers { firstArg() }
+
+        val result = service.updateMinimumVersion(ClientType.IOS, "3.5.1")
+
+        assertEquals("3.5.1", result.minimumVersion)
+        verify {
+            appVersionRepository.save(
+                match {
+                    it.id == current.id &&
+                        it.clientType == ClientType.IOS &&
+                        it.minimumVersion == "3.5.1"
+                },
+            )
         }
     }
 }

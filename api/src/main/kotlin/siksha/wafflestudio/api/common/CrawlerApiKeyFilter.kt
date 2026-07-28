@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.servlet.HandlerExceptionResolver
@@ -18,6 +19,7 @@ class CrawlerApiKeyFilter(
     companion object {
         private const val HDR_API_KEY = "X-API-Key"
         private const val CRAWLER_PATH_PREFIX = "/v2/crawler/"
+        private const val VERSION_PATH_PREFIX = "/versions/"
     }
 
     override fun doFilterInternal(
@@ -25,7 +27,7 @@ class CrawlerApiKeyFilter(
         response: HttpServletResponse,
         chain: FilterChain,
     ) {
-        if (!request.requestURI.startsWith(CRAWLER_PATH_PREFIX)) {
+        if (!requiresCrawlerApiKey(request)) {
             chain.doFilter(request, response)
             return
         }
@@ -38,4 +40,11 @@ class CrawlerApiKeyFilter(
 
         chain.doFilter(request, response)
     }
+
+    private fun requiresCrawlerApiKey(request: HttpServletRequest): Boolean =
+        request.requestURI.startsWith(CRAWLER_PATH_PREFIX) ||
+            (
+                request.method.equals(HttpMethod.PATCH.name(), ignoreCase = true) &&
+                    request.requestURI.startsWith(VERSION_PATH_PREFIX)
+            )
 }
