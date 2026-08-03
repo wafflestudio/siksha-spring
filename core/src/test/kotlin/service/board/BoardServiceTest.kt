@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
-import siksha.wafflestudio.core.domain.common.exception.BoardNameAlreadyExistException
-import siksha.wafflestudio.core.domain.common.exception.BoardNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.InvalidBoardFormException
+import siksha.wafflestudio.core.domain.common.exception.community.BoardNameAlreadyExistException
+import siksha.wafflestudio.core.domain.common.exception.community.BoardNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.community.InvalidBoardFormException
 import siksha.wafflestudio.core.domain.user.data.User
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.board.data.Board

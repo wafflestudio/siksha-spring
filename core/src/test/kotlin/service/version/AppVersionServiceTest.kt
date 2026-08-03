@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import siksha.wafflestudio.core.domain.common.exception.VersionNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.version.VersionNotFoundException
 import siksha.wafflestudio.core.domain.v1.version.data.AppVersion
 import siksha.wafflestudio.core.domain.v1.version.data.ClientType
 import siksha.wafflestudio.core.domain.v1.version.repository.AppVersionRepository

@@ -8,7 +8,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFound
+import siksha.wafflestudio.core.domain.common.exception.main.RestaurantNotFound
 import siksha.wafflestudio.core.domain.main.meal.data.MealMenuV2
 import siksha.wafflestudio.core.domain.main.meal.data.MealType
 import siksha.wafflestudio.core.domain.main.meal.data.MealV2

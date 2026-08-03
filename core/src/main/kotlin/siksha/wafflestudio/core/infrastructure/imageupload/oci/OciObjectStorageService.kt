@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import siksha.wafflestudio.core.domain.common.exception.ImageUploadFailedException
+import siksha.wafflestudio.core.domain.common.exception.image.ImageUploadFailedException
 import siksha.wafflestudio.core.infrastructure.imageupload.ImagePrefix
 import siksha.wafflestudio.core.infrastructure.imageupload.ImageUploadUseCase
 import siksha.wafflestudio.core.infrastructure.imageupload.UploadFileDto

@@ -10,7 +10,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import siksha.wafflestudio.core.domain.common.exception.InvalidClientTypeException
+import siksha.wafflestudio.core.domain.common.exception.version.InvalidClientTypeException
 import java.time.OffsetDateTime
 import java.time.ZoneId
 

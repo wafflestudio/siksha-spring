@@ -2,7 +2,7 @@ package siksha.wafflestudio.core.domain.main.meal.usecase
 
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFound
+import siksha.wafflestudio.core.domain.common.exception.main.RestaurantNotFound
 import siksha.wafflestudio.core.domain.main.meal.data.MealMenuV2
 import siksha.wafflestudio.core.domain.main.meal.data.MealV2
 import siksha.wafflestudio.core.domain.main.meal.dto.CrawlerMealRequestDto

@@ -4,7 +4,7 @@ import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import siksha.wafflestudio.core.domain.common.exception.VersionNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.version.VersionNotFoundException
 import siksha.wafflestudio.core.domain.v1.version.data.ClientType
 import siksha.wafflestudio.core.domain.v1.version.dto.VersionResponseDto
 import siksha.wafflestudio.core.domain.v1.version.repository.AppVersionRepository

@@ -3,8 +3,8 @@ package siksha.wafflestudio.core.domain.main.restaurant.service
 import jakarta.transaction.Transactional
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.domain.common.exception.RestaurantNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.main.RestaurantNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.user.UserNotFoundException
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantLikeV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
