@@ -45,7 +45,13 @@ class SecurityConfig(
         auth
             .requestMatchers(HttpMethod.OPTIONS, "/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "/community/boards", "/community/boards/{board_id}")
+            .requestMatchers(
+                HttpMethod.GET,
+                "/community/boards",
+                "/community/boards/{board_id}",
+                "/versions/**",
+            ).permitAll()
+            .requestMatchers(HttpMethod.PATCH, "/versions/**")
             .permitAll()
             .requestMatchers(
                 AntPathRequestMatcher.antMatcher("/community/**/web"),
@@ -68,7 +74,6 @@ class SecurityConfig(
                 "/reviews/keyword/dist",
                 "/v2/reviews/dist",
                 "/v2/reviews/keyword/dist",
-                "/versions/**",
                 "/voc",
                 "/ping",
                 "/v2/crawler/**",
