@@ -17,9 +17,16 @@ class CrawlerApiKeyFilter(
     @Qualifier("handlerExceptionResolver") private val resolver: HandlerExceptionResolver,
 ) : OncePerRequestFilter() {
     companion object {
-        private const val HDR_API_KEY = "X-API-Key"
+        private const val API_KEY = "X-API-Key"
         private const val CRAWLER_PATH_PREFIX = "/v2/crawler/"
         private const val VERSION_PATH_PREFIX = "/versions/"
+
+        internal fun requiresApiKey(request: HttpServletRequest): Boolean =
+            request.requestURI.startsWith(CRAWLER_PATH_PREFIX) ||
+                (
+                    request.method.equals(HttpMethod.PATCH.name(), ignoreCase = true) &&
+                        request.requestURI.startsWith(VERSION_PATH_PREFIX)
+                )
     }
 
     override fun doFilterInternal(
@@ -27,12 +34,12 @@ class CrawlerApiKeyFilter(
         response: HttpServletResponse,
         chain: FilterChain,
     ) {
-        if (!requiresCrawlerApiKey(request)) {
+        if (!requiresApiKey(request)) {
             chain.doFilter(request, response)
             return
         }
 
-        val apiKey = request.getHeader(HDR_API_KEY)
+        val apiKey = request.getHeader(API_KEY)
         if (apiKey.isNullOrBlank() || apiKey != expectedApiKey) {
             resolver.resolveException(request, response, null, UnauthorizedUserException())
             return
@@ -40,11 +47,4 @@ class CrawlerApiKeyFilter(
 
         chain.doFilter(request, response)
     }
-
-    private fun requiresCrawlerApiKey(request: HttpServletRequest): Boolean =
-        request.requestURI.startsWith(CRAWLER_PATH_PREFIX) ||
-            (
-                request.method.equals(HttpMethod.PATCH.name(), ignoreCase = true) &&
-                    request.requestURI.startsWith(VERSION_PATH_PREFIX)
-            )
 }
