@@ -15,7 +15,22 @@ class JwtAuthenticationFilterTest {
     private val filter = JwtAuthenticationFilter(jwtProvider, resolver)
 
     @Test
-    fun `allow version endpoints without jwt because api key filter owns update authentication`() {
+    fun `allow version lookup without jwt`() {
+        val request =
+            MockHttpServletRequest("GET", "/versions/IOS").apply {
+                servletPath = "/versions/IOS"
+            }
+        val response = MockHttpServletResponse()
+        val chain = mockk<FilterChain>(relaxed = true)
+
+        filter.doFilter(request, response, chain)
+
+        verify(exactly = 0) { resolver.resolveException(any(), any(), any(), any()) }
+        verify(exactly = 1) { chain.doFilter(request, response) }
+    }
+
+    @Test
+    fun `allow version update without jwt because api key filter owns update authentication`() {
         val request =
             MockHttpServletRequest("PATCH", "/versions/IOS").apply {
                 servletPath = "/versions/IOS"
@@ -27,5 +42,20 @@ class JwtAuthenticationFilterTest {
 
         verify(exactly = 0) { resolver.resolveException(any(), any(), any(), any()) }
         verify(exactly = 1) { chain.doFilter(request, response) }
+    }
+
+    @Test
+    fun `reject unsupported version method without jwt`() {
+        val request =
+            MockHttpServletRequest("DELETE", "/versions/IOS").apply {
+                servletPath = "/versions/IOS"
+            }
+        val response = MockHttpServletResponse()
+        val chain = mockk<FilterChain>(relaxed = true)
+
+        filter.doFilter(request, response, chain)
+
+        verify(exactly = 1) { resolver.resolveException(request, response, null, any()) }
+        verify(exactly = 0) { chain.doFilter(any(), any()) }
     }
 }

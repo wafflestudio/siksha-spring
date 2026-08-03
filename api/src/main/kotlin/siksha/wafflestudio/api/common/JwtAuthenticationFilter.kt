@@ -52,7 +52,8 @@ class JwtAuthenticationFilter(
             AntPathRequestMatcher("/voc"),
             AntPathRequestMatcher("/ping"),
             AntPathRequestMatcher("/v2/crawler/**"),
-            AntPathRequestMatcher("/versions/**"),
+            AntPathRequestMatcher("/versions/**", HttpMethod.GET.name()),
+            AntPathRequestMatcher("/versions/**", HttpMethod.PATCH.name()),
             AntPathRequestMatcher("/menus/festival/**"),
         )
 
