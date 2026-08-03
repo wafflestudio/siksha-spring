@@ -6,8 +6,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.main.InvalidCustomException
+import siksha.wafflestudio.core.domain.common.exception.user.UserNotFoundException
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item

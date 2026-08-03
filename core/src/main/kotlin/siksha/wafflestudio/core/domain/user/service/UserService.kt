@@ -7,9 +7,9 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
-import siksha.wafflestudio.core.domain.common.exception.BannedWordException
-import siksha.wafflestudio.core.domain.common.exception.DuplicatedNicknameException
-import siksha.wafflestudio.core.domain.common.exception.UserNotFoundException
+import siksha.wafflestudio.core.domain.common.exception.user.BannedWordException
+import siksha.wafflestudio.core.domain.common.exception.user.DuplicatedNicknameException
+import siksha.wafflestudio.core.domain.common.exception.user.UserNotFoundException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository

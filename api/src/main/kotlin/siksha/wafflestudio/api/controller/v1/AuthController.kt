@@ -26,7 +26,7 @@ import siksha.wafflestudio.core.domain.auth.service.AuthService
 import siksha.wafflestudio.core.domain.auth.social.SocialTokenVerifier
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProfile
 import siksha.wafflestudio.core.domain.auth.social.data.SocialProvider
-import siksha.wafflestudio.core.domain.common.exception.TokenParseException
+import siksha.wafflestudio.core.domain.common.exception.auth.TokenParseException
 import siksha.wafflestudio.core.domain.user.dto.AlarmSettingRequestDto
 import siksha.wafflestudio.core.domain.user.dto.UserAlarmResponseDto
 import siksha.wafflestudio.core.domain.user.dto.UserDeviceDto

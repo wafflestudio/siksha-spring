@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import siksha.wafflestudio.core.domain.common.exception.InvalidMealTypeException
+import siksha.wafflestudio.core.domain.common.exception.main.InvalidMealTypeException
 import siksha.wafflestudio.core.domain.main.meal.repository.MealMenuV2Repository
 import siksha.wafflestudio.core.domain.main.menu.data.MenuV2
 import siksha.wafflestudio.core.domain.main.menu.dto.MenuV2DetailRow

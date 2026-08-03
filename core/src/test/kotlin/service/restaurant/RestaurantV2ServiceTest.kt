@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import siksha.wafflestudio.core.domain.common.exception.InvalidCustomException
+import siksha.wafflestudio.core.domain.common.exception.main.InvalidCustomException
 import siksha.wafflestudio.core.domain.main.restaurant.data.BuildingV2
 import siksha.wafflestudio.core.domain.main.restaurant.data.CustomV2Item
 import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
