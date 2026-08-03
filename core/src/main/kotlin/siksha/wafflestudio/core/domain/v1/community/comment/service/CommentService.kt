@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.community.CommentAlreadyReportedException
 import siksha.wafflestudio.core.domain.common.exception.community.CommentNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.community.CommentReportSaveFailedException
@@ -14,7 +15,6 @@ import siksha.wafflestudio.core.domain.common.exception.community.InvalidPageNum
 import siksha.wafflestudio.core.domain.common.exception.community.NotCommentOwnerException
 import siksha.wafflestudio.core.domain.common.exception.community.NotFoundItem
 import siksha.wafflestudio.core.domain.common.exception.community.PostNotFoundException
-import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.user.UserNotFoundException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.comment.data.Comment

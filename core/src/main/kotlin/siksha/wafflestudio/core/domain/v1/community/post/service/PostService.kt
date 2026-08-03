@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.community.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.community.CustomNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.community.InvalidPageNumberException
@@ -17,7 +18,6 @@ import siksha.wafflestudio.core.domain.common.exception.community.NotPostOwnerEx
 import siksha.wafflestudio.core.domain.common.exception.community.PostAlreadyReportedException
 import siksha.wafflestudio.core.domain.common.exception.community.PostNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.community.PostReportSaveFailedException
-import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.image.data.Image
 import siksha.wafflestudio.core.domain.image.data.ImageCategory
 import siksha.wafflestudio.core.domain.image.repository.ImageRepository

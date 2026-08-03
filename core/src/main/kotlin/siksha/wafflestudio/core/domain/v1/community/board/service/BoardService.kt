@@ -6,11 +6,11 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.common.exception.community.BoardNameAlreadyExistException
 import siksha.wafflestudio.core.domain.common.exception.community.BoardNotFoundException
 import siksha.wafflestudio.core.domain.common.exception.community.BoardSaveFailedException
 import siksha.wafflestudio.core.domain.common.exception.community.InvalidBoardFormException
-import siksha.wafflestudio.core.domain.common.exception.auth.UnauthorizedUserException
 import siksha.wafflestudio.core.domain.user.repository.UserRepository
 import siksha.wafflestudio.core.domain.v1.community.board.data.Board
 import siksha.wafflestudio.core.domain.v1.community.board.dto.BoardCreateDto
