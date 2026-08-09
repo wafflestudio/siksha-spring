@@ -5,6 +5,4 @@ import siksha.wafflestudio.core.domain.main.menu.data.MenuAliasV2
 
 interface MenuAliasV2Repository : JpaRepository<MenuAliasV2, Long> {
     fun findByAlias(alias: String): MenuAliasV2?
-
-    fun findAllByOrderByIdAsc(): List<MenuAliasV2>
 }

@@ -4,7 +4,18 @@ plugins {
     kotlin("plugin.serialization")
 }
 
-val dl4jVersion = "1.0.0-M2.1"
+val djlVersion = "0.36.0"
+val pytorchVersion = "2.7.1"
+val currentOs = System.getProperty("os.name").lowercase()
+val currentArch = System.getProperty("os.arch").lowercase()
+val pytorchNativeClassifier =
+    when {
+        currentOs.contains("windows") -> "win-x86_64"
+        currentOs.contains("mac") && (currentArch.contains("aarch64") || currentArch.contains("arm64")) -> "osx-aarch64"
+        currentOs.contains("linux") && (currentArch.contains("aarch64") || currentArch.contains("arm64")) -> "linux-aarch64"
+        currentOs.contains("linux") -> "linux-x86_64"
+        else -> error("Unsupported PyTorch platform: $currentOs/$currentArch")
+    }
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -17,21 +28,15 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.10")
     implementation("com.nimbusds:nimbus-jose-jwt:9.37")
     implementation("com.google.firebase:firebase-admin:9.2.0")
-    implementation("org.deeplearning4j:deeplearning4j-core:$dl4jVersion")
-    implementation("org.deeplearning4j:deeplearning4j-nlp:$dl4jVersion")
-    implementation("org.nd4j:nd4j-native-platform:$dl4jVersion")
+    implementation(platform("ai.djl:bom:$djlVersion"))
+    implementation("ai.djl:api")
+    implementation("ai.djl.huggingface:tokenizers")
+    runtimeOnly("ai.djl.pytorch:pytorch-engine")
+    runtimeOnly("ai.djl.pytorch:pytorch-jni:$pytorchVersion-$djlVersion")
+    runtimeOnly("ai.djl.pytorch:pytorch-native-cpu:$pytorchVersion:$pytorchNativeClassifier")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:mysql")
     testImplementation("org.testcontainers:junit-jupiter")
-}
-
-tasks.register<JavaExec>("trainMenuWord2Vec") {
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("siksha.wafflestudio.core.domain.main.meal.usecase.TrainMenuWord2Vec")
-    args(
-        providers.gradleProperty("menuNormalizerInput").getOrElse("data/menu-normalizer-pairs.tsv"),
-        providers.gradleProperty("menuNormalizerOutput").getOrElse("models/menu-word2vec.bin"),
-    )
 }
 
 allOpen {

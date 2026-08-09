@@ -8,15 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import siksha.wafflestudio.core.domain.main.meal.dto.CrawlerMealRequestDto
-import siksha.wafflestudio.core.domain.main.meal.dto.MenuNormalizerPairsExportResponseDto
-import siksha.wafflestudio.core.domain.main.meal.usecase.ExportMenuNormalizerPairsUseCase
 import siksha.wafflestudio.core.domain.main.meal.usecase.SyncMealUseCase
 
 @RestController
 @Tag(name = "Crawler", description = "크롤러 데이터 수집 엔드포인트")
 class CrawlerController(
     private val syncMealUseCase: SyncMealUseCase,
-    private val exportMenuNormalizerPairsUseCase: ExportMenuNormalizerPairsUseCase,
 ) {
     // POST /v2/crawler/meals
     @PostMapping("/v2/crawler/meals")
@@ -27,12 +24,4 @@ class CrawlerController(
     ) {
         syncMealUseCase(request)
     }
-
-    @PostMapping("/v2/crawler/menu-normalizer/pairs/export")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(
-        summary = "Export menu normalizer training pairs",
-        description = "Exports menu normalizer TSV pairs from menu_alias_v2 and menu_v2.",
-    )
-    fun exportMenuNormalizerPairs(): MenuNormalizerPairsExportResponseDto = exportMenuNormalizerPairsUseCase()
 }

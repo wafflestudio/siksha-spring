@@ -132,7 +132,7 @@ class NormalizeMenuUseCaseTest {
         every { menuNameNormalizer.normalize("치즈돈까스플러스") } returns
             MenuNameNormalizer.NormalizationResult(
                 normalizedName = "치즈돈까스",
-                confidence = 0.9,
+                confidence = 0.95,
             )
         every { menuV2Repository.findByRestaurantAndName(restaurant, "치즈돈까스플러스") } returns null
         every { menuV2Repository.findByRestaurantAndName(restaurant, "치즈돈까스") } returns menu
@@ -149,6 +149,28 @@ class NormalizeMenuUseCaseTest {
         verify(exactly = 1) { menuV2Repository.findByRestaurantAndName(restaurant, "치즈돈까스") }
         verify(exactly = 1) { menuNameNormalizer.addAlias("추천 치즈 돈까스 플러스", "치즈돈까스") }
         verify(exactly = 0) { menuV2Repository.save(any()) }
+    }
+
+    @Test
+    fun `원본 이름 그대로 새 menu를 만들면 canonical 이름을 model index에 추가한다`() {
+        val restaurant = testRestaurant("자하연식당 3층")
+        val createdMenu = MenuV2(id = 10, restaurant = restaurant, name = "비빔밥")
+
+        every { menuAliasV2Repository.findByAlias("비빔밥") } returns null
+        every { menuV2Repository.findByRestaurantAndName(restaurant, "비빔밥") } returns null
+        every { menuNameNormalizer.normalize("비빔밥") } returns
+            MenuNameNormalizer.NormalizationResult(
+                normalizedName = "다른메뉴",
+                confidence = 0.5,
+            )
+        every { menuV2Repository.save(any()) } returns createdMenu
+
+        val result = useCase("비빔밥", restaurant)
+
+        assertEquals(createdMenu, result)
+        verify(exactly = 1) { menuV2Repository.save(any()) }
+        verify(exactly = 1) { menuNameNormalizer.addAlias("비빔밥", "비빔밥") }
+        verify(exactly = 0) { menuAliasV2Repository.save(any()) }
     }
 
     private fun testRestaurant(name: String): RestaurantV2 =

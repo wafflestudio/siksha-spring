@@ -36,8 +36,9 @@ class NormalizeMenuUseCase(
             } else {
                 menuV2Repository.findByRestaurantAndName(restaurant, normalizedName)
             }
+        val existingMenu = preprocessedMenu ?: normalizedMenu
         val menu =
-            preprocessedMenu ?: normalizedMenu
+            existingMenu
                 ?: menuV2Repository.save(
                     MenuV2(
                         restaurant = restaurant,
@@ -54,6 +55,8 @@ class NormalizeMenuUseCase(
                     ),
                 )
             menuNameNormalizer.addAlias(savedAlias.alias, savedAlias.menuName)
+        } else if (existingMenu == null) {
+            menuNameNormalizer.addAlias(menu.name, menu.name)
         }
 
         return menu
@@ -72,6 +75,6 @@ class NormalizeMenuUseCase(
             )
 
     companion object {
-        private const val NORMALIZATION_CONFIDENCE_THRESHOLD = 0.85
+        private const val NORMALIZATION_CONFIDENCE_THRESHOLD = 0.90
     }
 }
