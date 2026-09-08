@@ -22,9 +22,9 @@ class FestivalServiceTest {
 
         assertEquals(
             listOf(
-                LocalDate.of(2026, 5, 12),
-                LocalDate.of(2026, 5, 13),
-                LocalDate.of(2026, 5, 14),
+                LocalDate.of(2026, 9, 15),
+                LocalDate.of(2026, 9, 16),
+                LocalDate.of(2026, 9, 17),
             ),
             result.festivalDates,
         )
@@ -32,17 +32,17 @@ class FestivalServiceTest {
 
     @Test
     fun `return true when input date is festival`() {
-        val result = service.getIsFestivalWhereDate(LocalDate.of(2026, 5, 12))
+        val result = service.getIsFestivalWhereDate(LocalDate.of(2026, 9, 15))
 
-        assertEquals(LocalDate.of(2026, 5, 12), result.targetDate)
+        assertEquals(LocalDate.of(2026, 9, 15), result.targetDate)
         assertTrue(result.isFestival)
     }
 
     @Test
     fun `return false when input date is not festival`() {
-        val result = service.getIsFestivalWhereDate(LocalDate.of(2026, 5, 11))
+        val result = service.getIsFestivalWhereDate(LocalDate.of(2026, 9, 14))
 
-        assertEquals(LocalDate.of(2026, 5, 11), result.targetDate)
+        assertEquals(LocalDate.of(2026, 9, 14), result.targetDate)
         assertFalse(result.isFestival)
     }
 }
