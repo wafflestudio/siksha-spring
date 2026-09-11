@@ -4,6 +4,19 @@ plugins {
     kotlin("plugin.serialization")
 }
 
+val djlVersion = "0.36.0"
+val pytorchVersion = "2.7.1"
+val currentOs = System.getProperty("os.name").lowercase()
+val currentArch = System.getProperty("os.arch").lowercase()
+val pytorchNativeClassifier =
+    when {
+        currentOs.contains("windows") -> "win-x86_64"
+        currentOs.contains("mac") && (currentArch.contains("aarch64") || currentArch.contains("arm64")) -> "osx-aarch64"
+        currentOs.contains("linux") && (currentArch.contains("aarch64") || currentArch.contains("arm64")) -> "linux-aarch64"
+        currentOs.contains("linux") -> "linux-x86_64"
+        else -> error("Unsupported PyTorch platform: $currentOs/$currentArch")
+    }
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("com.mysql:mysql-connector-j")
@@ -15,6 +28,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.10")
     implementation("com.nimbusds:nimbus-jose-jwt:9.37")
     implementation("com.google.firebase:firebase-admin:9.2.0")
+    implementation(platform("ai.djl:bom:$djlVersion"))
+    implementation("ai.djl:api")
+    implementation("ai.djl.huggingface:tokenizers")
+    runtimeOnly("ai.djl.pytorch:pytorch-engine")
+    runtimeOnly("ai.djl.pytorch:pytorch-jni:$pytorchVersion-$djlVersion")
+    runtimeOnly("ai.djl.pytorch:pytorch-native-cpu:$pytorchVersion:$pytorchNativeClassifier")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:mysql")
     testImplementation("org.testcontainers:junit-jupiter")
