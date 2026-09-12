@@ -12,6 +12,8 @@ jobs:
       ocir_repository: siksha-prod/siksha-spring-server
       dockerfile: Dockerfile
       profile: prod
+      gitops_overlay_path: argocd/siksha-prod
     secrets:
       OCI_AUTH_TOKEN: ${{ secrets.OCI_AUTH_TOKEN }}
       GH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+      DEPLOYER_APP_PRIVATE_KEY: ${{ secrets.DEPLOYER_APP_PRIVATE_KEY }}
