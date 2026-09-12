@@ -70,7 +70,13 @@ class FestivalMenuOrderTest {
         listOf(listOf(large, small, medium), listOf(medium, large, small)).forEach { input ->
             stubMenus(input)
 
-            val menus = service.getMenusWhereDate(date, date, true, null).result.single().LU.single().menus
+            val response = service.getMenusWhereDate(date, date, true, null)
+            val menus =
+                response.result
+                    .single()
+                    .LU
+                    .single()
+                    .menus
 
             assertEquals(listOf(101, 102, 103), menus.map { it.id })
             assertEquals(listOf("닭강정 (소)", "닭강정 (중)", "닭강정 (대)"), menus.map { it.nameKr })
@@ -89,7 +95,13 @@ class FestivalMenuOrderTest {
             ),
         )
 
-        val menus = service.getMenusWhereDate(date, date, true, 1).result.single().DN.single().menus
+        val response = service.getMenusWhereDate(date, date, true, 1)
+        val menus =
+            response.result
+                .single()
+                .DN
+                .single()
+                .menus
 
         assertEquals(listOf(326388, 326389, 326390, 326391), menus.map { it.id })
         assertEquals(listOf("김용범 수제꼬치", "떡꼬치", "소시지 꼬치", "꼬치모듬 플래터"), menus.map { it.nameKr })
@@ -99,7 +111,13 @@ class FestivalMenuOrderTest {
     fun `ordinary restaurant menus retain repository order`() {
         stubMenus(listOf(menu(last.id, "LU", 103), menu(last.id, "LU", 101), menu(last.id, "LU", 102)))
 
-        val menus = service.getMenusWhereDate(date, date, true, null).result.single().LU.single().menus
+        val response = service.getMenusWhereDate(date, date, true, null)
+        val menus =
+            response.result
+                .single()
+                .LU
+                .single()
+                .menus
 
         assertEquals(listOf(103, 101, 102), menus.map { it.id })
     }
