@@ -23,9 +23,9 @@ class RestaurantService(
     private val userRepository: UserRepository,
     private val restaurantCustomRepository: RestaurantCustomRepository,
 ) {
-    @Cacheable(value = ["restaurantCache"])
+    @Cacheable(value = ["restaurantCache"], key = "'sillichochi-first-v1'")
     fun getAllRestaurants(): RestaurantListResponseDto {
-        val restaurants = restaurantRepository.findAll()
+        val restaurants = restaurantRepository.findAll().withSillichochiFirst()
         return RestaurantListResponseDto(
             count = restaurants.size,
             result =
@@ -48,7 +48,7 @@ class RestaurantService(
                     ordered.sortedBy { customMap[it.id]!!.orderIndex!! } to unordered
                 }
 
-        val resultRestaurants = orderedRestaurants + unorderedRestaurants
+        val resultRestaurants = (orderedRestaurants + unorderedRestaurants).withSillichochiFirst()
 
         return RestaurantListResponseDto(
             count = resultRestaurants.size,
