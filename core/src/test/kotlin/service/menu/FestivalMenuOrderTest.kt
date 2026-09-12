@@ -62,17 +62,79 @@ class FestivalMenuOrderTest {
         every { restaurantRepository.findAllByOrderByNameKr() } returns listOf(first, featured, last)
     }
 
+    @Test
+    fun `festival menu sizes follow ascending ids regardless of query order`() {
+        val small = menu(first.id, "LU", 101, "닭강정 (소)")
+        val medium = menu(first.id, "LU", 102, "닭강정 (중)")
+        val large = menu(first.id, "LU", 103, "닭강정 (대)")
+        listOf(listOf(large, small, medium), listOf(medium, large, small)).forEach { input ->
+            stubMenus(input)
+
+            val response = service.getMenusWhereDate(date, date, true, null)
+            val menus =
+                response.result
+                    .single()
+                    .LU
+                    .single()
+                    .menus
+
+            assertEquals(listOf(101, 102, 103), menus.map { it.id })
+            assertEquals(listOf("닭강정 (소)", "닭강정 (중)", "닭강정 (대)"), menus.map { it.nameKr })
+            assertEquals(listOf(1000, 1000, 1000), menus.map { it.price })
+        }
+    }
+
+    @Test
+    fun `Sillichochi handmade skewer is first with its existing smallest menu id`() {
+        stubMenus(
+            listOf(
+                menu(featured.id, "DN", 326389, "떡꼬치"),
+                menu(featured.id, "DN", 326391, "꼬치모듬 플래터"),
+                menu(featured.id, "DN", 326388, "김용범 수제꼬치"),
+                menu(featured.id, "DN", 326390, "소시지 꼬치"),
+            ),
+        )
+
+        val response = service.getMenusWhereDate(date, date, true, 1)
+        val menus =
+            response.result
+                .single()
+                .DN
+                .single()
+                .menus
+
+        assertEquals(listOf(326388, 326389, 326390, 326391), menus.map { it.id })
+        assertEquals(listOf("김용범 수제꼬치", "떡꼬치", "소시지 꼬치", "꼬치모듬 플래터"), menus.map { it.nameKr })
+    }
+
+    @Test
+    fun `ordinary restaurant menus retain repository order`() {
+        stubMenus(listOf(menu(last.id, "LU", 103), menu(last.id, "LU", 101), menu(last.id, "LU", 102)))
+
+        val response = service.getMenusWhereDate(date, date, true, null)
+        val menus =
+            response.result
+                .single()
+                .LU
+                .single()
+                .menus
+
+        assertEquals(listOf(103, 101, 102), menus.map { it.id })
+    }
+
     private fun menu(
         restaurantId: Int,
         type: String,
+        menuId: Int = restaurantId,
+        name: String = "메뉴",
     ): MenuSummary =
         mockk {
-            every { getId() } returns restaurantId
+            every { getId() } returns menuId
             every { getRestaurantId() } returns restaurantId
             every { getCode() } returns "menu-$restaurantId"
             every { getDate() } returns date
             every { getType() } returns type
-            every { getNameKr() } returns "메뉴"
+            every { getNameKr() } returns name
             every { getNameEn() } returns null
             every { getPrice() } returns 1000
             every { getEtc() } returns "[]"
