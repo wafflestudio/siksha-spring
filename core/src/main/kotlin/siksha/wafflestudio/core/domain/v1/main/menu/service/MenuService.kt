@@ -116,7 +116,13 @@ class MenuService(
                 }
             val restaurantList = dateGroupMap[date]?.get(type) ?: return@forEach
             restaurantList.find { it.id == restaurantId }?.let {
-                (it.menus as MutableList<MenuInListDto>).addAll(menuDtos)
+                val orderedMenus =
+                    if (it.code.startsWith("[축제]")) {
+                        menuDtos.sortedBy { menu -> menu.id }
+                    } else {
+                        menuDtos
+                    }
+                (it.menus as MutableList<MenuInListDto>).addAll(orderedMenus)
             }
         }
 
