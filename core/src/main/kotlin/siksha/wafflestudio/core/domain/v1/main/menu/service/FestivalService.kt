@@ -10,9 +10,9 @@ class FestivalService {
     companion object {
         private val festivalDates: List<LocalDate> =
             listOf(
-                LocalDate.of(2026, 5, 12),
-                LocalDate.of(2026, 5, 13),
-                LocalDate.of(2026, 5, 14),
+                LocalDate.of(2026, 9, 15),
+                LocalDate.of(2026, 9, 16),
+                LocalDate.of(2026, 9, 17),
             )
     }
 
