@@ -24,6 +24,7 @@ import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuAlarmReposito
 import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuLikeRepository
 import siksha.wafflestudio.core.domain.v1.main.menu.repository.MenuRepository
 import siksha.wafflestudio.core.domain.v1.main.restaurant.repository.RestaurantRepository
+import siksha.wafflestudio.core.domain.v1.main.restaurant.service.withSillichochiFirst
 import java.io.InputStream
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -86,7 +87,7 @@ class MenuService(
         val likeInfoMap = menuLikeSummaries.associateBy { it.getId() }
 
         // 모든 restaurant 정보 조회
-        val allRestaurants = restaurantRepository.findAllByOrderByNameKr()
+        val allRestaurants = restaurantRepository.findAllByOrderByNameKr().withSillichochiFirst()
 
         // 날짜·타입별 기본 구조 초기화 (모든 식당, 빈 메뉴 리스트 포함)
         val dateGroupMap = mutableMapOf<LocalDate, MutableMap<String, MutableList<RestaurantInListDto>>>()
