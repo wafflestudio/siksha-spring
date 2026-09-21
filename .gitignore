@@ -8,3 +8,5 @@ mermaid_svg
 package-lock.json
 .codex
 .env.local
+models/*
+!models/README.md

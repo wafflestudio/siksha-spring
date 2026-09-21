@@ -11,16 +11,34 @@ import siksha.wafflestudio.core.domain.main.restaurant.data.RestaurantV2
 class NormalizeMenuUseCase(
     private val menuAliasV2Repository: MenuAliasV2Repository,
     private val menuV2Repository: MenuV2Repository,
+    private val menuNameNormalizer: MenuNameNormalizer,
 ) {
     operator fun invoke(
         originalName: String,
         restaurant: RestaurantV2,
     ): MenuV2 {
         val alias = menuAliasV2Repository.findByAlias(originalName)
-        val normalizedName = alias?.menuName ?: normalizeName(originalName)
+        if (alias != null) return findOrCreateMenu(restaurant, alias.menuName)
 
+        val preprocessedName = MenuNamePreprocessor.preprocess(originalName)
+        val preprocessedMenu = menuV2Repository.findByRestaurantAndName(restaurant, preprocessedName)
+        val normalizedName =
+            preprocessedMenu?.name
+                ?: menuNameNormalizer
+                    .normalize(preprocessedName)
+                    .takeIf { it.confidence > NORMALIZATION_CONFIDENCE_THRESHOLD }
+                    ?.normalizedName
+                ?: preprocessedName
+
+        val normalizedMenu =
+            if (normalizedName == preprocessedName) {
+                null
+            } else {
+                menuV2Repository.findByRestaurantAndName(restaurant, normalizedName)
+            }
+        val existingMenu = preprocessedMenu ?: normalizedMenu
         val menu =
-            menuV2Repository.findByRestaurantAndName(restaurant, normalizedName)
+            existingMenu
                 ?: menuV2Repository.save(
                     MenuV2(
                         restaurant = restaurant,
@@ -28,37 +46,35 @@ class NormalizeMenuUseCase(
                     ),
                 )
 
-        if (alias == null && originalName != menu.name) {
-            menuAliasV2Repository.save(
-                MenuAliasV2(
-                    alias = originalName,
-                    menuName = menu.name,
-                ),
-            )
+        if (originalName != menu.name) {
+            val savedAlias =
+                menuAliasV2Repository.save(
+                    MenuAliasV2(
+                        alias = originalName,
+                        menuName = menu.name,
+                    ),
+                )
+            menuNameNormalizer.addAlias(savedAlias.alias, savedAlias.menuName)
+        } else if (existingMenu == null) {
+            menuNameNormalizer.addAlias(menu.name, menu.name)
         }
 
         return menu
     }
 
-    private fun normalizeName(name: String): String {
-        var normalized = name.trim()
-        normalized = normalized.replace(OPERATING_PARENTHESIS_REGEX, " ")
-        normalized = normalized.replace(DELIMITER_REGEX, " ")
-        normalized = normalized.replace(OPERATING_TOKEN_REGEX, " ")
-        normalized = normalized.replace(DESCRIPTIVE_TOKEN_REGEX, " ")
-        normalized = normalized.replace(MULTIPLE_SPACES_REGEX, " ").trim()
-        normalized = normalized.replace(SPACES_REGEX, "")
-
-        return normalized.ifBlank { name.trim() }
-    }
+    private fun findOrCreateMenu(
+        restaurant: RestaurantV2,
+        name: String,
+    ): MenuV2 =
+        menuV2Repository.findByRestaurantAndName(restaurant, name)
+            ?: menuV2Repository.save(
+                MenuV2(
+                    restaurant = restaurant,
+                    name = name,
+                ),
+            )
 
     companion object {
-        private val OPERATING_PARENTHESIS_REGEX = Regex("""\((HOT|NEW|추천|특식|한정|셀프|추가|별도)[^)]*\)""")
-        private val DELIMITER_REGEX = Regex("""[\/,|]+""")
-        private val OPERATING_TOKEN_REGEX = Regex("""\b(HOT|NEW|추천|특식|한정|셀프|추가|별도)\b""")
-        private val DESCRIPTIVE_TOKEN_REGEX =
-            Regex("""(원산지[^\s]*|알레르기[^\s]*|소스\s*별도|밥\s*/?\s*김치\s*포함|밥\s*포함|김치\s*포함)""")
-        private val MULTIPLE_SPACES_REGEX = Regex("""\s+""")
-        private val SPACES_REGEX = Regex("""\s+""")
+        private const val NORMALIZATION_CONFIDENCE_THRESHOLD = 0.90
     }
 }
